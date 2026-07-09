@@ -1,0 +1,81 @@
+# slopcheck — привратник качества для ЛЮБОГО репозитория.
+# Тянет готовый образ ghcr.io/destraction/slopcheck (не собирает локально)
+# и гоняет delta-гейт: валит, только если добавлен новый slop.
+#
+# Ставится автоматически в новые репо через `ghnew` / `slopcheck-init`
+# (см. репозиторий Destraction/slopcheck, каталог consumer/).
+
+name: slopcheck
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+  actions: read
+  packages: read
+  security-events: write
+
+jobs:
+  slopcheck:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE: ghcr.io/destraction/slopcheck:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Pull slopcheck image
+        run: docker pull "$IMAGE"
+
+      - name: Resolve baseline
+        id: base
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE="${{ github.event.before }}"
+          fi
+          ZERO="0000000000000000000000000000000000000000"
+          if [ -z "$BASE" ] || [ "$BASE" = "$ZERO" ] || ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+            echo "has_base=false" >> "$GITHUB_OUTPUT"
+            echo "База не найдена (новая ветка/первый пуш) — гейт будет пропущен."
+          else
+            echo "has_base=true" >> "$GITHUB_OUTPUT"
+            echo "sha=$BASE" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Baseline report
+        if: steps.base.outputs.has_base == 'true'
+        run: |
+          git worktree add ../base "${{ steps.base.outputs.sha }}"
+          docker run --rm -v "$PWD/../base:/src" "$IMAGE" run /src --format json > base.json
+
+      - name: Report (SARIF + summary)
+        run: |
+          docker run --rm -v "$PWD:/src" "$IMAGE" run /src --format sarif > slopcheck.sarif
+          docker run --rm -v "$PWD:/src" "$IMAGE" run /src --format md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload SARIF artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: slopcheck-sarif
+          path: slopcheck.sarif
+
+      - name: Upload SARIF to Code Scanning
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: slopcheck.sarif
+
+      - name: Delta gate
+        if: steps.base.outputs.has_base == 'true'
+        run: docker run --rm -v "$PWD:/src" "$IMAGE" gate /src --baseline /src/base.json
