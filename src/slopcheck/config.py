@@ -44,6 +44,10 @@ class Config(BaseModel):
     languages: list[str] = Field(default_factory=list)
     # Находки этого severity и выше учитываются delta-гейтом как регресс.
     gate_severity: Severity = Severity.WARN
+    # Порог дублей для jscpd: минимум токенов/строк в клоне. Дефолт jscpd — 50
+    # токенов; ниже поднимает чувствительность к мелким копипастам.
+    dup_min_tokens: int = Field(default=50, ge=1)
+    dup_min_lines: int = Field(default=5, ge=1)
     # Настройки по каждой категории.
     categories: dict[Category, CategoryConfig] = Field(
         default_factory=lambda: {cat: CategoryConfig() for cat in Category}
