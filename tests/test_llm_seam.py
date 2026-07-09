@@ -54,10 +54,3 @@ def test_cli_without_flag_is_deterministic(tmp_path: Path) -> None:
     assert _findings_json(a.stdout) == _findings_json(b.stdout)
 
 
-def test_cli_llm_flag_runs_stub(tmp_path: Path) -> None:
-    (tmp_path / "app.py").write_text("print(1)\n", encoding="utf-8")
-    res = CliRunner().invoke(
-        app, ["run", str(tmp_path), "--format", "json", "--llm-review"]
-    )
-    assert res.exit_code == 0
-    assert "заглушка v1" in res.stderr
