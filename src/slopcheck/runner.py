@@ -14,6 +14,7 @@ from slopcheck import languages as lang_detect
 from slopcheck.config import Config, load_config
 from slopcheck.models import Category, CategoryResult, Finding, Report
 from slopcheck.registry import Registry, default_registry
+from slopcheck.scoring import score_report
 from slopcheck.subprocess_util import ToolNotFound
 
 
@@ -66,4 +67,5 @@ def run(
         languages=languages,
         categories=_group_into_categories(enabled, findings),
     )
+    report = score_report(report, config)
     return RunResult(report=report, skipped=skipped)
