@@ -146,8 +146,27 @@ def gate(
     from slopcheck.runner import run as run_analysis
 
     head = run_analysis(path)
-    base_report = load_baseline(baseline)
-    outcome = evaluate_gate(head.report, base_report, load_config(path))
+    base = load_baseline(baseline)
+    outcome = evaluate_gate(
+        head.report,
+        base.report,
+        load_config(path),
+        head_skipped=head.skipped,
+        base_skipped=base.skipped,
+    )
+
+    # Слепые зоны показываем всегда: молчание о skipped — прямой путь
+    # к ложному зелёному.
+    if base.skipped:
+        typer.echo("Пропущенные детекторы baseline:", err=True)
+        for entry in base.skipped:
+            typer.echo(f"  - {entry}", err=True)
+    if head.skipped:
+        typer.echo("Пропущенные детекторы head:", err=True)
+        for entry in head.skipped:
+            typer.echo(f"  - {entry}", err=True)
+    for warning in outcome.warnings:
+        typer.echo(f"⚠️  {warning}", err=True)
 
     if outcome.passed:
         typer.echo(
@@ -156,9 +175,16 @@ def gate(
         )
         raise typer.Exit(code=0)
 
-    typer.echo(f"❌ slopcheck gate: PR добавил slop — {len(outcome.blocking)} блокирующих находок:")
-    for f in outcome.blocking:
-        typer.echo(f"  [{f.severity.value}] {f.category.value} {f.file}:{f.line} — {f.message}")
+    for error in outcome.errors:
+        typer.echo(f"❌ slopcheck gate: {error}", err=True)
+    if outcome.blocking:
+        typer.echo(
+            f"❌ slopcheck gate: PR добавил slop — {len(outcome.blocking)} блокирующих находок:"
+        )
+        for f in outcome.blocking:
+            typer.echo(
+                f"  [{f.severity.value}] {f.category.value} {f.file}:{f.line} — {f.message}"
+            )
     raise typer.Exit(code=1)
 
 
