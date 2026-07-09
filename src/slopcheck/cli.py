@@ -7,6 +7,7 @@ from pathlib import Path
 import typer
 
 from slopcheck import __version__
+from slopcheck.config import CONFIG_FILENAME, dump_default_config
 
 app = typer.Typer(
     name="slopcheck",
@@ -20,6 +21,28 @@ app = typer.Typer(
 def version() -> None:
     """Показать версию slopcheck."""
     typer.echo(f"slopcheck {__version__}")
+
+
+@app.command(name="init-config")
+def init_config(
+    path: Path = typer.Argument(
+        Path("."),
+        file_okay=False,
+        dir_okay=True,
+        help="Каталог, в котором создать .slopcheck.yml.",
+    ),
+    force: bool = typer.Option(
+        False, "--force", help="Перезаписать существующий конфиг."
+    ),
+) -> None:
+    """Записать дефолтный .slopcheck.yml."""
+    target = path / CONFIG_FILENAME
+    if target.exists() and not force:
+        typer.echo(f"{target} уже существует (--force для перезаписи)", err=True)
+        raise typer.Exit(code=1)
+    path.mkdir(parents=True, exist_ok=True)
+    target.write_text(dump_default_config(), encoding="utf-8")
+    typer.echo(f"Записан {target}")
 
 
 @app.command()
