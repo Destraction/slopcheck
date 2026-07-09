@@ -17,6 +17,13 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Python-детекторы, вызываемые адаптерами напрямую (API) или как бинарники.
+detectors = [
+    "vulture>=2.14",
+    "deptry>=0.23",
+    "interrogate>=1.7",
+    "lizard>=1.17",
+]
 dev = [
     "pytest>=8.0",
 ]

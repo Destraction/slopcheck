@@ -21,4 +21,18 @@ slopcheck version
 
 ```bash
 slopcheck run ./path/to/repo --format console   # json | sarif | md
+slopcheck gate ./repo --baseline base.json      # delta-гейт для CI (exit 1 при регрессе)
 ```
+
+## Docker (все детекторы в одном образе)
+
+Собирать в окружении с открытой сетью (npm-registry, GitHub releases):
+
+```bash
+docker build -t slopcheck .
+docker run --rm -v "$PWD":/src slopcheck run /src --format console
+```
+
+Образ несёт node-детекторы (jscpd, knip), Python-детекторы (vulture, deptry,
+interrogate, lizard) и best-effort бинарник aislop. Недоступный детектор
+пропускается с пометкой в отчёте.
