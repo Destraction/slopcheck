@@ -26,6 +26,25 @@ class RunResult:
     skipped: list[str] = field(default_factory=list)
 
 
+def _normalize_paths(findings: list[Finding], root: Path) -> list[Finding]:
+    """Привести пути находок к относительным от корня репозитория.
+
+    Разные тулы отдают то абсолютные, то относительные пути; единый вид нужен
+    для консистентного отчёта и стабильных ключей delta-гейта (F12).
+    """
+    normalized: list[Finding] = []
+    for f in findings:
+        path = Path(f.file)
+        if path.is_absolute():
+            try:
+                rel = path.resolve().relative_to(root)
+                f = f.model_copy(update={"file": str(rel)})
+            except ValueError:
+                pass  # путь вне репозитория — оставляем как есть
+        normalized.append(f)
+    return normalized
+
+
 def _group_into_categories(
     enabled: list[Category], findings: list[Finding]
 ) -> list[CategoryResult]:
@@ -62,6 +81,7 @@ def run(
         except ToolNotFound as exc:
             skipped.append(f"{adapter.name}: тул не найден ({exc})")
 
+    findings = _normalize_paths(findings, root)
     report = Report(
         repo=root.name,
         languages=languages,

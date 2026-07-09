@@ -83,6 +83,21 @@ def test_runner_respects_language_applicability(tmp_path: Path) -> None:
     assert result.skipped == []  # неприменимость — не skip, просто пропуск
 
 
+def test_runner_normalizes_absolute_paths(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    abs_path = str(repo / "app.py")
+    reg = Registry()
+    reg.register(
+        _FakeAdapter(
+            "abs",
+            Category.DEAD_CODE,
+            [Finding(category=Category.DEAD_CODE, tool="t", file=abs_path, line=1, message="x")],
+        )
+    )
+    result = run(repo, config=Config(), registry=reg)
+    assert result.report.findings[0].file == "app.py"  # приведён к относительному
+
+
 def test_runner_excludes_disabled_category(tmp_path: Path) -> None:
     reg = Registry()
     reg.register(

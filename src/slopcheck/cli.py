@@ -58,15 +58,22 @@ def run(
         "console",
         "--format",
         "-f",
-        help="Формат отчёта: console | json | sarif | md.",
+        help="Формат отчёта: console | json.",
     ),
 ) -> None:
-    """Прогнать детекторы по репозиторию и выдать отчёт.
+    """Прогнать детекторы по репозиторию и выдать отчёт."""
+    from slopcheck import reporters
+    from slopcheck.runner import run as run_analysis
 
-    Заглушка F1 — оркестрация появится в следующих фичах (F3+).
-    """
-    typer.echo(f"slopcheck run: {path} (format={fmt}) — оркестрация ещё не реализована (F3+)")
-    raise typer.Exit(code=0)
+    if fmt not in reporters.available_formats():
+        typer.echo(
+            f"неизвестный формат: {fmt} (доступно: {', '.join(reporters.available_formats())})",
+            err=True,
+        )
+        raise typer.Exit(code=2)
+
+    result = run_analysis(path)
+    reporters.emit(result, fmt)
 
 
 if __name__ == "__main__":
