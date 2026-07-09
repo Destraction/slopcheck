@@ -36,3 +36,10 @@ docker run --rm -v "$PWD":/src slopcheck run /src --format console
 Образ несёт node-детекторы (jscpd, knip), Python-детекторы (vulture, deptry,
 interrogate, lizard) и best-effort бинарник aislop. Недоступный детектор
 пропускается с пометкой в отчёте.
+
+## CI (GitHub Actions)
+
+Готовый composite-action — `action.yml`; полный пример PR-workflow с delta-гейтом
+и загрузкой SARIF в Code Scanning — [.github/workflows/example.yml](.github/workflows/example.yml).
+Гейт красит PR красным, только если он **добавил** slop уровня не ниже
+`gate_severity` (см. `.slopcheck.yml`); старый долг сборку не валит.

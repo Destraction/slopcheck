@@ -1,0 +1,42 @@
+name: slopcheck
+description: Детект добавленного AI slop (дубли, мёртвый код, комментарии, сложность) с delta-гейтом.
+branding:
+  icon: filter
+  color: yellow
+
+inputs:
+  path:
+    description: Путь к анализируемому коду (относительно корня репозитория).
+    default: "."
+  baseline:
+    description: JSON-отчёт базовой ветки для delta-гейта. Пусто — гейт не запускается.
+    default: ""
+  sarif-output:
+    description: Куда записать SARIF-отчёт.
+    default: "slopcheck.sarif"
+
+runs:
+  using: composite
+  steps:
+    - name: Build slopcheck image
+      shell: bash
+      run: docker build -t slopcheck:ci "${{ github.action_path }}"
+
+    - name: SARIF report
+      shell: bash
+      run: >
+        docker run --rm -v "${{ github.workspace }}:/src" slopcheck:ci
+        run "/src/${{ inputs.path }}" --format sarif > "${{ inputs.sarif-output }}"
+
+    - name: Job summary
+      shell: bash
+      run: >
+        docker run --rm -v "${{ github.workspace }}:/src" slopcheck:ci
+        run "/src/${{ inputs.path }}" --format md >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Delta gate
+      if: ${{ inputs.baseline != '' }}
+      shell: bash
+      run: >
+        docker run --rm -v "${{ github.workspace }}:/src" slopcheck:ci
+        gate "/src/${{ inputs.path }}" --baseline "/src/${{ inputs.baseline }}"

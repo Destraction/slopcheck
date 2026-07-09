@@ -1,0 +1,47 @@
+# Пример PR-workflow: полный delta-гейт slopcheck.
+#
+# Логика: собрать образ → снять отчёт по базовой ветке (base.json) →
+# отчёт по PR (SARIF + summary) → загрузить SARIF в Code Scanning →
+# delta-гейт (красный, если PR добавил slop выше порога severity).
+#
+# В своём репозитории замените `docker build` на pull опубликованного образа:
+#   docker pull ghcr.io/destraction/slopcheck:latest
+
+name: slopcheck
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  security-events: write  # для upload-sarif
+
+jobs:
+  slopcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # нужен доступ к base sha
+
+      - name: Build slopcheck image
+        run: docker build -t slopcheck:ci .
+
+      - name: Baseline report (базовая ветка)
+        run: |
+          git worktree add ../base "${{ github.event.pull_request.base.sha }}"
+          docker run --rm -v "$PWD/../base:/src" slopcheck:ci run /src --format json > base.json
+
+      - name: PR report (SARIF + summary)
+        run: |
+          docker run --rm -v "$PWD:/src" slopcheck:ci run /src --format sarif > slopcheck.sarif
+          docker run --rm -v "$PWD:/src" slopcheck:ci run /src --format md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: slopcheck.sarif
+
+      - name: Delta gate
+        run: docker run --rm -v "$PWD:/src" slopcheck:ci gate /src --baseline /src/base.json
