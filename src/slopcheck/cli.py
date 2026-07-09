@@ -76,5 +76,48 @@ def run(
     reporters.emit(result, fmt)
 
 
+@app.command()
+def gate(
+    path: Path = typer.Argument(
+        Path("."),
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        help="Путь к репозиторию (текущее состояние / PR).",
+    ),
+    baseline: Path = typer.Option(
+        ...,
+        "--baseline",
+        "-b",
+        exists=True,
+        dir_okay=False,
+        help="JSON-отчёт базовой ветки (вывод `slopcheck run --format json`).",
+    ),
+) -> None:
+    """Delta-гейт: провалить (exit 1), если PR добавил slop выше порога severity.
+
+    Base-отчёт готовится заранее: на базовой ветке `slopcheck run --format json`.
+    """
+    from slopcheck.baseline import evaluate_gate, load_baseline
+    from slopcheck.config import load_config
+    from slopcheck.runner import run as run_analysis
+
+    head = run_analysis(path)
+    base_report = load_baseline(baseline)
+    outcome = evaluate_gate(head.report, base_report, load_config(path))
+
+    if outcome.passed:
+        typer.echo(
+            f"✅ slopcheck gate: новых блокирующих находок нет "
+            f"(всего новых: {len(outcome.new_findings)})"
+        )
+        raise typer.Exit(code=0)
+
+    typer.echo(f"❌ slopcheck gate: PR добавил slop — {len(outcome.blocking)} блокирующих находок:")
+    for f in outcome.blocking:
+        typer.echo(f"  [{f.severity.value}] {f.category.value} {f.file}:{f.line} — {f.message}")
+    raise typer.Exit(code=1)
+
+
 if __name__ == "__main__":
     app()
