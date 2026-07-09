@@ -30,7 +30,7 @@ class SemgrepSmellsAdapter(Adapter):
 
     name = "semgrep-smells"
     category = Category.COMPLEXITY
-    languages = frozenset({"python"})  # текущие правила — только Python
+    languages = frozenset({"python", "javascript", "typescript", "go"})
 
     def is_available(self) -> bool:
         return tool_available("semgrep") and _RULES_FILE.exists()

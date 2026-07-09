@@ -44,3 +44,43 @@ rules:
     pattern-either:
       - pattern: $X == None
       - pattern: $X != None
+
+  # ------------------------------------------------------------- JavaScript / TypeScript
+  - id: empty-catch
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: >
+      Пустой catch — ошибка проглочена без обработки.
+    pattern: |
+      try { ... } catch ($E) {}
+
+  - id: debugger-statement
+    languages: [javascript, typescript]
+    severity: INFO
+    message: >
+      Оставлен debugger; — отладочный след в коде.
+    pattern: debugger;
+
+  - id: loose-eq-null
+    languages: [javascript, typescript]
+    severity: INFO
+    message: >
+      Нестрогое сравнение с null (== / !=); обычно нужен === / !==.
+    pattern-either:
+      - pattern: $X == null
+      - pattern: $X != null
+
+  # ------------------------------------------------------------- Go
+  - id: swallowed-error-go
+    languages: [go]
+    severity: WARNING
+    message: >
+      Возврат присвоен _ — возможная ошибка проигнорирована.
+    pattern: _ = $F(...)
+
+  - id: bare-panic-go
+    languages: [go]
+    severity: INFO
+    message: >
+      panic() в коде — предпочтительнее возврат error.
+    pattern: panic(...)
