@@ -1,1 +1,6 @@
-"""Адаптеры детекторов: обёртки над внешними тулами, дающие Finding."""
+"""Адаптеры детекторов: обёртки над внешними тулами, дающие Finding.
+
+Импорт этого пакета регистрирует все конкретные адаптеры в default_registry.
+"""
+
+from slopcheck.adapters import duplication as duplication  # noqa: F401

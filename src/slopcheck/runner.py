@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import slopcheck.adapters  # noqa: F401  — регистрирует адаптеры в default_registry
 from slopcheck import languages as lang_detect
 from slopcheck.config import Config, load_config
 from slopcheck.models import Category, CategoryResult, Finding, Report

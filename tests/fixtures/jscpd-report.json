@@ -1,0 +1,31 @@
+{
+  "statistics": {
+    "total": {
+      "lines": 42,
+      "duplicatedLines": 5,
+      "percentage": 11.9
+    }
+  },
+  "duplicates": [
+    {
+      "format": "javascript",
+      "lines": 5,
+      "tokens": 30,
+      "fragment": "const x = a + b;\nconst y = x * 2;\nconsole.log(y);\nreturn y;",
+      "firstFile": {
+        "name": "src/a.js",
+        "start": 1,
+        "end": 6,
+        "startLoc": { "line": 1, "column": 0 },
+        "endLoc": { "line": 6, "column": 1 }
+      },
+      "secondFile": {
+        "name": "src/b.js",
+        "start": 1,
+        "end": 6,
+        "startLoc": { "line": 1, "column": 0 },
+        "endLoc": { "line": 6, "column": 1 }
+      }
+    }
+  ]
+}
