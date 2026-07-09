@@ -41,3 +41,32 @@ def test_semgrep_smells_live(tmp_path: Path) -> None:
     assert eq.severity is Severity.INFO
     swallowed = next(f for f in findings if f.rule_id == "swallowed-exception")
     assert swallowed.severity is Severity.WARN
+
+
+@pytest.mark.skipif(shutil.which("semgrep") is None, reason="semgrep не установлен")
+def test_semgrep_smells_js_live(tmp_path: Path) -> None:
+    (tmp_path / "a.js").write_text(
+        "function f(x) {\n"
+        "  try {\n"
+        "    risky();\n"
+        "  } catch (e) {}\n"
+        "  if (x == null) return;\n"
+        "  debugger;\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    rule_ids = {f.rule_id for f in SemgrepSmellsAdapter().run(tmp_path, Config())}
+    assert "empty-catch" in rule_ids
+    assert "debugger-statement" in rule_ids
+    assert "loose-eq-null" in rule_ids
+
+
+@pytest.mark.skipif(shutil.which("semgrep") is None, reason="semgrep не установлен")
+def test_semgrep_smells_go_live(tmp_path: Path) -> None:
+    (tmp_path / "b.go").write_text(
+        "package main\n\nfunc do() {\n\t_ = mayFail()\n\tpanic(\"boom\")\n}\n",
+        encoding="utf-8",
+    )
+    rule_ids = {f.rule_id for f in SemgrepSmellsAdapter().run(tmp_path, Config())}
+    assert "swallowed-error-go" in rule_ids
+    assert "bare-panic-go" in rule_ids

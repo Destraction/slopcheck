@@ -9,7 +9,7 @@
 ## Статус
 
 v1 готов: 4 категории детекторов, отчёты (console/json/sarif/md), delta-гейт, Docker, GitHub Action.
-v2 (в работе): semgrep-адаптер смеллов (`slopcheck/rules/smells.yml`, категория complexity) — Python-антипаттерны (проглоченные исключения, изменяемые дефолты, `== None`).
+v2 (в работе): semgrep-адаптер смеллов (`slopcheck/rules/smells.yml`, категория complexity) — антипаттерны в Python (проглоченные исключения, изменяемые дефолты, `== None`), JS/TS (пустой catch, `debugger`, нестрогое `== null`) и Go (проигнорированная ошибка `_ =`, `panic`).
 
 ## Установка (dev)
 
