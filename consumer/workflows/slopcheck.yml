@@ -33,8 +33,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Пакет slopcheck в GHCR приватный: GITHUB_TOKEN чужого репо доступа не имеет.
+      # GHCR_PULL_TOKEN (PAT с read:packages) раскатывается автоматически через
+      # slopcheck-init / ghnew; fallback на GITHUB_TOKEN — если пакет станет public.
       - name: Log in to GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+        run: echo "${{ secrets.GHCR_PULL_TOKEN || secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
       - name: Pull slopcheck image
         run: docker pull "$IMAGE"
