@@ -74,14 +74,21 @@ def test_collect_code_reads_finding_files(tmp_path: Path) -> None:
 
 # --------------------------------------------------------------- review (мок subprocess)
 
-def _result_with_finding(tmp_path: Path) -> RunResult:
-    (tmp_path / "a.py").write_text("def foo():\n    return 1\n", encoding="utf-8")
+def _patch_gemini(monkeypatch, stdout: str = "", returncode: int = 0, stderr: str = "") -> None:
+    """Подменить run_tool в gemini-модуле фиксированным результатом."""
+    result = ToolResult(returncode=returncode, stdout=stdout, stderr=stderr)
+    monkeypatch.setattr(gem, "run_tool", lambda *_a, **_k: result)
+    monkeypatch.setattr(gem, "tool_available", lambda *_a, **_k: True)
+
+
+def _repo(tmp_path: Path, name: str = "a.py") -> RunResult:
+    (tmp_path / name).write_text("def foo():\n    return 1\n", encoding="utf-8")
     report = Report(
         repo="d",
         categories=[
             CategoryResult(
                 category=Category.DEAD_CODE,
-                findings=[Finding(category=Category.DEAD_CODE, tool="t", file="a.py",
+                findings=[Finding(category=Category.DEAD_CODE, tool="t", file=name,
                                   line=1, message="m")],
             )
         ],
@@ -90,31 +97,19 @@ def _result_with_finding(tmp_path: Path) -> RunResult:
 
 
 def test_review_maps_gemini_json(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setattr(
-        gem, "run_tool",
-        lambda *a, **k: ToolResult(
-            returncode=0,
-            stdout='[{"file":"a.py","line":1,"message":"Имя foo неинформативно"}]',
-            stderr="",
-        ),
-    )
-    findings = GeminiReviewer().review(_result_with_finding(tmp_path), Config())
+    _patch_gemini(monkeypatch, stdout='[{"file":"a.py","line":1,"message":"Имя foo неинформативно"}]')
+    findings = GeminiReviewer().review(_repo(tmp_path), Config())
     assert len(findings) == 1
     assert findings[0].tool == "gemini"
     assert "неинформативно" in findings[0].message
 
 
 def test_review_raises_when_unauthenticated(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setattr(
-        gem, "run_tool",
-        lambda *a, **k: ToolResult(
-            returncode=1, stdout="", stderr="Please set an Auth method in settings.json"
-        ),
-    )
     import pytest
 
+    _patch_gemini(monkeypatch, returncode=1, stderr="Please set an Auth method in settings.json")
     with pytest.raises(GeminiNotAuthenticated):
-        GeminiReviewer().review(_result_with_finding(tmp_path), Config())
+        GeminiReviewer().review(_repo(tmp_path), Config())
 
 
 def test_review_empty_when_no_files() -> None:
@@ -124,17 +119,13 @@ def test_review_empty_when_no_files() -> None:
 
 # --------------------------------------------------------------- CLI-интеграция
 
-def test_cli_llm_review_injects_findings(monkeypatch, tmp_path: Path) -> None:
+def _cli_llm(tmp_path: Path) -> None:
     (tmp_path / "app.py").write_text("import os\n\n\ndef dead():\n    return 1\n", encoding="utf-8")
-    monkeypatch.setattr(gem, "tool_available", lambda name: True)
-    monkeypatch.setattr(
-        gem, "run_tool",
-        lambda *a, **k: ToolResult(
-            returncode=0,
-            stdout='[{"file":"app.py","line":4,"message":"dead — плохое имя"}]',
-            stderr="",
-        ),
-    )
+
+
+def test_cli_llm_review_injects_findings(monkeypatch, tmp_path: Path) -> None:
+    _cli_llm(tmp_path)
+    _patch_gemini(monkeypatch, stdout='[{"file":"app.py","line":4,"message":"dead — плохое имя"}]')
     res = CliRunner().invoke(app, ["run", str(tmp_path), "--format", "json", "--llm-review"])
     assert res.exit_code == 0
     data = json.loads(res.stdout)
@@ -144,12 +135,8 @@ def test_cli_llm_review_injects_findings(monkeypatch, tmp_path: Path) -> None:
 
 
 def test_cli_llm_review_graceful_when_unauthed(monkeypatch, tmp_path: Path) -> None:
-    (tmp_path / "app.py").write_text("import os\n\n\ndef dead():\n    return 1\n", encoding="utf-8")
-    monkeypatch.setattr(gem, "tool_available", lambda name: True)
-    monkeypatch.setattr(
-        gem, "run_tool",
-        lambda *a, **k: ToolResult(returncode=1, stdout="", stderr="Please set an Auth method"),
-    )
+    _cli_llm(tmp_path)
+    _patch_gemini(monkeypatch, returncode=1, stderr="Please set an Auth method")
     res = CliRunner().invoke(app, ["run", str(tmp_path), "--format", "json", "--llm-review"])
     # Не падаем — отчёт всё равно выводится, ревью пропущено с пометкой.
     assert res.exit_code == 0
