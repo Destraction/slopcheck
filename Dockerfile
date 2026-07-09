@@ -24,7 +24,7 @@ RUN npm install -g jscpd@4 knip@5
 # aislop: best-effort загрузка релизного бинарника (сборку не валит).
 RUN set -eux; \
     arch="$(uname -m)"; \
-    url="https://github.com/scanaislop/aislop/releases/${AISLOP_VERSION}/download/aislop-${arch}-unknown-linux-gnu"; \
+    url="https://github.com/scanaislop/aislop/releases/download/${AISLOP_VERSION}/aislop-${arch}-unknown-linux-gnu"; \
     (curl -fsSL "$url" -o /usr/local/bin/aislop && chmod +x /usr/local/bin/aislop) \
         || echo "aislop не установлен — адаптер будет пропущен";
 

@@ -45,6 +45,14 @@ def _extract_json_array(text: str) -> str:
     return text[start : end + 1]
 
 
+def _safe_line(value: object) -> int:
+    """Номер строки из ответа модели: мусор ('12-14', null, 'abc') → 0."""
+    try:
+        return max(int(value), 0)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return 0
+
+
 def parse_review(text: str, category: Category = Category.COMPLEXITY) -> list[Finding]:
     """Разобрать JSON-ответ Gemini в находки (advisory, severity INFO)."""
     try:
@@ -63,7 +71,7 @@ def parse_review(text: str, category: Category = Category.COMPLEXITY) -> list[Fi
                 category=category,
                 tool="gemini",
                 file=str(item["file"]),
-                line=int(item.get("line") or 0),
+                line=_safe_line(item.get("line")),
                 message=str(item.get("message", "")).strip() or "субъективное замечание",
                 severity=Severity.INFO,
                 rule_id="llm-design",

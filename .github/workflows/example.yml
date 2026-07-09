@@ -16,6 +16,11 @@ name: slopcheck
 on:
   pull_request:
   push:
+    branches: [master, main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -55,11 +60,11 @@ jobs:
         if: steps.base.outputs.has_base == 'true'
         run: |
           git worktree add ../base "${{ steps.base.outputs.sha }}"
-          docker run --rm -v "$PWD/../base:/src" slopcheck:ci run /src --format json > base.json
+          docker run --rm -v "$PWD/../base:/src" slopcheck:ci run /src --format json > "$RUNNER_TEMP/base.json"
 
       - name: Report (SARIF + summary)
         run: |
-          docker run --rm -v "$PWD:/src" slopcheck:ci run /src --format sarif > slopcheck.sarif
+          docker run --rm -v "$PWD:/src" slopcheck:ci run /src --format sarif > "$RUNNER_TEMP/slopcheck.sarif"
           docker run --rm -v "$PWD:/src" slopcheck:ci run /src --format md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload SARIF artifact
@@ -67,7 +72,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: slopcheck-sarif
-          path: slopcheck.sarif
+          path: ${{ runner.temp }}/slopcheck.sarif
 
       # Загрузка в Code Scanning требует GitHub Advanced Security; на приватном
       # репо без GHAS шаг недоступен — неблокирующий, чтобы гейт всё равно отработал.
@@ -76,8 +81,8 @@ jobs:
         continue-on-error: true
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: slopcheck.sarif
+          sarif_file: ${{ runner.temp }}/slopcheck.sarif
 
       - name: Delta gate
         if: steps.base.outputs.has_base == 'true'
-        run: docker run --rm -v "$PWD:/src" slopcheck:ci gate /src --baseline /src/base.json
+        run: docker run --rm -v "$RUNNER_TEMP/base.json:/base/base.json:ro" -v "$PWD:/src" slopcheck:ci gate /src --baseline /base/base.json

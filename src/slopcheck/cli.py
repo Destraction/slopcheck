@@ -88,9 +88,11 @@ def run(
 
 def _apply_llm_review(result, config) -> None:
     """Прогнать опциональный Gemini-ревью и влить его находки в отчёт."""
-    from slopcheck.llm.gemini import GeminiNotAuthenticated, GeminiReviewer
+    from slopcheck.llm.gemini import GeminiReviewer
     from slopcheck.llm.review import run_review
     from slopcheck.models import CategoryResult
+    from slopcheck.scoring import score_report
+    from slopcheck.subprocess_util import ToolExecutionError
 
     reviewer = GeminiReviewer()
     if not reviewer.is_available():
@@ -99,7 +101,8 @@ def _apply_llm_review(result, config) -> None:
 
     try:
         extra = run_review(result, config, reviewer)
-    except GeminiNotAuthenticated as exc:
+    except ToolExecutionError as exc:
+        # Не авторизован / упал / таймаут — advisory-ревью не валит основной прогон.
         typer.echo(f"LLM-ревью пропущено: {exc}", err=True)
         return
 
@@ -116,6 +119,9 @@ def _apply_llm_review(result, config) -> None:
             by_cat[finding.category] = target
             result.report.categories.append(target)
         target.findings.append(finding)
+
+    # Пересчитать score/total_score: они были посчитаны ДО влития LLM-находок.
+    result.report = score_report(result.report, config)
     typer.echo(f"LLM-ревью: добавлено замечаний — {len(extra)}.", err=True)
 
 

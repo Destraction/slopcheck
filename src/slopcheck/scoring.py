@@ -59,5 +59,11 @@ def score_report(report: Report, config: Config | None = None) -> Report:
         weighted_sum += score * weight_value
         weight_total += weight_value
 
-    total = round(weighted_sum / weight_total, 2) if weight_total else 100.0
+    if weight_total:
+        total = round(weighted_sum / weight_total, 2)
+    elif scored:
+        # Все веса обнулены — не рисуем фиктивные 100, берём невзвешенное среднее.
+        total = round(sum(c.score for c in scored) / len(scored), 2)
+    else:
+        total = 100.0
     return report.model_copy(update={"categories": scored, "total_score": total})
