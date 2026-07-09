@@ -42,14 +42,24 @@ class Finding(BaseModel):
     end_line: int | None = Field(default=None, ge=0)
     rule_id: str | None = None
     metric: float | None = None
+    # Стабильная идентичность для delta-гейта. Задаётся адаптером, когда
+    # message содержит изменчивые данные (число строк, CCN, номер строки):
+    # без неё косметический сдвиг превращал бы старую находку в «новую».
+    identity: str | None = None
 
     def key(self) -> tuple[str, str, str, str]:
         """Стабильный ключ для delta-сравнения, устойчивый к сдвигу строк.
 
         Строку намеренно не включаем — вставка кода выше не должна
-        превращать старую находку в «новую».
+        превращать старую находку в «новую». Если адаптер задал `identity`,
+        она используется вместо изменчивого message.
         """
-        return (self.category.value, self.rule_id or self.tool, self.file, self.message)
+        return (
+            self.category.value,
+            self.rule_id or self.tool,
+            self.file,
+            self.identity or self.message,
+        )
 
 
 class CategoryResult(BaseModel):

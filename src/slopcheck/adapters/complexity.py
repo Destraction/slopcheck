@@ -53,9 +53,25 @@ def findings_from_analysis(
                     severity=severity,
                     rule_id="high-complexity",
                     metric=float(ccn),
+                    # Идентичность — имя функции (файл уже входит в ключ):
+                    # рост CCN 15→16 не должен делать находку «новой» для гейта.
+                    identity=func.name,
                 )
             )
     return findings
+
+
+def exclude_globs(ignore: list[str]) -> list[str]:
+    """Glob'ы для lizard `exclude_pattern` из паттернов конфига.
+
+    Паттерн может означать и каталог (`build`), и файл (`*.min.js`) — даём обе
+    формы: обёртка только в `*/{pat}/*` ломала файловые паттерны (получалось
+    `*/*.min.js/*`, которое не матчит ни один файл).
+    """
+    globs: list[str] = []
+    for pattern in ignore:
+        globs += [f"*/{pattern}/*", f"*/{pattern}", pattern]
+    return globs
 
 
 class LizardAdapter(Adapter):
@@ -71,8 +87,7 @@ class LizardAdapter(Adapter):
     def run(self, root: Path, config: Config) -> list[Finding]:
         import lizard
 
-        exclude = [f"*/{pattern}/*" for pattern in config.ignore]
-        analysis = lizard.analyze([str(root)], exclude_pattern=exclude)
+        analysis = lizard.analyze([str(root)], exclude_pattern=exclude_globs(config.ignore))
         return findings_from_analysis(analysis)
 
 

@@ -58,3 +58,12 @@ def test_lizard_live(tmp_path: Path) -> None:
     findings = LizardAdapter().run(tmp_path, Config())
     assert any("tangled" in f.message for f in findings)
     assert all(f.metric and f.metric > 10 for f in findings)
+
+
+def test_identity_ignores_ccn_growth() -> None:
+    # Рост CCN 15→16 не меняет ключ находки (identity = имя функции).
+    before = findings_from_analysis([_File("a.py", [_Func("busy", 15, 10)])], threshold=10)[0]
+    after = findings_from_analysis([_File("a.py", [_Func("busy", 16, 10)])], threshold=10)[0]
+    assert before.identity == "busy"
+    assert before.key() == after.key()
+    assert before.message != after.message

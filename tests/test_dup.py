@@ -38,3 +38,40 @@ def test_adapter_metadata() -> None:
     assert adapter.name == "jscpd"
     assert adapter.category is Category.DUPLICATION
     assert adapter.applies_to(["python"])  # мультиязычен → применим к любому
+
+
+def test_identity_stable_without_lines_and_positions() -> None:
+    # Идентичность дубля — пара путей: рост числа строк и сдвиг второго
+    # блока не должны делать находку «новой» для delta-гейта.
+    findings = parse_report(FIXTURE.read_text(encoding="utf-8"))
+    f = findings[0]
+    assert f.identity == "|".join(sorted(["src/a.js", "src/b.js"]))
+    # message содержит изменчивое (строки/позиции) — ключ его игнорирует
+    import json as _json
+
+    data = _json.loads(FIXTURE.read_text(encoding="utf-8"))
+    data["duplicates"][0]["lines"] += 7
+    data["duplicates"][0]["secondFile"]["start"] = 999
+    shifted = parse_report(_json.dumps(data))[0]
+    assert shifted.key() == f.key()
+    assert shifted.message != f.message
+
+
+def test_parse_report_relativizes_both_paths(tmp_path: Path) -> None:
+    # second_name нормализуется той же логикой, что и f.file.
+    import json as _json
+
+    report = {
+        "duplicates": [
+            {
+                "lines": 5,
+                "firstFile": {"name": str(tmp_path / "src" / "a.js"), "start": 1, "end": 6},
+                "secondFile": {"name": str(tmp_path / "src" / "b.js"), "start": 10},
+            }
+        ]
+    }
+    f = parse_report(_json.dumps(report), root=tmp_path)[0]
+    assert f.file == "src/a.js"
+    assert "src/b.js" in f.message
+    assert str(tmp_path) not in (f.identity or "")
+    assert f.identity == "src/a.js|src/b.js"

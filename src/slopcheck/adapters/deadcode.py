@@ -53,6 +53,22 @@ def parse_vulture(text: str) -> list[Finding]:
     return findings
 
 
+def vulture_excludes(ignore: list[str]) -> list[str]:
+    """Точные исключения для vulture из паттернов конфига.
+
+    vulture оборачивает паттерн без wildcard'ов в `*pattern*` (матч по
+    ПОДСТРОКЕ пути!), из-за чего `build` исключал бы и `rebuilder/`. Даём
+    явные glob'ы по компоненту пути; паттерны с wildcard передаём как есть.
+    """
+    patterns: list[str] = []
+    for pat in ignore:
+        if any(ch in pat for ch in "*?["):
+            patterns.append(pat)
+        else:
+            patterns += [f"*/{pat}/*", f"*/{pat}"]
+    return patterns
+
+
 class VultureAdapter(Adapter):
     """Неиспользуемый Python-код."""
 
@@ -65,10 +81,12 @@ class VultureAdapter(Adapter):
 
     def run(self, root: Path, config: Config) -> list[Finding]:
         cmd = ["vulture", str(root)]
-        if config.ignore:
-            cmd += ["--exclude", ",".join(config.ignore)]
+        excludes = vulture_excludes(config.ignore)
+        if excludes:
+            cmd += ["--exclude", ",".join(excludes)]
         result = run_tool(cmd, cwd=root)
-        if crashed(result):
+        # Коды vulture: 0 — мёртвого кода нет, 3 — найден (штатно); 1/2 — сбой.
+        if crashed(result, ok_returncodes=(0, 3)):
             raise ToolExecutionError(f"vulture упал: {result.stderr.strip()[:200]}")
         return parse_vulture(result.stdout)
 
@@ -189,9 +207,13 @@ class KnipAdapter(Adapter):
         result = run_tool(
             ["knip", "--reporter", "json", "--directory", str(root)], cwd=root
         )
-        if crashed(result):
+        # Коды knip: 0 — чисто, 1 — есть находки (штатно); прочие — сбой.
+        if crashed(result, ok_returncodes=(0, 1)):
             raise ToolExecutionError(f"knip упал: {result.stderr.strip()[:200]}")
         if not result.stdout.strip():
+            if result.returncode != 0:
+                # Код «есть находки» без вывода — недостоверный результат.
+                raise ToolExecutionError("knip вернул код 1 без JSON-вывода")
             return []
         return parse_knip(result.stdout)
 
