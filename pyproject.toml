@@ -23,6 +23,7 @@ detectors = [
     "deptry>=0.23",
     "interrogate>=1.7",
     "lizard>=1.17",
+    "semgrep>=1.100",
 ]
 dev = [
     "pytest>=8.0",

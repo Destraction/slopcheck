@@ -29,18 +29,36 @@ _SARIF_LEVEL_TO_SEVERITY = {
 }
 
 
+def _rule_levels(run: dict) -> dict[str, str]:
+    """Собрать severity правил из driver.rules (id → defaultConfiguration.level).
+
+    Нужно для источников (напр. semgrep), которые не кладут level в сам result,
+    а держат его в определении правила.
+    """
+    driver = (run.get("tool") or {}).get("driver") or {}
+    levels: dict[str, str] = {}
+    for rule in driver.get("rules") or []:
+        rule_id = rule.get("id")
+        level = (rule.get("defaultConfiguration") or {}).get("level")
+        if rule_id and level:
+            levels[rule_id] = level
+    return levels
+
+
 def parse_sarif(sarif_json: str, tool: str, category: Category) -> list[Finding]:
     """Разобрать SARIF 2.1.0 в находки.
 
     Читает `runs[].results[]`: ruleId, level, message.text и первую физическую
-    локацию (файл + начальная строка).
+    локацию. Если у result нет level, берёт его из определения правила.
     """
     data = json.loads(sarif_json)
     findings: list[Finding] = []
     for run in data.get("runs", []):
+        rule_levels = _rule_levels(run)
         for result in run.get("results", []):
             message = (result.get("message") or {}).get("text", "")
-            severity = _SARIF_LEVEL_TO_SEVERITY.get(result.get("level", "warning"), Severity.WARN)
+            level = result.get("level") or rule_levels.get(result.get("ruleId"), "warning")
+            severity = _SARIF_LEVEL_TO_SEVERITY.get(level, Severity.WARN)
             file, line = _first_location(result)
             findings.append(
                 Finding(
