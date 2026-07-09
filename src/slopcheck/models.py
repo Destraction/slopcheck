@@ -1,0 +1,76 @@
+"""Нормализованная модель данных slopcheck.
+
+Каждый адаптер парсит родной вывод своего тула в список `Finding`.
+Всё дальше (скоринг, репортеры, delta-гейт) работает только с этими моделями,
+поэтому конкретные детекторы взаимозаменяемы.
+"""
+
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from enum import Enum
+
+from pydantic import BaseModel, Field
+
+
+class Category(str, Enum):
+    """Категории slop, по которым группируются находки."""
+
+    DUPLICATION = "duplication"
+    DEAD_CODE = "dead_code"
+    COMMENTS = "comments"
+    COMPLEXITY = "complexity"
+
+
+class Severity(str, Enum):
+    """Уровень находки. Гейт настраивается на пороговый severity."""
+
+    INFO = "info"
+    WARN = "warn"
+    ERROR = "error"
+
+
+class Finding(BaseModel):
+    """Одна нормализованная находка от любого детектора."""
+
+    category: Category
+    tool: str
+    file: str
+    line: int = Field(ge=0)
+    message: str
+    severity: Severity = Severity.WARN
+    end_line: int | None = Field(default=None, ge=0)
+    rule_id: str | None = None
+    metric: float | None = None
+
+    def key(self) -> tuple[str, str, str, str]:
+        """Стабильный ключ для delta-сравнения, устойчивый к сдвигу строк.
+
+        Строку намеренно не включаем — вставка кода выше не должна
+        превращать старую находку в «новую».
+        """
+        return (self.category.value, self.rule_id or self.tool, self.file, self.message)
+
+
+class CategoryResult(BaseModel):
+    """Агрегат находок и метрик по одной категории."""
+
+    category: Category
+    findings: list[Finding] = Field(default_factory=list)
+    metrics: dict[str, float] = Field(default_factory=dict)
+    score: float = Field(default=100.0, ge=0.0, le=100.0)
+
+
+class Report(BaseModel):
+    """Полный результат прогона по репозиторию."""
+
+    repo: str
+    languages: list[str] = Field(default_factory=list)
+    categories: list[CategoryResult] = Field(default_factory=list)
+    total_score: float = Field(default=100.0, ge=0.0, le=100.0)
+    generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    @property
+    def findings(self) -> list[Finding]:
+        """Все находки из всех категорий одним списком."""
+        return [f for cat in self.categories for f in cat.findings]
