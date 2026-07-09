@@ -1,8 +1,12 @@
-# Пример PR-workflow: полный delta-гейт slopcheck.
+# PR- и push-workflow: delta-гейт slopcheck внутри пайплайна.
 #
-# Логика: собрать образ → снять отчёт по базовой ветке (base.json) →
-# отчёт по PR (SARIF + summary) → загрузить SARIF в Code Scanning →
-# delta-гейт (красный, если PR добавил slop выше порога severity).
+# Триггеры:
+#   pull_request — база = целевая ветка PR;
+#   push         — база = предыдущий коммит (github.event.before).
+# Если базы нет (новая ветка / первый пуш) — гейт пропускается, остаётся отчёт.
+#
+# Логика: собрать образ → определить базу → отчёт по базе (base.json) →
+# отчёт по текущему коду (SARIF + summary) → загрузить SARIF → delta-гейт.
 #
 # В своём репозитории замените `docker build` на pull опубликованного образа:
 #   docker pull ghcr.io/destraction/slopcheck:latest
@@ -11,17 +15,18 @@ name: slopcheck
 
 on:
   pull_request:
+  push:
 
 permissions:
   contents: read
-  actions: read           # codeql-action читает инфо о запуске
-  security-events: write  # для upload-sarif (нужен GHAS на приватных репо)
+  actions: read
+  security-events: write
 
 jobs:
   slopcheck:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout PR
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # нужен доступ к base sha
@@ -29,17 +34,34 @@ jobs:
       - name: Build slopcheck image
         run: docker build -t slopcheck:ci .
 
-      - name: Baseline report (базовая ветка)
+      - name: Resolve baseline
+        id: base
         run: |
-          git worktree add ../base "${{ github.event.pull_request.base.sha }}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE="${{ github.event.before }}"
+          fi
+          ZERO="0000000000000000000000000000000000000000"
+          if [ -z "$BASE" ] || [ "$BASE" = "$ZERO" ] || ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+            echo "has_base=false" >> "$GITHUB_OUTPUT"
+            echo "База не найдена (новая ветка/первый пуш) — гейт будет пропущен."
+          else
+            echo "has_base=true" >> "$GITHUB_OUTPUT"
+            echo "sha=$BASE" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Baseline report
+        if: steps.base.outputs.has_base == 'true'
+        run: |
+          git worktree add ../base "${{ steps.base.outputs.sha }}"
           docker run --rm -v "$PWD/../base:/src" slopcheck:ci run /src --format json > base.json
 
-      - name: PR report (SARIF + summary)
+      - name: Report (SARIF + summary)
         run: |
           docker run --rm -v "$PWD:/src" slopcheck:ci run /src --format sarif > slopcheck.sarif
           docker run --rm -v "$PWD:/src" slopcheck:ci run /src --format md >> "$GITHUB_STEP_SUMMARY"
 
-      # SARIF всегда сохраняем как артефакт (работает и на приватных репо).
       - name: Upload SARIF artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -48,8 +70,7 @@ jobs:
           path: slopcheck.sarif
 
       # Загрузка в Code Scanning требует GitHub Advanced Security; на приватном
-      # репо без GHAS шаг недоступен — делаем его неблокирующим, чтобы гейт всё
-      # равно отработал. На публичных репо / с GHAS уберите continue-on-error.
+      # репо без GHAS шаг недоступен — неблокирующий, чтобы гейт всё равно отработал.
       - name: Upload SARIF to Code Scanning
         if: always()
         continue-on-error: true
@@ -58,4 +79,5 @@ jobs:
           sarif_file: slopcheck.sarif
 
       - name: Delta gate
+        if: steps.base.outputs.has_base == 'true'
         run: docker run --rm -v "$PWD:/src" slopcheck:ci gate /src --baseline /src/base.json
