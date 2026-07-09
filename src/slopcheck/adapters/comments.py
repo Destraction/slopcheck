@@ -19,7 +19,7 @@ from slopcheck.adapters.base import Adapter
 from slopcheck.config import Config
 from slopcheck.models import Category, Finding, Severity
 from slopcheck.registry import default_registry
-from slopcheck.subprocess_util import run_tool, tool_available
+from slopcheck.subprocess_util import ToolExecutionError, crashed, run_tool, tool_available
 
 _SARIF_LEVEL_TO_SEVERITY = {
     "error": Severity.ERROR,
@@ -96,6 +96,10 @@ class AislopAdapter(Adapter):
 
     def run(self, root: Path, config: Config) -> list[Finding]:
         result = run_tool(["aislop", "scan", str(root), "--sarif"], cwd=root)
+        # Как и у других subprocess-адаптеров: сбой не глотаем (иначе delta-гейт
+        # ложно зеленеет). Код 1 у сканеров — «есть находки», штатно.
+        if crashed(result, ok_returncodes=(0, 1)):
+            raise ToolExecutionError(f"aislop упал: {result.stderr.strip()[:200]}")
         if not result.stdout.strip():
             return []
         return parse_sarif(result.stdout, tool="aislop", category=Category.COMMENTS)

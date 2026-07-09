@@ -74,11 +74,12 @@ def run_tool(
     return ToolResult(returncode=proc.returncode, stdout=proc.stdout, stderr=proc.stderr)
 
 
-def crashed(result: ToolResult) -> bool:
-    """Похоже ли на сбой: ненулевой код, пустой stdout и есть текст в stderr.
+def crashed(result: ToolResult, ok_returncodes: tuple[int, ...] = (0,)) -> bool:
+    """Сбой = код возврата вне штатных (`ok_returncodes`).
 
-    Многие тулы (vulture, deptry, knip) штатно возвращают ненулевой код, когда
-    НАШЛИ проблемы — поэтому одного кода мало; сбоем считаем лишь отсутствие
-    вывода при наличии диагностики в stderr.
+    Часть тулов штатно возвращает ненулевой код, когда НАШЛИ проблемы — такие
+    коды вызывающий перечисляет явно (напр. vulture: 3, knip: 1). Любой другой
+    ненулевой код — сбой, даже при непустом stdout: частичный вывод опаснее
+    пустого (delta-гейт ложно позеленеет на неполном списке находок).
     """
-    return result.returncode != 0 and not result.stdout.strip() and bool(result.stderr.strip())
+    return result.returncode not in ok_returncodes

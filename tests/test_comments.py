@@ -57,3 +57,34 @@ def test_interrogate_live(tmp_path: Path) -> None:
     assert findings[0].message.endswith("undocumented")
     assert findings[0].category is Category.COMMENTS
     assert findings[0].rule_id == "missing-docstring"
+
+
+def test_aislop_run_raises_on_crash(monkeypatch) -> None:
+    # Сбой aislop — не молчаливый [] (иначе delta-гейт ложно зеленеет).
+    import pytest
+
+    from slopcheck.adapters import comments as mod
+    from slopcheck.adapters.comments import AislopAdapter
+    from slopcheck.subprocess_util import ToolExecutionError, ToolResult
+
+    monkeypatch.setattr(
+        mod,
+        "run_tool",
+        lambda *a, **kw: ToolResult(returncode=2, stdout="", stderr="boom"),
+    )
+    with pytest.raises(ToolExecutionError):
+        AislopAdapter().run(Path("."), Config())
+
+
+def test_aislop_run_code1_is_findings(monkeypatch) -> None:
+    # Код 1 у сканера — «есть находки», штатно; пустой SARIF → [].
+    from slopcheck.adapters import comments as mod
+    from slopcheck.adapters.comments import AislopAdapter
+    from slopcheck.subprocess_util import ToolResult
+
+    monkeypatch.setattr(
+        mod,
+        "run_tool",
+        lambda *a, **kw: ToolResult(returncode=1, stdout="", stderr=""),
+    )
+    assert AislopAdapter().run(Path("."), Config()) == []
