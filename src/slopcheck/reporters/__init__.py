@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from slopcheck.reporters import console, json_report, sarif
+from slopcheck.reporters import console, json_report, markdown, sarif
 from slopcheck.runner import RunResult
 
 # Форматы, печатающие в stdout сами (rich).
@@ -13,6 +13,7 @@ _PRINTERS = {
 _TEXT = {
     "json": json_report.render,
     "sarif": sarif.render,
+    "md": markdown.render,
 }
 
 
