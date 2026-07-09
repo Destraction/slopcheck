@@ -19,7 +19,12 @@ from slopcheck.adapters.base import Adapter
 from slopcheck.config import Config
 from slopcheck.models import Category, Finding, Severity
 from slopcheck.registry import default_registry
-from slopcheck.subprocess_util import run_tool, tool_available
+from slopcheck.subprocess_util import (
+    ToolExecutionError,
+    crashed,
+    run_tool,
+    tool_available,
+)
 
 # ---------------------------------------------------------------- vulture
 
@@ -63,6 +68,8 @@ class VultureAdapter(Adapter):
         if config.ignore:
             cmd += ["--exclude", ",".join(config.ignore)]
         result = run_tool(cmd, cwd=root)
+        if crashed(result):
+            raise ToolExecutionError(f"vulture упал: {result.stderr.strip()[:200]}")
         return parse_vulture(result.stdout)
 
 
@@ -102,9 +109,11 @@ class DeptryAdapter(Adapter):
     def run(self, root: Path, config: Config) -> list[Finding]:
         with tempfile.TemporaryDirectory() as tmp:
             report = Path(tmp) / "deptry.json"
-            run_tool(["deptry", str(root), "--json-output", str(report)], cwd=root)
+            result = run_tool(["deptry", str(root), "--json-output", str(report)], cwd=root)
             if not report.exists():
-                return []
+                if crashed(result):
+                    raise ToolExecutionError(f"deptry упал: {result.stderr.strip()[:200]}")
+                return []  # нет проекта с зависимостями — штатно пусто
             return parse_deptry(report.read_text(encoding="utf-8"))
 
 
@@ -180,6 +189,8 @@ class KnipAdapter(Adapter):
         result = run_tool(
             ["knip", "--reporter", "json", "--directory", str(root)], cwd=root
         )
+        if crashed(result):
+            raise ToolExecutionError(f"knip упал: {result.stderr.strip()[:200]}")
         if not result.stdout.strip():
             return []
         return parse_knip(result.stdout)

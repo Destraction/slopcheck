@@ -84,7 +84,7 @@ def run(
         from slopcheck.llm.review import run_review
 
         extra = run_review(result, load_config(path))
-        if extra:
+        if extra and result.report.categories:
             result.report.categories[0].findings.extend(extra)  # упрощённо: до реальной интеграции
         else:
             typer.echo("LLM-ревью: заглушка v1 — доп. находок нет.", err=True)

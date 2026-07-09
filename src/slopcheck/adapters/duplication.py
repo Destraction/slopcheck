@@ -15,7 +15,7 @@ from slopcheck.adapters.base import Adapter
 from slopcheck.config import Config
 from slopcheck.models import Category, Finding, Severity
 from slopcheck.registry import default_registry
-from slopcheck.subprocess_util import run_tool, tool_available
+from slopcheck.subprocess_util import ToolExecutionError, run_tool, tool_available
 
 _REPORT_NAME = "jscpd-report.json"
 
@@ -80,7 +80,9 @@ class JscpdAdapter(Adapter):
 
             report = out_dir / _REPORT_NAME
             if not report.exists():
-                return []
+                # jscpd всегда пишет отчёт при успехе; его отсутствие = сбой,
+                # а не «дублей нет» — не глотаем молча (иначе ложный зелёный гейт).
+                raise ToolExecutionError("jscpd не создал JSON-отчёт")
             return parse_report(report.read_text(encoding="utf-8"))
 
 

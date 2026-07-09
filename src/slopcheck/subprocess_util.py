@@ -16,6 +16,14 @@ class ToolNotFound(Exception):
     """Бинарник детектора не найден в PATH."""
 
 
+class ToolExecutionError(Exception):
+    """Детектор запустился, но упал/завис — результат недостоверен.
+
+    Отличать от «находок нет»: молча вернуть [] при сбое опасно (delta-гейт
+    ложно позеленеет). Runner ловит это как пропуск с пометкой в отчёте.
+    """
+
+
 @dataclass
 class ToolResult:
     """Результат запуска внешнего тула."""
@@ -56,10 +64,17 @@ def run_tool(
             check=False,
         )
     except subprocess.TimeoutExpired as exc:
-        return ToolResult(
-            returncode=-1,
-            stdout=exc.stdout or "",
-            stderr=exc.stderr or "",
-            timed_out=True,
-        )
+        raise ToolExecutionError(
+            f"{cmd[0]} превысил таймаут {timeout:g}s"
+        ) from exc
     return ToolResult(returncode=proc.returncode, stdout=proc.stdout, stderr=proc.stderr)
+
+
+def crashed(result: ToolResult) -> bool:
+    """Похоже ли на сбой: ненулевой код, пустой stdout и есть текст в stderr.
+
+    Многие тулы (vulture, deptry, knip) штатно возвращают ненулевой код, когда
+    НАШЛИ проблемы — поэтому одного кода мало; сбоем считаем лишь отсутствие
+    вывода при наличии диагностики в stderr.
+    """
+    return result.returncode != 0 and not result.stdout.strip() and bool(result.stderr.strip())

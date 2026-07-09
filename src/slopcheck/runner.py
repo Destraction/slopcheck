@@ -11,11 +11,12 @@ from pathlib import Path
 
 import slopcheck.adapters  # noqa: F401  — регистрирует адаптеры в default_registry
 from slopcheck import languages as lang_detect
+from slopcheck.languages import is_ignored
 from slopcheck.config import Config, load_config
 from slopcheck.models import Category, CategoryResult, Finding, Report
 from slopcheck.registry import Registry, default_registry
 from slopcheck.scoring import score_report
-from slopcheck.subprocess_util import ToolNotFound
+from slopcheck.subprocess_util import ToolExecutionError, ToolNotFound
 
 
 @dataclass
@@ -80,8 +81,14 @@ def run(
             findings.extend(adapter.run(root, config))
         except ToolNotFound as exc:
             skipped.append(f"{adapter.name}: тул не найден ({exc})")
+        except ToolExecutionError as exc:
+            # Сбой детектора — НЕ молчаливый [] (иначе delta-гейт ложно зеленеет).
+            skipped.append(f"{adapter.name}: сбой запуска — {exc}")
 
     findings = _normalize_paths(findings, root)
+    findings = [
+        f for f in findings if not is_ignored(Path(f.file).parts, config.ignore)
+    ]
     report = Report(
         repo=root.name,
         languages=languages,
