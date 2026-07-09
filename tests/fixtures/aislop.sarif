@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "aislop",
+          "rules": [{ "id": "narrative-comment" }]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "narrative-comment",
+          "level": "warning",
+          "message": { "text": "Narrative comment restates the code" },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/a.js" },
+                "region": { "startLine": 10 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "swallowed-exception",
+          "level": "error",
+          "message": { "text": "Exception swallowed without handling" },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/b.py" },
+                "region": { "startLine": 42 }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -5,3 +5,4 @@
 
 from slopcheck.adapters import duplication as duplication  # noqa: F401
 from slopcheck.adapters import deadcode as deadcode  # noqa: F401
+from slopcheck.adapters import comments as comments  # noqa: F401
