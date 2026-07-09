@@ -58,11 +58,17 @@ def run(
         "console",
         "--format",
         "-f",
-        help="Формат отчёта: console | json.",
+        help="Формат отчёта: console | json | sarif | md.",
+    ),
+    llm_review: bool = typer.Option(
+        False,
+        "--llm-review",
+        help="Опциональный LLM-ревью (off по умолчанию; в v1 — заглушка без вызовов).",
     ),
 ) -> None:
     """Прогнать детекторы по репозиторию и выдать отчёт."""
     from slopcheck import reporters
+    from slopcheck.config import load_config
     from slopcheck.runner import run as run_analysis
 
     if fmt not in reporters.available_formats():
@@ -73,6 +79,16 @@ def run(
         raise typer.Exit(code=2)
 
     result = run_analysis(path)
+
+    if llm_review:
+        from slopcheck.llm.review import run_review
+
+        extra = run_review(result, load_config(path))
+        if extra:
+            result.report.categories[0].findings.extend(extra)  # упрощённо: до реальной интеграции
+        else:
+            typer.echo("LLM-ревью: заглушка v1 — доп. находок нет.", err=True)
+
     reporters.emit(result, fmt)
 
 
