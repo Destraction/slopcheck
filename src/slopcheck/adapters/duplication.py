@@ -73,6 +73,10 @@ class JscpdAdapter(Adapter):
                 "--output",
                 str(out_dir),
                 "--silent",
+                "--min-tokens",
+                str(config.dup_min_tokens),
+                "--min-lines",
+                str(config.dup_min_lines),
             ]
             for pattern in config.ignore:
                 cmd += ["--ignore", f"**/{pattern}/**"]
