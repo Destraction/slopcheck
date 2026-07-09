@@ -43,8 +43,11 @@ def run_tool(
     cmd: list[str],
     cwd: Path | None = None,
     timeout: float = 300.0,
+    input_text: str | None = None,
 ) -> ToolResult:
     """Запустить внешний тул `cmd`.
+
+    `input_text` подаётся в stdin процесса (напр. код для gemini -p).
 
     Raises:
         ToolNotFound: если бинарника нет в PATH.
@@ -62,6 +65,7 @@ def run_tool(
             text=True,
             timeout=timeout,
             check=False,
+            input=input_text,
         )
     except subprocess.TimeoutExpired as exc:
         raise ToolExecutionError(

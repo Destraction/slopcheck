@@ -81,15 +81,42 @@ def run(
     result = run_analysis(path)
 
     if llm_review:
-        from slopcheck.llm.review import run_review
-
-        extra = run_review(result, load_config(path))
-        if extra and result.report.categories:
-            result.report.categories[0].findings.extend(extra)  # упрощённо: до реальной интеграции
-        else:
-            typer.echo("LLM-ревью: заглушка v1 — доп. находок нет.", err=True)
+        _apply_llm_review(result, load_config(path))
 
     reporters.emit(result, fmt)
+
+
+def _apply_llm_review(result, config) -> None:
+    """Прогнать опциональный Gemini-ревью и влить его находки в отчёт."""
+    from slopcheck.llm.gemini import GeminiNotAuthenticated, GeminiReviewer
+    from slopcheck.llm.review import run_review
+    from slopcheck.models import CategoryResult
+
+    reviewer = GeminiReviewer()
+    if not reviewer.is_available():
+        typer.echo("LLM-ревью: gemini не установлен — пропущено.", err=True)
+        return
+
+    try:
+        extra = run_review(result, config, reviewer)
+    except GeminiNotAuthenticated as exc:
+        typer.echo(f"LLM-ревью пропущено: {exc}", err=True)
+        return
+
+    if not extra:
+        typer.echo("LLM-ревью: субъективных замечаний нет.", err=True)
+        return
+
+    # Влить находки в их категорию (создать, если отключена/отсутствует).
+    by_cat = {c.category: c for c in result.report.categories}
+    for finding in extra:
+        target = by_cat.get(finding.category)
+        if target is None:
+            target = CategoryResult(category=finding.category)
+            by_cat[finding.category] = target
+            result.report.categories.append(target)
+        target.findings.append(finding)
+    typer.echo(f"LLM-ревью: добавлено замечаний — {len(extra)}.", err=True)
 
 
 @app.command()

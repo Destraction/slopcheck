@@ -25,6 +25,7 @@ class RunResult:
 
     report: Report
     skipped: list[str] = field(default_factory=list)
+    root: Path = field(default_factory=lambda: Path("."))
 
 
 def _normalize_paths(findings: list[Finding], root: Path) -> list[Finding]:
@@ -95,4 +96,4 @@ def run(
         categories=_group_into_categories(enabled, findings),
     )
     report = score_report(report, config)
-    return RunResult(report=report, skipped=skipped)
+    return RunResult(report=report, skipped=skipped, root=root)
