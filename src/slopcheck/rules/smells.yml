@@ -1,0 +1,46 @@
+rules:
+  - id: swallowed-exception
+    languages: [python]
+    severity: WARNING
+    message: >
+      Исключение проглочено (except ...: pass) — ошибка теряется молча.
+    patterns:
+      - pattern: |
+          try:
+              ...
+          except $E:
+              pass
+
+  - id: bare-except
+    languages: [python]
+    severity: WARNING
+    message: >
+      Голый except перехватывает всё, включая KeyboardInterrupt/SystemExit.
+    pattern: |
+      try:
+          ...
+      except:
+          ...
+
+  - id: mutable-default-arg
+    languages: [python]
+    severity: WARNING
+    message: >
+      Изменяемый аргумент по умолчанию ([] / {}) разделяется между вызовами.
+    patterns:
+      - pattern-either:
+          - pattern: |
+              def $F(..., $A=[], ...):
+                  ...
+          - pattern: |
+              def $F(..., $A={}, ...):
+                  ...
+
+  - id: eq-none
+    languages: [python]
+    severity: INFO
+    message: >
+      Сравнение с None через ==; идиоматично `is None`.
+    pattern-either:
+      - pattern: $X == None
+      - pattern: $X != None

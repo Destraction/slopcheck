@@ -7,3 +7,4 @@ from slopcheck.adapters import duplication as duplication  # noqa: F401
 from slopcheck.adapters import deadcode as deadcode  # noqa: F401
 from slopcheck.adapters import comments as comments  # noqa: F401
 from slopcheck.adapters import complexity as complexity  # noqa: F401
+from slopcheck.adapters import smells as smells  # noqa: F401

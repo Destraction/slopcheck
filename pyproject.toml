@@ -23,6 +23,7 @@ detectors = [
     "deptry>=0.23",
     "interrogate>=1.7",
     "lizard>=1.17",
+    "semgrep>=1.100",
 ]
 dev = [
     "pytest>=8.0",
@@ -37,3 +38,13 @@ packages = ["src/slopcheck"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+
+[tool.deptry]
+# slopcheck — первопартийный пакет; без этого deptry ложно считает
+# `import slopcheck` транзитивной зависимостью (DEP003) во всех своих файлах.
+known_first_party = ["slopcheck"]
+
+[tool.deptry.per_rule_ignores]
+# Детекторы и pytest — CLI-тулы, вызываются как subprocess, а не импортируются;
+# deptry ложно метит их DEP002 («объявлена, но не используется»).
+DEP002 = ["vulture", "deptry", "interrogate", "lizard", "semgrep", "pytest"]

@@ -14,7 +14,8 @@ on:
 
 permissions:
   contents: read
-  security-events: write  # для upload-sarif
+  actions: read           # codeql-action читает инфо о запуске
+  security-events: write  # для upload-sarif (нужен GHAS на приватных репо)
 
 jobs:
   slopcheck:
@@ -38,7 +39,20 @@ jobs:
           docker run --rm -v "$PWD:/src" slopcheck:ci run /src --format sarif > slopcheck.sarif
           docker run --rm -v "$PWD:/src" slopcheck:ci run /src --format md >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload SARIF
+      # SARIF всегда сохраняем как артефакт (работает и на приватных репо).
+      - name: Upload SARIF artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: slopcheck-sarif
+          path: slopcheck.sarif
+
+      # Загрузка в Code Scanning требует GitHub Advanced Security; на приватном
+      # репо без GHAS шаг недоступен — делаем его неблокирующим, чтобы гейт всё
+      # равно отработал. На публичных репо / с GHAS уберите continue-on-error.
+      - name: Upload SARIF to Code Scanning
+        if: always()
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: slopcheck.sarif
