@@ -84,10 +84,20 @@ class LizardAdapter(Adapter):
     def is_available(self) -> bool:
         return importlib.util.find_spec("lizard") is not None
 
-    def run(self, root: Path, config: Config) -> list[Finding]:
+    def run(
+        self, root: Path, config: Config, files: list[str] | None = None
+    ) -> list[Finding]:
         import lizard
 
-        analysis = lizard.analyze([str(root)], exclude_pattern=exclude_globs(config.ignore))
+        if files is None:
+            targets = [str(root)]
+        else:
+            # lizard принимает явные пути; select_files не сузит (languages
+            # пуст), но отсечёт нечего — просто передаём список как есть.
+            targets = [str(root / f) for f in files]
+            if not targets:
+                return []
+        analysis = lizard.analyze(targets, exclude_pattern=exclude_globs(config.ignore))
         return findings_from_analysis(analysis)
 
 

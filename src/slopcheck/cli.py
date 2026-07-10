@@ -65,11 +65,21 @@ def run(
         "--llm-review",
         help="Опциональный LLM-ревью (off по умолчанию; в v1 — заглушка без вызовов).",
     ),
+    changed: str | None = typer.Option(
+        None,
+        "--changed",
+        help=(
+            "Инкрементальный режим: анализировать только изменённые файлы. "
+            "Значение — ref для diff (merge-base ref...HEAD) или 'staged' "
+            "(индекс, сценарий pre-commit)."
+        ),
+    ),
 ) -> None:
     """Прогнать детекторы по репозиторию и выдать отчёт."""
     from slopcheck import reporters
     from slopcheck.config import load_config
     from slopcheck.runner import run as run_analysis
+    from slopcheck.subprocess_util import ToolExecutionError
 
     if fmt not in reporters.available_formats():
         typer.echo(
@@ -78,7 +88,19 @@ def run(
         )
         raise typer.Exit(code=2)
 
-    result = run_analysis(path)
+    files: list[str] | None = None
+    if changed is not None:
+        from slopcheck.gitchanged import changed_files
+
+        try:
+            files = changed_files(path, changed)
+        except ToolExecutionError as exc:
+            # Битый ref / не git-репо — это ошибка вызова, а не «нет изменений»:
+            # молчаливый полный прогон в pre-commit хуже честного отказа.
+            typer.echo(f"--changed: {exc}", err=True)
+            raise typer.Exit(code=2) from exc
+
+    result = run_analysis(path, files=files)
 
     if llm_review:
         _apply_llm_review(result, load_config(path))

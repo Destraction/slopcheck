@@ -29,7 +29,9 @@ class _FakeAdapter(Adapter):
     def is_available(self) -> bool:
         return self._available
 
-    def run(self, root: Path, config: Config) -> list[Finding]:
+    def run(
+        self, root: Path, config: Config, files: list[str] | None = None
+    ) -> list[Finding]:
         return list(self._findings)
 
 

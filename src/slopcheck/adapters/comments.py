@@ -94,7 +94,11 @@ class AislopAdapter(Adapter):
     def is_available(self) -> bool:
         return tool_available("aislop")
 
-    def run(self, root: Path, config: Config) -> list[Finding]:
+    def run(
+        self, root: Path, config: Config, files: list[str] | None = None
+    ) -> list[Finding]:
+        # aislop сканирует путь целиком; в инкрементальном режиме находки
+        # вне изменённых файлов отсечёт центральный фильтр runner'а.
         result = run_tool(["aislop", "scan", str(root), "--sarif"], cwd=root)
         # Как и у других subprocess-адаптеров: сбой не глотаем (иначе delta-гейт
         # ложно зеленеет). Код 1 у сканеров — «есть находки», штатно.
@@ -115,10 +119,18 @@ class InterrogateAdapter(Adapter):
     def is_available(self) -> bool:
         return importlib.util.find_spec("interrogate") is not None
 
-    def run(self, root: Path, config: Config) -> list[Finding]:
+    def run(
+        self, root: Path, config: Config, files: list[str] | None = None
+    ) -> list[Finding]:
         from interrogate.coverage import InterrogateCoverage
 
-        cov = InterrogateCoverage(paths=[str(root)])
+        if files is None:
+            paths = [str(root)]
+        else:
+            paths = [str(root / f) for f in self.select_files(files)]
+            if not paths:
+                return []
+        cov = InterrogateCoverage(paths=paths)
         results = cov.get_coverage()
 
         findings: list[Finding] = []
