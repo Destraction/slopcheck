@@ -87,3 +87,28 @@ jobs:
       - name: Delta gate
         if: steps.base.outputs.has_base == 'true'
         run: docker run --rm -v "$RUNNER_TEMP/base.json:/base/base.json:ro" -v "$PWD:/src" "$IMAGE" gate /src --baseline /base/base.json
+
+      # Красный гейт → в Summary добавляется инструкция, как починить (автофикс).
+      - name: How to fix (autofix instructions)
+        if: failure()
+        run: |
+          {
+            echo ""
+            echo "## ❌ Гейт красный — как починить"
+            echo ""
+            echo "Находки выше (формат: \`детектор файл:строка — описание\`). Чинится код, не конфиг."
+            echo ""
+            echo "**Автофикс (Claude Code):** скажи агенту \`почини slopcheck в CI\` или вызови \`/slopcheck\` —"
+            echo "он возьмёт находки этого прогона, исправит код (без изменения поведения, с тестами до/после),"
+            echo "запушит и дождётся зелёного чека."
+            echo ""
+            echo "**Вручную:**"
+            echo '```bash'
+            echo "# локальный прогон до пуша:"
+            echo "docker run --rm -v \"\$PWD:/src\" ghcr.io/destraction/slopcheck:latest run /src"
+            echo '```'
+            echo "duplication → вынести общее в функцию; deadcode → удалить неиспользуемое;"
+            echo "comments → убрать закомментированный код; complexity → guard clauses / разбить функцию."
+            echo ""
+            echo "Запрещено «чинить» ослаблением \`.slopcheck.yml\` или удалением workflow."
+          } >> "$GITHUB_STEP_SUMMARY"
