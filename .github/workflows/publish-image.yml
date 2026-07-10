@@ -6,12 +6,11 @@ name: publish-image
 on:
   push:
     branches: [master]
-    paths:
-      - "src/**"
-      - "Dockerfile"
-      - "pyproject.toml"
-      - ".github/workflows/publish-image.yml"
+    tags: ["v*"]
   workflow_dispatch:
+  # paths-фильтр убран: GitHub Actions некорректно сочетает paths с push по tags
+  # (тег без изменений в src/** просто не соберёт образ) — пожертвовали фильтром
+  # ради надёжной сборки semver-тегов.
 
 # Параллельные пуши в master не должны наперегонки перезаписывать :latest —
 # сборки идут по очереди, без отмены (каждый sha-тег должен опубликоваться).
@@ -37,11 +36,24 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Теги вычисляются из события: semver-теги (version/major.minor/major) —
+      # только при пуше тега вида vX.Y.Z; latest — только на master; sha — всегда.
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/destraction/slopcheck
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,format=long
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: |
-            ghcr.io/destraction/slopcheck:latest
-            ghcr.io/destraction/slopcheck:${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

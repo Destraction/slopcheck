@@ -26,7 +26,9 @@ jobs:
   slopcheck:
     runs-on: ubuntu-latest
     env:
-      IMAGE: ghcr.io/destraction/slopcheck:latest
+      # Пин на минорную ветку 0.1: патчи (0.1.x) прилетают автоматически,
+      # минор/мажор — только осознанным обновлением этой строки.
+      IMAGE: ghcr.io/destraction/slopcheck:0.1
     steps:
       - name: Checkout
         uses: actions/checkout@v4
