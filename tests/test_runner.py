@@ -108,3 +108,71 @@ def test_runner_excludes_disabled_category(tmp_path: Path) -> None:
     result = run(_repo(tmp_path), config=cfg, registry=reg)
     assert result.report.findings == []
     assert all(c.category is not Category.DUPLICATION for c in result.report.categories)
+
+
+def test_unavailable_detector_marks_category_unmeasured(tmp_path) -> None:
+    """Непоставленный тул → категория помечена непроверенной, а не чистой.
+
+    Именно эта дыра завышала счёт: детектора нет, находок ноль, категория
+    берёт 100 и тянет итог вверх.
+    """
+    from slopcheck.models import Category
+    from slopcheck.registry import Registry
+    from slopcheck.runner import run
+
+    class MissingTool:
+        name = "missing"
+        category = Category.DUPLICATION
+        languages = frozenset({"python"})
+
+        def applies_to(self, languages):
+            return True
+
+        def is_available(self):
+            return False
+
+        def run(self, root, config):  # pragma: no cover — не должен вызываться
+            raise AssertionError("недоступный детектор не должен запускаться")
+
+    (tmp_path / "a.py").write_text("x = 1\n", encoding="utf-8")
+    registry = Registry()
+    registry.register(MissingTool())
+
+    result = run(tmp_path, registry=registry)
+    duplication = next(
+        c for c in result.report.categories if c.category is Category.DUPLICATION
+    )
+    assert duplication.measured is False
+    assert Category.DUPLICATION in result.report.unmeasured
+    assert any("missing" in note for note in result.skipped)
+
+
+def test_crashed_detector_also_marks_category_unmeasured(tmp_path) -> None:
+    """Упавший детектор тоже ничего не доказал — его ноль находок не в счёт."""
+    from slopcheck.models import Category
+    from slopcheck.registry import Registry
+    from slopcheck.runner import run
+    from slopcheck.subprocess_util import ToolExecutionError
+
+    class BrokenTool:
+        name = "broken"
+        category = Category.DEAD_CODE
+        languages = frozenset({"python"})
+
+        def applies_to(self, languages):
+            return True
+
+        def is_available(self):
+            return True
+
+        def run(self, root, config):
+            raise ToolExecutionError("упал")
+
+    (tmp_path / "a.py").write_text("x = 1\n", encoding="utf-8")
+    registry = Registry()
+    registry.register(BrokenTool())
+
+    result = run(tmp_path, registry=registry)
+    dead = next(c for c in result.report.categories if c.category is Category.DEAD_CODE)
+    assert dead.measured is False
+    assert Category.DEAD_CODE in result.report.unmeasured

@@ -37,10 +37,21 @@ def _summary_section(report: Report) -> list[str]:
     for cat in report.categories:
         m = cat.metrics
         ewi = f"{int(m.get('error', 0))}/{int(m.get('warn', 0))}/{int(m.get('info', 0))}"
-        lines.append(
-            f"| {cat.category.value} | {_score_emoji(cat.score)} {cat.score:.1f} "
-            f"| {len(cat.findings)} | {ewi} |"
-        )
+        if cat.measured:
+            lines.append(
+                f"| {cat.category.value} | {_score_emoji(cat.score)} {cat.score:.1f} "
+                f"| {len(cat.findings)} | {ewi} |"
+            )
+        else:
+            lines.append(f"| {cat.category.value} | ❌ не проверялась | — | — |")
+    if report.unmeasured:
+        names = ", ".join(cat.value for cat in report.unmeasured)
+        lines += [
+            "",
+            f"> ⚠️ Не проверялись: **{names}** — детекторы не запускались. "
+            "Итоговый счёт посчитан без них: иначе он был бы завышен на "
+            "непроверенное. Установи недостающие тулы и прогони заново.",
+        ]
     return lines
 
 

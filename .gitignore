@@ -19,3 +19,6 @@ htmlcov/
 .DS_Store
 .idea/
 .vscode/
+
+# Рабочие каталоги Claude Code: временные worktree, в репозиторий им нельзя
+.claude/worktrees/

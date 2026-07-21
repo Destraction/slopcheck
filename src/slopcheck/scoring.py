@@ -42,6 +42,7 @@ def score_report(report: Report, config: Config | None = None) -> Report:
     config = config or default_config()
 
     scored: list[CategoryResult] = []
+    unmeasured: list = []
     weighted_sum = 0.0
     weight_total = 0.0
 
@@ -54,16 +55,28 @@ def score_report(report: Report, config: Config | None = None) -> Report:
             cat_result.model_copy(update={"score": score, "metrics": metrics})
         )
 
+        # Категория без единого отработавшего детектора в счёт не идёт.
+        # Иначе «не проверяли» неотличимо от «чисто»: находок ноль, score 100,
+        # и итог завышается ровно на непроверенное.
+        if not cat_result.measured:
+            unmeasured.append(cat_result.category)
+            continue
+
         weight = config.categories.get(cat_result.category)
         weight_value = weight.weight if weight else 1.0
         weighted_sum += score * weight_value
         weight_total += weight_value
 
+    measured = [c for c in scored if c.measured]
     if weight_total:
         total = round(weighted_sum / weight_total, 2)
-    elif scored:
+    elif measured:
         # Все веса обнулены — не рисуем фиктивные 100, берём невзвешенное среднее.
-        total = round(sum(c.score for c in scored) / len(scored), 2)
+        total = round(sum(c.score for c in measured) / len(measured), 2)
     else:
-        total = 100.0
-    return report.model_copy(update={"categories": scored, "total_score": total})
+        # Не измерено ничего. Ноль честнее сотни: сотня означала бы, что код
+        # проверен и чист, а проверок не было вовсе.
+        total = 0.0
+    return report.model_copy(
+        update={"categories": scored, "total_score": total, "unmeasured": unmeasured}
+    )

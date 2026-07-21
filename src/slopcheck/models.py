@@ -69,6 +69,11 @@ class CategoryResult(BaseModel):
     findings: list[Finding] = Field(default_factory=list)
     metrics: dict[str, float] = Field(default_factory=dict)
     score: float = Field(default=100.0, ge=0.0, le=100.0)
+    # Отработал ли хоть один детектор категории. False означает «не проверяли»,
+    # и это НЕ то же самое, что «чисто»: пустой список находок у непроведённой
+    # проверки выглядел бы как безупречный код. Такие категории не идут в
+    # total_score и помечаются в отчётах отдельно.
+    measured: bool = True
 
 
 class Report(BaseModel):
@@ -78,6 +83,9 @@ class Report(BaseModel):
     languages: list[str] = Field(default_factory=list)
     categories: list[CategoryResult] = Field(default_factory=list)
     total_score: float = Field(default=100.0, ge=0.0, le=100.0)
+    # Категории, по которым не отработал ни один детектор. Итоговый счёт
+    # посчитан БЕЗ них — иначе он завышен на непроверенное.
+    unmeasured: list[Category] = Field(default_factory=list)
     generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     @property

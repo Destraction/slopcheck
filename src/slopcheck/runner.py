@@ -47,12 +47,26 @@ def _normalize_paths(findings: list[Finding], root: Path) -> list[Finding]:
 
 
 def _group_into_categories(
-    enabled: list[Category], findings: list[Finding]
+    enabled: list[Category],
+    findings: list[Finding],
+    measured: set[Category] | None = None,
 ) -> list[CategoryResult]:
+    """Свернуть находки в результаты категорий.
+
+    `measured` — категории, по которым отработал хотя бы один детектор. Не
+    попавшие туда помечаются как непроверенные: ноль находок у непроведённой
+    проверки не должен читаться как чистый код.
+    """
+    measured = set(enabled) if measured is None else measured
     by_cat: dict[Category, list[Finding]] = {cat: [] for cat in enabled}
     for f in findings:
         by_cat.setdefault(f.category, []).append(f)
-    return [CategoryResult(category=cat, findings=by_cat[cat]) for cat in enabled]
+    return [
+        CategoryResult(
+            category=cat, findings=by_cat[cat], measured=cat in measured
+        )
+        for cat in enabled
+    ]
 
 
 def run(
@@ -70,6 +84,9 @@ def run(
 
     findings: list[Finding] = []
     skipped: list[str] = []
+    # Категории, по которым детектор реально отработал. Пропущенный и упавший
+    # детектор сюда не попадают: их «ноль находок» ничего не доказывает.
+    measured: set[Category] = set()
 
     for adapter in registry.for_categories(enabled):
         if not adapter.applies_to(languages):
@@ -79,6 +96,7 @@ def run(
             continue
         try:
             findings.extend(adapter.run(root, config))
+            measured.add(adapter.category)
         except ToolNotFound as exc:
             skipped.append(f"{adapter.name}: тул не найден ({exc})")
         except ToolExecutionError as exc:
@@ -96,7 +114,7 @@ def run(
     report = Report(
         repo=root.name,
         languages=languages,
-        categories=_group_into_categories(enabled, findings),
+        categories=_group_into_categories(enabled, findings, measured),
     )
     report = score_report(report, config)
     return RunResult(report=report, skipped=skipped, root=root)

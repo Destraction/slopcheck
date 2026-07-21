@@ -72,3 +72,55 @@ def test_total_score_respects_weights() -> None:
 
     # Больший вес грязной категории тянет total ниже.
     assert heavy < light
+
+
+# --- Непроведённая проверка не считается чистым кодом -------------------------
+#
+# Самая опасная ошибка инструмента качества — сказать «всё хорошо», когда он
+# ничего не проверял. Детектор не установлен → находок ноль → категория брала
+# 100 и тянула вверх итог. На реальном проекте это дало 53.6 вместо 7.6.
+
+
+def test_unmeasured_category_is_excluded_from_total() -> None:
+    """Категория без отработавшего детектора не участвует в итоге."""
+    dirty = [_finding(Category.COMMENTS, Severity.ERROR) for _ in range(5)]
+    report = _report([
+        CategoryResult(category=Category.COMMENTS, findings=dirty),
+        CategoryResult(category=Category.DUPLICATION, measured=False),
+    ])
+    scored = score_report(report)
+
+    comments = next(c for c in scored.categories if c.category is Category.COMMENTS)
+    assert scored.total_score == comments.score, (
+        "непроверенная категория не должна вытягивать итог вверх"
+    )
+    assert scored.unmeasured == [Category.DUPLICATION]
+
+
+def test_unmeasured_category_is_reported_not_hidden() -> None:
+    """Факт «не проверяли» обязан быть виден: молча пропустить хуже, чем упасть."""
+    report = _report([CategoryResult(category=Category.DEAD_CODE, measured=False)])
+    scored = score_report(report)
+    assert scored.unmeasured == [Category.DEAD_CODE]
+    assert scored.categories[0].measured is False
+
+
+def test_nothing_measured_scores_zero_not_hundred() -> None:
+    """Ни одной проверки — ноль, а не сто.
+
+    Сотня означала бы «код проверен и чист», хотя проверок не было вовсе.
+    """
+    report = _report([
+        CategoryResult(category=Category.DEAD_CODE, measured=False),
+        CategoryResult(category=Category.DUPLICATION, measured=False),
+    ])
+    assert score_report(report).total_score == 0.0
+
+
+def test_measured_clean_category_still_scores_100() -> None:
+    """Проверенная и чистая категория по-прежнему получает 100."""
+    report = _report([CategoryResult(category=Category.DUPLICATION, measured=True)])
+    scored = score_report(report)
+    assert scored.categories[0].score == 100.0
+    assert scored.total_score == 100.0
+    assert scored.unmeasured == []

@@ -35,12 +35,16 @@ def _summary_table(report: Report) -> Table:
     for cat in report.categories:
         m = cat.metrics
         ewi = f"{int(m.get('error', 0))}/{int(m.get('warn', 0))}/{int(m.get('info', 0))}"
-        table.add_row(
-            cat.category.value,
-            f"[{_score_style(cat.score)}]{cat.score:.1f}[/]",
-            str(len(cat.findings)),
-            ewi,
-        )
+        if cat.measured:
+            score_cell = f"[{_score_style(cat.score)}]{cat.score:.1f}[/]"
+            findings_cell = str(len(cat.findings))
+        else:
+            # Ноль находок у непроведённой проверки не означает чистый код,
+            # поэтому цифру не показываем вовсе — иначе её прочтут как оценку.
+            score_cell = "[bold red]не проверялась[/]"
+            findings_cell = "—"
+            ewi = "—"
+        table.add_row(cat.category.value, score_cell, findings_cell, ewi)
     return table
 
 
@@ -75,6 +79,13 @@ def render(result: RunResult, console: Console | None = None) -> None:
         f"Итоговый slop-score: "
         f"[{_score_style(report.total_score)}]{report.total_score:.1f}[/] / 100"
     )
+    if report.unmeasured:
+        names = ", ".join(cat.value for cat in report.unmeasured)
+        console.print(
+            f"[bold red]Счёт неполный: не проверялись {names}[/] — детекторы не "
+            "запускались, и категории исключены из итога. Иначе он был бы "
+            "завышен на непроверенное.",
+        )
     if report.languages:
         console.print(f"Языки: {', '.join(report.languages)}", style="dim")
 
