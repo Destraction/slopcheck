@@ -114,3 +114,27 @@ def test_vulture_ignore_names_from_config(tmp_path: Path) -> None:
     messages = " ".join(f.message for f in VultureAdapter().run(tmp_path, config))
     assert "orphan" not in messages
     assert "other" in messages
+
+
+def test_deptry_skipped_without_manifest(tmp_path: Path) -> None:
+    """Репозиторий без объявленных зависимостей — не сбой, а «нечего проверять»."""
+    (tmp_path / "app.py").write_text("print(1)\n", encoding="utf-8")
+    assert DeptryAdapter().run(tmp_path, Config()) == []
+
+
+def test_has_dependency_manifest_detects_sources(tmp_path: Path) -> None:
+    """Манифестом считаем requirements*.txt и pyproject с секцией зависимостей."""
+    from slopcheck.adapters.deadcode import has_dependency_manifest
+
+    assert not has_dependency_manifest(tmp_path)
+    (tmp_path / "pyproject.toml").write_text("[tool.ruff]\n", encoding="utf-8")
+    assert not has_dependency_manifest(tmp_path)
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "x"\n', encoding="utf-8"
+    )
+    assert has_dependency_manifest(tmp_path)
+
+    other = tmp_path / "req"
+    other.mkdir()
+    (other / "requirements.txt").write_text("requests\n", encoding="utf-8")
+    assert has_dependency_manifest(other)

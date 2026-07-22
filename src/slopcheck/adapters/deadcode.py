@@ -124,6 +124,25 @@ def parse_deptry(report_json: str) -> list[Finding]:
     return findings
 
 
+def has_dependency_manifest(root: Path) -> bool:
+    """Объявлены ли в репозитории Python-зависимости.
+
+    deptry умеет читать `[project]`/`[tool.poetry.dependencies]`/`[tool.pdm]`
+    из pyproject.toml и файлы requirements*.txt; без них ему нечего сравнивать.
+    """
+    for name in ("requirements.txt", "requirements-dev.txt", "requirements.in"):
+        if (root / name).exists():
+            return True
+    pyproject = root / "pyproject.toml"
+    if not pyproject.exists():
+        return False
+    text = pyproject.read_text(encoding="utf-8", errors="replace")
+    return any(
+        section in text
+        for section in ("[project]", "[tool.poetry.dependencies]", "[tool.pdm]")
+    )
+
+
 class DeptryAdapter(Adapter):
     """Лишние/отсутствующие Python-зависимости."""
 
@@ -141,6 +160,11 @@ class DeptryAdapter(Adapter):
         self, root: Path, config: Config, files: list[str] | None = None
     ) -> list[Finding]:
         """Прогнать deptry и вернуть проблемы зависимостей."""
+        if not has_dependency_manifest(root):
+            # Объявленных зависимостей нет — проверять нечего. Без этой
+            # проверки deptry падает с DependencySpecificationNotFoundError,
+            # и штатная ситуация читалась бы как слепая зона гейта.
+            return []
         with tempfile.TemporaryDirectory() as tmp:
             report = Path(tmp) / "deptry.json"
             result = run_tool(["deptry", str(root), "--json-output", str(report)], cwd=root)
