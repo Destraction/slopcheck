@@ -69,7 +69,7 @@ slopcheck/
 
 ## 3. Архитектура и реализация
 
-**Стек.** Python 3.11+, `typer`(CLI) + `rich`(console), `pydantic`(модели/конфиг), `pyyaml`. Внешние детекторы вызываются как subprocess и живут в Docker-образе (разные рантаймы: Node — jscpd/knip; Python — vulture/deptry/interrogate/semgrep/lizard; бинарник — aislop).
+**Стек.** Python 3.11+, `typer`(CLI) + `rich`(console), `pydantic`(модели/конфиг), `pyyaml`. Внешние детекторы вызываются как subprocess и живут в Docker-образе (разные рантаймы: Node — jscpd/knip/aislop; Python — vulture/deptry/interrogate/semgrep/lizard).
 
 **Нормализованная модель (ядро всей системы).**
 ```
@@ -104,7 +104,7 @@ config + пути → languages.detect → runner выбирает адапте�
 
 **Конфиг `.slopcheck.yml`.** enabled-детекторы, пороги/веса по категориям, `ignore:` пути (vendor, миграции, генерённое), явный список языков (override автодетекта), severity-порог гейта.
 
-**Docker.** Multi-stage: базовый python-slim + установка node, pip-тулов, скачивание бинарника aislop; в финале — `slopcheck` как entrypoint. `docker run -v $PWD:/src slopcheck run /src`.
+**Docker.** База node-slim + python-venv с pip-тулами; aislop ставится из npm, и сборка падает, если он не встал (молча пропущенный детектор AI-slop обесценивает гейт); в финале — `slopcheck` как entrypoint. `docker run -v $PWD:/src slopcheck run /src`.
 
 **GitHub Action.** `action.yml` (composite): checkout base+head, запуск docker-образа, upload SARIF (`github/codeql-action/upload-sarif`), Markdown в `$GITHUB_STEP_SUMMARY`, exit code от delta-гейта.
 
