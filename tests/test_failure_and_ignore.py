@@ -27,7 +27,9 @@ class _CrashingAdapter(Adapter):
     def is_available(self) -> bool:
         return True
 
-    def run(self, root: Path, config: Config) -> list[Finding]:
+    def run(
+        self, root: Path, config: Config, files: list[str] | None = None
+    ) -> list[Finding]:
         raise ToolExecutionError("детектор упал")
 
 
@@ -93,7 +95,9 @@ def test_runner_central_ignore_filters_findings(tmp_path: Path) -> None:
         def is_available(self) -> bool:
             return True
 
-        def run(self, root: Path, config: Config) -> list[Finding]:
+        def run(
+        self, root: Path, config: Config, files: list[str] | None = None
+    ) -> list[Finding]:
             return [
                 Finding(category=Category.DEAD_CODE, tool="t", file="generated/a.py",
                         line=1, message="dead"),
@@ -119,7 +123,9 @@ class _PythonApiCrashingAdapter(Adapter):
     def is_available(self) -> bool:
         return True
 
-    def run(self, root: Path, config: Config) -> list[Finding]:
+    def run(
+        self, root: Path, config: Config, files: list[str] | None = None
+    ) -> list[Finding]:
         raise RuntimeError("внутренняя поломка Python-API")
 
 

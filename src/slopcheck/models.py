@@ -30,6 +30,10 @@ class Severity(str, Enum):
     ERROR = "error"
 
 
+# Ранг severity: чем выше, тем серьёзнее. Единая шкала для гейта и --fail-on.
+SEVERITY_RANK = {Severity.INFO: 0, Severity.WARN: 1, Severity.ERROR: 2}
+
+
 class Finding(BaseModel):
     """Одна нормализованная находка от любого детектора."""
 

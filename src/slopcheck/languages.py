@@ -34,6 +34,11 @@ _EXT_TO_LANG: dict[str, str] = {
     ".swift": "swift",
 }
 
+def lang_for_path(path: str | Path) -> str | None:
+    """Канонический язык файла по расширению (None — не кодовый файл)."""
+    return _EXT_TO_LANG.get(Path(path).suffix.lower())
+
+
 # Каталоги, всегда пропускаемые при детекте (независимо от конфига).
 _ALWAYS_SKIP = {".git", "node_modules", ".venv", "venv", "__pycache__", "dist", "build"}
 

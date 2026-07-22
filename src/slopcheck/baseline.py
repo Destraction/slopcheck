@@ -24,10 +24,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from slopcheck.config import Config, default_config
+from slopcheck.models import SEVERITY_RANK as _SEVERITY_RANK
 from slopcheck.models import Category, Finding, Report, Severity
-
-# Ранг severity: чем выше, тем серьёзнее.
-_SEVERITY_RANK = {Severity.INFO: 0, Severity.WARN: 1, Severity.ERROR: 2}
 
 
 @dataclass

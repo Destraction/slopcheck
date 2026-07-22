@@ -87,7 +87,13 @@ class JscpdAdapter(Adapter):
     def is_available(self) -> bool:
         return tool_available("jscpd")
 
-    def run(self, root: Path, config: Config) -> list[Finding]:
+    def run(
+        self, root: Path, config: Config, files: list[str] | None = None
+    ) -> list[Finding]:
+        # Дубли — парное свойство: изменённый файл может дублировать
+        # неизменённый, поэтому сканируем весь root даже в инкрементальном
+        # режиме; runner оставит только находки, задевшие изменённые файлы
+        # (учитывая обе стороны пары через identity).
         with tempfile.TemporaryDirectory() as tmp:
             out_dir = Path(tmp)
             cmd = [

@@ -79,8 +79,16 @@ class VultureAdapter(Adapter):
     def is_available(self) -> bool:
         return tool_available("vulture")
 
-    def run(self, root: Path, config: Config) -> list[Finding]:
-        cmd = ["vulture", str(root)]
+    def run(
+        self, root: Path, config: Config, files: list[str] | None = None
+    ) -> list[Finding]:
+        if files is None:
+            targets = [str(root)]
+        else:
+            targets = self.select_files(files)
+            if not targets:
+                return []
+        cmd = ["vulture", *targets]
         excludes = vulture_excludes(config.ignore)
         if excludes:
             cmd += ["--exclude", ",".join(excludes)]
@@ -120,11 +128,15 @@ class DeptryAdapter(Adapter):
     name = "deptry"
     category = Category.DEAD_CODE
     languages = frozenset({"python"})
+    # Анализ зависимостей осмыслен только по проекту целиком.
+    file_scoped = False
 
     def is_available(self) -> bool:
         return tool_available("deptry")
 
-    def run(self, root: Path, config: Config) -> list[Finding]:
+    def run(
+        self, root: Path, config: Config, files: list[str] | None = None
+    ) -> list[Finding]:
         with tempfile.TemporaryDirectory() as tmp:
             report = Path(tmp) / "deptry.json"
             result = run_tool(["deptry", str(root), "--json-output", str(report)], cwd=root)
@@ -199,11 +211,15 @@ class KnipAdapter(Adapter):
     name = "knip"
     category = Category.DEAD_CODE
     languages = frozenset({"javascript", "typescript"})
+    # «Неиспользуемый экспорт/файл» вычислим только по всему графу проекта.
+    file_scoped = False
 
     def is_available(self) -> bool:
         return tool_available("knip")
 
-    def run(self, root: Path, config: Config) -> list[Finding]:
+    def run(
+        self, root: Path, config: Config, files: list[str] | None = None
+    ) -> list[Finding]:
         result = run_tool(
             ["knip", "--reporter", "json", "--directory", str(root)], cwd=root
         )

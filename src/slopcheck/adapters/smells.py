@@ -35,7 +35,15 @@ class SemgrepSmellsAdapter(Adapter):
     def is_available(self) -> bool:
         return tool_available("semgrep") and _RULES_FILE.exists()
 
-    def run(self, root: Path, config: Config) -> list[Finding]:
+    def run(
+        self, root: Path, config: Config, files: list[str] | None = None
+    ) -> list[Finding]:
+        if files is None:
+            targets = [str(root)]
+        else:
+            targets = self.select_files(files)
+            if not targets:
+                return []
         cmd = [
             "semgrep",
             "--config",
@@ -46,7 +54,7 @@ class SemgrepSmellsAdapter(Adapter):
         ]
         for pattern in config.ignore:
             cmd += ["--exclude", pattern]
-        cmd.append(str(root))
+        cmd += targets
 
         result = run_tool(cmd, cwd=root)
         if crashed(result) or not result.stdout.strip():

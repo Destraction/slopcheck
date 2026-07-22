@@ -4,17 +4,30 @@ build-backend = "hatchling.build"
 
 [project]
 name = "slopcheck"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Детектор AI slop без ИИ: оркестратор поверх статических анализаторов"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
+keywords = ["ai", "slop", "lint", "code-quality", "static-analysis"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Quality Assurance",
+]
 dependencies = [
     "typer>=0.12",
     "rich>=13.7",
     "pydantic>=2.6",
     "pyyaml>=6.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Destraction/slopcheck"
+Repository = "https://github.com/Destraction/slopcheck"
 
 [project.optional-dependencies]
 # Python-детекторы, вызываемые адаптерами напрямую (API) или как бинарники.
@@ -34,6 +47,9 @@ slopcheck = "slopcheck.cli:app"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/slopcheck"]
+
+[tool.hatch.version]
+path = "src/slopcheck/__init__.py"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
