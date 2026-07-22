@@ -210,3 +210,65 @@ def test_cross_category_findings_mark_category_measured(tmp_path: Path) -> None:
     assert by_cat[Category.DEAD_CODE].measured
     assert by_cat[Category.DEAD_CODE].findings == [finding]
     assert not by_cat[Category.DUPLICATION].measured
+
+
+def _at(category: Category, line: int, severity: Severity, tool: str, **kw) -> Finding:
+    return Finding(
+        category=category,
+        tool=tool,
+        file="a.py",
+        line=line,
+        message=f"{tool} нашёл проблему",
+        severity=severity,
+        **kw,
+    )
+
+
+def test_same_place_findings_are_collapsed(tmp_path: Path) -> None:
+    """Один дефект, найденный двумя тулами, штрафует счёт один раз."""
+    registry = Registry()
+    registry.register(
+        _FakeAdapter(
+            "multi",
+            Category.DEAD_CODE,
+            [
+                _at(Category.DEAD_CODE, 3, Severity.WARN, "aislop"),
+                _at(Category.DEAD_CODE, 3, Severity.ERROR, "vulture"),
+                _at(Category.DEAD_CODE, 9, Severity.WARN, "vulture"),
+            ],
+        )
+    )
+    findings = run(tmp_path, Config(), registry).report.findings
+    assert [(f.line, f.tool) for f in findings] == [(3, "vulture"), (9, "vulture")]
+
+
+def test_distinct_clones_on_same_line_survive(tmp_path: Path) -> None:
+    """Два разных клона с одной строки — две проблемы, склеивать нельзя."""
+    registry = Registry()
+    registry.register(
+        _FakeAdapter(
+            "dup",
+            Category.DUPLICATION,
+            [
+                _at(Category.DUPLICATION, 5, Severity.WARN, "jscpd", identity="a.py|b.py"),
+                _at(Category.DUPLICATION, 5, Severity.WARN, "jscpd", identity="a.py|c.py"),
+            ],
+        )
+    )
+    assert len(run(tmp_path, Config(), registry).report.findings) == 2
+
+
+def test_file_level_findings_are_not_collapsed(tmp_path: Path) -> None:
+    """Находки без строки (file-level) остаются все: их на файл может быть много."""
+    registry = Registry()
+    registry.register(
+        _FakeAdapter(
+            "knip",
+            Category.DEAD_CODE,
+            [
+                _at(Category.DEAD_CODE, 0, Severity.WARN, "knip"),
+                _at(Category.DEAD_CODE, 0, Severity.WARN, "knip"),
+            ],
+        )
+    )
+    assert len(run(tmp_path, Config(), registry).report.findings) == 2

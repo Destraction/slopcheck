@@ -14,7 +14,7 @@ from slopcheck.adapters import register_all
 from slopcheck.adapters.base import Adapter
 from slopcheck.languages import is_ignored
 from slopcheck.config import Config, load_config
-from slopcheck.models import Category, CategoryResult, Finding, Report
+from slopcheck.models import SEVERITY_RANK, Category, CategoryResult, Finding, Report
 from slopcheck.pathutil import relativize
 from slopcheck.registry import Registry
 from slopcheck.scoring import score_report
@@ -108,11 +108,37 @@ def _run_adapter(
         return [], f"{adapter.name}: сбой детектора — {exc!r}"
 
 
+def _dedupe(findings: list[Finding]) -> list[Finding]:
+    """Схлопнуть находки разных тулов об одном и том же месте.
+
+    aislop встраивает ruff/eslint, поэтому неиспользуемый импорт приезжает и
+    от него, и от vulture/knip — без склейки один дефект штрафует счёт дважды.
+    Ключ — категория, файл, строка и `identity`; находки без строки (file-level,
+    напр. «неиспользуемый файл» knip) не склеиваем: их на файл может быть много.
+    identity в ключе бережёт парные находки: два разных клона могут начинаться
+    на одной строке, и это две разные проблемы. Из совпавших остаётся severe.
+    """
+    best: dict[tuple, int] = {}
+    result: list[Finding] = []
+    for f in findings:
+        if not f.line:
+            result.append(f)
+            continue
+        key = (f.category, f.file, f.line, f.identity)
+        index = best.get(key)
+        if index is None:
+            best[key] = len(result)
+            result.append(f)
+        elif SEVERITY_RANK[f.severity] > SEVERITY_RANK[result[index].severity]:
+            result[index] = f
+    return result
+
+
 def _filter_findings(
     findings: list[Finding], root: Path, config: Config, files: list[str] | None
 ) -> list[Finding]:
-    """Нормализовать пути и отсеять игнорируемое и не задетое изменениями."""
-    findings = _normalize_paths(findings, root)
+    """Нормализовать пути и отсеять игнорируемое, дубли и не задетое изменениями."""
+    findings = _dedupe(_normalize_paths(findings, root))
     findings = [
         f for f in findings if not is_ignored(Path(f.file).parts, config.ignore)
     ]

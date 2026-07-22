@@ -51,14 +51,20 @@ def test_semgrep_smells_js_live(tmp_path: Path) -> None:
         "    risky();\n"
         "  } catch (e) {}\n"
         "  if (x == null) return;\n"
+        "  if (x == 0) return;\n"
         "  debugger;\n"
         "}\n",
         encoding="utf-8",
     )
-    rule_ids = {f.rule_id for f in SemgrepSmellsAdapter().run(tmp_path, Config())}
+    findings = SemgrepSmellsAdapter().run(tmp_path, Config())
+    rule_ids = {f.rule_id for f in findings}
     assert "empty-catch" in rule_ids
     assert "debugger-statement" in rule_ids
-    assert "loose-eq-null" in rule_ids
+    # Нестрогое сравнение ловим, но `x == null` — идиома проверки на
+    # null и undefined сразу, и находкой быть не должна.
+    loose = [f for f in findings if f.rule_id == "loose-equality"]
+    assert len(loose) == 1
+    assert loose[0].line == 6
 
 
 @pytest.mark.skipif(shutil.which("semgrep") is None, reason="semgrep не установлен")

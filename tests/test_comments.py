@@ -124,9 +124,13 @@ def test_aislop_rule_category_mapping() -> None:
 
     assert category_for_aislop_rule("ruff/F401") is Category.DEAD_CODE
     assert category_for_aislop_rule("ai-slop/unused-import") is Category.DEAD_CODE
-    assert category_for_aislop_rule("ai-slop/python-print-debug") is Category.COMPLEXITY
+    assert category_for_aislop_rule("eslint/no-unused-vars") is Category.DEAD_CODE
+    assert category_for_aislop_rule("code-quality/duplicate-block") is Category.DUPLICATION
     assert category_for_aislop_rule("ai-slop/narrative-comment") is Category.COMMENTS
-    assert category_for_aislop_rule(None) is Category.COMMENTS
+    assert category_for_aislop_rule("ai-slop/todo-stub") is Category.COMMENTS
+    # Незнакомое lint-правило — смелл, а не «комментарий».
+    assert category_for_aislop_rule("jsx-a11y/no-autofocus") is Category.COMPLEXITY
+    assert category_for_aislop_rule(None) is Category.COMPLEXITY
 
 
 def _aislop_sarif(*rule_ids: str) -> str:

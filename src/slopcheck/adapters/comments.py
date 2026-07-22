@@ -85,20 +85,20 @@ def _first_location(result: dict) -> tuple[str, int]:
 
 
 # Куда относить находку aislop по фрагменту её rule_id. Проверяется по
-# вхождению подстроки, сверху вниз; что не совпало — COMMENTS (aislop прежде
-# всего про нарративные комментарии и прочий текстовый slop).
+# вхождению подстроки, сверху вниз; что не совпало — COMPLEXITY (общий bucket
+# смеллов: lint-правила про a11y, хуки и типы — точно не про комментарии).
 _AISLOP_RULE_CATEGORIES: tuple[tuple[str, Category], ...] = (
+    ("comment", Category.COMMENTS),
+    ("todo", Category.COMMENTS),
+    ("doc", Category.COMMENTS),
     ("unused-import", Category.DEAD_CODE),
+    ("unused-var", Category.DEAD_CODE),
+    ("no-unused", Category.DEAD_CODE),
     ("f401", Category.DEAD_CODE),
-    ("unused", Category.DEAD_CODE),
     ("dead-code", Category.DEAD_CODE),
+    ("unreachable", Category.DEAD_CODE),
     ("duplicate", Category.DUPLICATION),
     ("copy-paste", Category.DUPLICATION),
-    ("debug", Category.COMPLEXITY),
-    ("swallowed", Category.COMPLEXITY),
-    ("complexity", Category.COMPLEXITY),
-    ("oversized", Category.COMPLEXITY),
-    ("as-any", Category.COMPLEXITY),
 )
 
 
@@ -113,7 +113,7 @@ def category_for_aislop_rule(rule_id: str | None) -> Category:
     for fragment, category in _AISLOP_RULE_CATEGORIES:
         if fragment in rule:
             return category
-    return Category.COMMENTS
+    return Category.COMPLEXITY
 
 
 class AislopAdapter(Adapter):

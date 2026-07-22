@@ -61,14 +61,26 @@ rules:
       Оставлен debugger; — отладочный след в коде.
     pattern: debugger;
 
-  - id: loose-eq-null
+  - id: loose-equality
     languages: [javascript, typescript]
     severity: INFO
     message: >
-      Нестрогое сравнение с null (== / !=); обычно нужен === / !==.
-    pattern-either:
-      - pattern: $X == null
-      - pattern: $X != null
+      Нестрогое сравнение (== / !=) — обычно нужен === / !==.
+    patterns:
+      - pattern-either:
+          - pattern: $X == $Y
+          - pattern: $X != $Y
+      # `x == null` — не халтура, а идиома: единственный способ проверить
+      # null и undefined одним сравнением (так же считает eslint eqeqeq
+      # с опцией null: ignore). Флажить её — топить отчёт ложными находками.
+      - pattern-not: $X == null
+      - pattern-not: $X != null
+      - pattern-not: null == $X
+      - pattern-not: null != $X
+      - pattern-not: $X == undefined
+      - pattern-not: $X != undefined
+      - pattern-not: undefined == $X
+      - pattern-not: undefined != $X
 
   # ------------------------------------------------------------- Go
   - id: swallowed-error-go
