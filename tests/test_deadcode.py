@@ -89,3 +89,28 @@ def test_deptry_live(tmp_path: Path) -> None:
     (tmp_path / "app.py").write_text("print(1)\n", encoding="utf-8")
     findings = DeptryAdapter().run(tmp_path, Config())
     assert any("requests" in f.message for f in findings)
+
+
+def test_vulture_ignores_registered_decorated_functions(tmp_path: Path) -> None:
+    """Функция, зарегистрированная декоратором фреймворка, не мёртвая."""
+    (tmp_path / "cli.py").write_text(
+        "import typer\n\napp = typer.Typer()\n\n\n"
+        "@app.command()\ndef version() -> None:\n    print(1)\n\n\n"
+        "def orphan() -> None:\n    print(2)\n",
+        encoding="utf-8",
+    )
+    messages = " ".join(f.message for f in VultureAdapter().run(tmp_path, Config()))
+    assert "orphan" in messages
+    assert "version" not in messages
+
+
+def test_vulture_ignore_names_from_config(tmp_path: Path) -> None:
+    """Имена из dead_code_ignore_names vulture не считает мёртвыми."""
+    (tmp_path / "mod.py").write_text(
+        "def orphan() -> None:\n    pass\n\n\ndef other() -> None:\n    pass\n",
+        encoding="utf-8",
+    )
+    config = Config(dead_code_ignore_names=["orphan"])
+    messages = " ".join(f.message for f in VultureAdapter().run(tmp_path, config))
+    assert "orphan" not in messages
+    assert "other" in messages

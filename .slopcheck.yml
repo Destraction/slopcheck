@@ -1,0 +1,26 @@
+# Конфиг slopcheck для самого slopcheck (dogfooding).
+# Полный список полей с дефолтами: `slopcheck init-config`.
+
+ignore:
+  # Дефолтный набор (перечисляем целиком: список замещается, а не дополняется).
+  - node_modules
+  - .git
+  - dist
+  - build
+  - vendor
+  - .venv
+  - venv
+  - migrations
+  - __pycache__
+  - .pytest_cache
+  - .mypy_cache
+  - .ruff_cache
+  - .tox
+  - htmlcov
+  - .next
+  - .claude
+  # Шаблон workflow, который ставится в ЧУЖИЕ репозитории. Он обязан быть
+  # самодостаточным (переиспользовать наш код не может), поэтому повторяет
+  # шаги .github/workflows/example.yml намеренно — это артефакт поставки,
+  # а не копипаста в исходниках.
+  - consumer/workflows

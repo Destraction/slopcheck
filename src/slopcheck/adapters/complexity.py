@@ -13,7 +13,6 @@ from typing import Iterable, Protocol
 from slopcheck.adapters.base import Adapter
 from slopcheck.config import Config
 from slopcheck.models import Category, Finding, Severity
-from slopcheck.registry import default_registry
 
 # Порог цикломатической сложности, выше которого функция считается раздутой.
 DEFAULT_CCN_THRESHOLD = 10
@@ -22,12 +21,16 @@ ERROR_CCN_THRESHOLD = 20
 
 
 class _FunctionInfo(Protocol):
+    """Функция в разборе lizard: только нужные нам поля."""
+
     name: str
     cyclomatic_complexity: int
     start_line: int
 
 
 class _FileInfo(Protocol):
+    """Файл в разборе lizard: имя и список функций."""
+
     filename: str
     function_list: list[_FunctionInfo]
 
@@ -82,23 +85,22 @@ class LizardAdapter(Adapter):
     languages = frozenset()  # lizard покрывает множество языков
 
     def is_available(self) -> bool:
+        """lizard — Python-библиотека, отдельной установки не требует."""
         return importlib.util.find_spec("lizard") is not None
 
     def run(
         self, root: Path, config: Config, files: list[str] | None = None
     ) -> list[Finding]:
+        """Посчитать цикломатику через lizard и вернуть раздутые функции."""
         import lizard
 
-        if files is None:
-            targets = [str(root)]
-        else:
-            # lizard принимает явные пути; select_files не сузит (languages
-            # пуст), но отсечёт нечего — просто передаём список как есть.
-            targets = [str(root / f) for f in files]
-            if not targets:
-                return []
+        # lizard принимает явные пути; select_files не сузит (languages пуст).
+        targets = self.resolve_targets(root, files, absolute=True)
+        if targets is None:
+            return []
         analysis = lizard.analyze(targets, exclude_pattern=exclude_globs(config.ignore))
         return findings_from_analysis(analysis)
 
 
-default_registry.register(LizardAdapter())
+# Адаптеры модуля; регистрирует их `slopcheck.adapters.register_all`.
+ADAPTERS = (LizardAdapter(),)

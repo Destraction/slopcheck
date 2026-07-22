@@ -12,7 +12,6 @@ from slopcheck.adapters.base import Adapter
 from slopcheck.adapters.comments import parse_sarif
 from slopcheck.config import Config
 from slopcheck.models import Category, Finding
-from slopcheck.registry import default_registry
 from slopcheck.subprocess_util import ToolExecutionError, crashed, run_tool, tool_available
 
 _RULES_FILE = Path(__file__).resolve().parent.parent / "rules" / "smells.yml"
@@ -33,17 +32,16 @@ class SemgrepSmellsAdapter(Adapter):
     languages = frozenset({"python", "javascript", "typescript", "go"})
 
     def is_available(self) -> bool:
+        """Нужны и бинарник semgrep, и файл правил в пакете."""
         return tool_available("semgrep") and _RULES_FILE.exists()
 
     def run(
         self, root: Path, config: Config, files: list[str] | None = None
     ) -> list[Finding]:
-        if files is None:
-            targets = [str(root)]
-        else:
-            targets = self.select_files(files)
-            if not targets:
-                return []
+        """Прогнать semgrep по правилам пакета и вернуть смеллы."""
+        targets = self.resolve_targets(root, files)
+        if targets is None:
+            return []
         cmd = [
             "semgrep",
             "--config",
@@ -68,4 +66,5 @@ class SemgrepSmellsAdapter(Adapter):
         return findings
 
 
-default_registry.register(SemgrepSmellsAdapter())
+# Адаптеры модуля; регистрирует их `slopcheck.adapters.register_all`.
+ADAPTERS = (SemgrepSmellsAdapter(),)

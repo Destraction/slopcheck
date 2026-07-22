@@ -18,6 +18,7 @@ _SARIF_SCHEMA = "https://json.schemastore.org/sarif-2.1.0.json"
 
 
 def _rules(report: Report) -> list[dict]:
+    """Уникальные правила отчёта для driver.rules (id = rule_id или тул)."""
     seen: dict[str, dict] = {}
     for f in report.findings:
         rule_id = f.rule_id or f.tool
@@ -27,6 +28,7 @@ def _rules(report: Report) -> list[dict]:
 
 
 def _results(report: Report) -> list[dict]:
+    """Находки отчёта в виде SARIF-результатов."""
     results: list[dict] = []
     for f in report.findings:
         results.append(

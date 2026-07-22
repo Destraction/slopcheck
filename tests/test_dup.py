@@ -75,3 +75,49 @@ def test_parse_report_relativizes_both_paths(tmp_path: Path) -> None:
     assert "src/b.js" in f.message
     assert str(tmp_path) not in (f.identity or "")
     assert f.identity == "src/a.js|src/b.js"
+
+
+def test_parse_report_drops_ignored_format() -> None:
+    """Дубли в игнорируемом формате (проза) не попадают в находки."""
+    report = """
+    {"duplicates": [{"format": "markdown", "lines": 8,
+      "firstFile": {"name": "docs/G.md:markdown", "start": 1, "end": 8},
+      "secondFile": {"name": "docs/G.md:markdown", "start": 20, "end": 27}}]}
+    """
+    assert parse_report(report, ignore_formats=["markdown"]) == []
+    assert len(parse_report(report, ignore_formats=[])) == 1
+
+
+def test_parse_report_strips_format_suffix() -> None:
+    """Хвост `:<format>` у фрагментов срезается — путь должен быть настоящим."""
+    report = """
+    {"duplicates": [{"format": "markdown", "lines": 8,
+      "firstFile": {"name": "docs/G.md:markdown", "start": 1, "end": 8},
+      "secondFile": {"name": "docs/H.md:markdown", "start": 20, "end": 27}}]}
+    """
+    (f,) = parse_report(report, ignore_formats=[])
+    assert f.file == "docs/G.md"
+    assert "docs/H.md:20" in f.message
+    assert f.identity == "docs/G.md|docs/H.md"
+
+
+def test_parse_report_drops_self_overlap() -> None:
+    """Клон файла с самим собой на тех же строках — шум jscpd, отбрасываем."""
+    report = """
+    {"duplicates": [{"format": "javascript", "lines": 8,
+      "firstFile": {"name": "src/a.js", "start": 201, "end": 208},
+      "secondFile": {"name": "src/a.js", "start": 201, "end": 208}}]}
+    """
+    assert parse_report(report) == []
+
+
+def test_parse_report_keeps_same_file_distinct_blocks() -> None:
+    """Два разных блока одного файла — настоящий дубль, с понятным текстом."""
+    report = """
+    {"duplicates": [{"format": "javascript", "lines": 16,
+      "firstFile": {"name": "src/a.js", "start": 1, "end": 16},
+      "secondFile": {"name": "src/a.js", "start": 40, "end": 55}}]}
+    """
+    (f,) = parse_report(report)
+    assert f.file == "src/a.js"
+    assert "в этом же файле, строка 40" in f.message

@@ -70,7 +70,7 @@ def test_aislop_run_raises_on_crash(monkeypatch) -> None:
     monkeypatch.setattr(
         mod,
         "run_tool",
-        lambda *a, **kw: ToolResult(returncode=2, stdout="", stderr="boom"),
+        lambda *_a, **_kw: ToolResult(returncode=2, stdout="", stderr="boom"),
     )
     with pytest.raises(ToolExecutionError):
         AislopAdapter().run(Path("."), Config())
@@ -85,6 +85,73 @@ def test_aislop_run_code1_is_findings(monkeypatch) -> None:
     monkeypatch.setattr(
         mod,
         "run_tool",
-        lambda *a, **kw: ToolResult(returncode=1, stdout="", stderr=""),
+        lambda *_a, **_kw: ToolResult(returncode=1, stdout="", stderr=""),
     )
     assert AislopAdapter().run(Path("."), Config()) == []
+
+
+def test_interrogate_skips_tests_by_default(tmp_path: Path) -> None:
+    """Докстринги в тестах не требуются: имя теста и есть описание."""
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "test_x.py").write_text(
+        "def test_something():\n    assert True\n", encoding="utf-8"
+    )
+    (tmp_path / "app.py").write_text("def helper(x):\n    return x\n", encoding="utf-8")
+
+    adapter = InterrogateAdapter()
+    default_files = {f.file for f in adapter.run(tmp_path, Config())}
+    assert not any("test_x.py" in f for f in default_files)
+    assert any("app.py" in f for f in default_files)
+
+    with_tests = {f.file for f in adapter.run(tmp_path, Config(docstrings_skip_tests=False))}
+    assert any("test_x.py" in f for f in with_tests)
+
+
+def test_interrogate_honours_ignore_paths(tmp_path: Path) -> None:
+    """Каталоги из ignore не читаются вовсе (иначе сканируем полдиска)."""
+    (tmp_path / ".venv").mkdir()
+    (tmp_path / ".venv" / "lib.py").write_text("def f(x):\n    return x\n", encoding="utf-8")
+    (tmp_path / "app.py").write_text("def helper(x):\n    return x\n", encoding="utf-8")
+
+    files = {f.file for f in InterrogateAdapter().run(tmp_path, Config())}
+    assert not any(".venv" in f for f in files)
+    assert any("app.py" in f for f in files)
+
+
+def test_aislop_rule_category_mapping() -> None:
+    """Находки aislop раскладываются по категориям, а не валятся в comments."""
+    from slopcheck.adapters.comments import category_for_aislop_rule
+
+    assert category_for_aislop_rule("ruff/F401") is Category.DEAD_CODE
+    assert category_for_aislop_rule("ai-slop/unused-import") is Category.DEAD_CODE
+    assert category_for_aislop_rule("ai-slop/python-print-debug") is Category.COMPLEXITY
+    assert category_for_aislop_rule("ai-slop/narrative-comment") is Category.COMMENTS
+    assert category_for_aislop_rule(None) is Category.COMMENTS
+
+
+def _aislop_sarif(*rule_ids: str) -> str:
+    results = ", ".join(
+        '{"ruleId": "%s", "level": "warning", "message": {"text": "x"},'
+        ' "locations": [{"physicalLocation": {"artifactLocation": {"uri": "a.py"},'
+        ' "region": {"startLine": 1}}}]}' % rule_id
+        for rule_id in rule_ids
+    )
+    return '{"runs": [{"results": [%s]}]}' % results
+
+
+def test_aislop_run_applies_categories_and_ignores(monkeypatch) -> None:
+    """Игнор-правила отсекаются, остальным проставляется своя категория."""
+    from slopcheck.adapters import comments as mod
+    from slopcheck.adapters.comments import AislopAdapter
+    from slopcheck.subprocess_util import ToolResult
+
+    sarif = _aislop_sarif("python-formatting", "ruff/F401")
+    monkeypatch.setattr(
+        mod, "run_tool", lambda *_a, **_kw: ToolResult(returncode=1, stdout=sarif, stderr="")
+    )
+    (finding,) = AislopAdapter().run(Path("."), Config())
+    assert finding.rule_id == "ruff/F401"
+    assert finding.category is Category.DEAD_CODE
+
+    both = AislopAdapter().run(Path("."), Config(aislop_ignore_rules=[]))
+    assert len(both) == 2

@@ -25,7 +25,7 @@ from pathlib import Path
 
 from slopcheck.config import Config, default_config
 from slopcheck.models import SEVERITY_RANK as _SEVERITY_RANK
-from slopcheck.models import Category, Finding, Report, Severity
+from slopcheck.models import Category, Finding, Report
 
 
 @dataclass
@@ -69,32 +69,14 @@ def _skipped_names(skipped: list[str]) -> set[str]:
 
 def _categories_of(adapter_names: set[str]) -> set[Category]:
     """Категории адаптеров по их именам (через глобальный реестр)."""
-    import slopcheck.adapters  # noqa: F401 — наполняет default_registry
-    from slopcheck.registry import default_registry
+    from slopcheck.adapters import all_adapters
 
-    by_name = {a.name: a.category for a in default_registry.all()}
+    by_name = {a.name: a.category for a in all_adapters()}
     return {by_name[n] for n in adapter_names if n in by_name}
 
 
-def evaluate_gate(
-    head: Report,
-    base: Report,
-    config: Config | None = None,
-    *,
-    head_skipped: list[str] | None = None,
-    base_skipped: list[str] | None = None,
-) -> GateOutcome:
-    """Оценить регресс: новые находки, слепые зоны и вердикт гейта.
-
-    `head_skipped`/`base_skipped` — списки пропущенных детекторов текущего
-    прогона и baseline-снимка (формат runner'а: `имя: причина`).
-    """
-    config = config or default_config()
-    threshold = _SEVERITY_RANK[config.gate_severity]
-
-    head_names = _skipped_names(head_skipped or [])
-    base_names = _skipped_names(base_skipped or [])
-
+def _blindspot_notes(head_names: set[str], base_names: set[str]) -> tuple[list[str], list[str]]:
+    """Ошибки и предупреждения по слепым зонам детекторов (errors, warnings)."""
     errors: list[str] = []
     warnings: list[str] = []
 
@@ -115,26 +97,58 @@ def evaluate_gate(
             "детекторы пропущены и в baseline, и в head — их категории вне "
             f"контроля гейта: {', '.join(both_blind)}"
         )
+    return errors, warnings
 
-    new = diff_findings(base.findings, head.findings)
 
-    # base был слеп, head видит: находки этих категорий не «новые» по вине PR —
-    # baseline их физически не мог содержать. Не блокируем, но показываем.
-    base_blind_cats = _categories_of(base_names - head_names)
+def _split_blocking(
+    new: list[Finding], threshold: int, base_blind_cats: set[Category]
+) -> tuple[list[Finding], list[str]]:
+    """Разделить новые находки на блокирующие и «прощённые» слепотой baseline.
+
+    Находки категорий, которых baseline не видел, не могут честно считаться
+    добавленными этим PR — они не блокируют, но попадают в предупреждения.
+    """
     above = [f for f in new if _SEVERITY_RANK[f.severity] >= threshold]
     blocking = [f for f in above if f.category not in base_blind_cats]
     demoted = [f for f in above if f.category in base_blind_cats]
-    if demoted:
-        cats = ", ".join(sorted({f.category.value for f in demoted}))
-        warnings.append(
-            f"категории [{cats}] отсутствовали в baseline (детектор был "
-            f"пропущен) — {len(demoted)} находок не блокируют гейт, "
-            "проверьте их вручную"
-        )
+    if not demoted:
+        return blocking, []
+    cats = ", ".join(sorted({f.category.value for f in demoted}))
+    return blocking, [
+        f"категории [{cats}] отсутствовали в baseline (детектор был "
+        f"пропущен) — {len(demoted)} находок не блокируют гейт, "
+        "проверьте их вручную"
+    ]
 
-    passed = not blocking and not errors
+
+def evaluate_gate(
+    head: Report,
+    base: Report,
+    config: Config | None = None,
+    *,
+    head_skipped: list[str] | None = None,
+    base_skipped: list[str] | None = None,
+) -> GateOutcome:
+    """Оценить регресс: новые находки, слепые зоны и вердикт гейта.
+
+    `head_skipped`/`base_skipped` — списки пропущенных детекторов текущего
+    прогона и baseline-снимка (формат runner'а: `имя: причина`).
+    """
+    config = config or default_config()
+    head_names = _skipped_names(head_skipped or [])
+    base_names = _skipped_names(base_skipped or [])
+
+    errors, warnings = _blindspot_notes(head_names, base_names)
+    new = diff_findings(base.findings, head.findings)
+    blocking, demoted_warnings = _split_blocking(
+        new,
+        _SEVERITY_RANK[config.gate_severity],
+        _categories_of(base_names - head_names),
+    )
+    warnings += demoted_warnings
+
     return GateOutcome(
-        passed=passed,
+        passed=not blocking and not errors,
         new_findings=new,
         blocking=blocking,
         warnings=warnings,

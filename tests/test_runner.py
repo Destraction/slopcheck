@@ -178,3 +178,35 @@ def test_crashed_detector_also_marks_category_unmeasured(tmp_path) -> None:
     dead = next(c for c in result.report.categories if c.category is Category.DEAD_CODE)
     assert dead.measured is False
     assert Category.DEAD_CODE in result.report.unmeasured
+
+
+def test_register_all_is_idempotent() -> None:
+    """Повторная регистрация не плодит дублей адаптеров."""
+    from slopcheck.adapters import all_adapters, register_all
+
+    registry = Registry()
+    register_all(registry)
+    first = [a.name for a in registry.all()]
+    register_all(registry)
+    assert [a.name for a in registry.all()] == first
+    assert sorted(first) == sorted(a.name for a in all_adapters())
+
+
+def test_cross_category_findings_mark_category_measured(tmp_path: Path) -> None:
+    """Детектор, нашедший чужую категорию, делает её измеренной, а не «слепой»."""
+    finding = Finding(
+        category=Category.DEAD_CODE,
+        tool="fake",
+        file="a.py",
+        line=1,
+        message="мёртвый импорт",
+        severity=Severity.WARN,
+    )
+    registry = Registry()
+    registry.register(_FakeAdapter("multi", Category.COMMENTS, [finding]))
+
+    result = run(tmp_path, Config(), registry)
+    by_cat = {c.category: c for c in result.report.categories}
+    assert by_cat[Category.DEAD_CODE].measured
+    assert by_cat[Category.DEAD_CODE].findings == [finding]
+    assert not by_cat[Category.DUPLICATION].measured

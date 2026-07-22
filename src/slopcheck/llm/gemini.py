@@ -11,7 +11,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 from slopcheck.config import Config
 from slopcheck.models import Category, Finding, Severity
@@ -101,9 +100,11 @@ class GeminiReviewer:
     """Реализация LLMReviewer поверх локального Gemini CLI."""
 
     def is_available(self) -> bool:
+        """Есть ли в PATH бинарник gemini."""
         return tool_available("gemini")
 
     def review(self, result: RunResult, config: Config) -> list[Finding]:
+        """Отдать код прогона в Gemini CLI и вернуть его находки."""
         code = _collect_code(result)
         if not code.strip():
             return []

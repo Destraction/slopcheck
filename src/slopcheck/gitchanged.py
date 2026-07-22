@@ -21,6 +21,7 @@ STAGED = "staged"
 
 
 def _git(root: Path, *args: str) -> str:
+    """Выполнить git в `root` и вернуть stdout; сбой git — исключение."""
     result = run_tool(["git", "-C", str(root), *args])
     if crashed(result):
         raise ToolExecutionError(

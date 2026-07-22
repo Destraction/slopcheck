@@ -9,13 +9,14 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import slopcheck.adapters  # noqa: F401  — регистрирует адаптеры в default_registry
 from slopcheck import languages as lang_detect
+from slopcheck.adapters import register_all
+from slopcheck.adapters.base import Adapter
 from slopcheck.languages import is_ignored
 from slopcheck.config import Config, load_config
 from slopcheck.models import Category, CategoryResult, Finding, Report
 from slopcheck.pathutil import relativize
-from slopcheck.registry import Registry, default_registry
+from slopcheck.registry import Registry
 from slopcheck.scoring import score_report
 from slopcheck.subprocess_util import ToolExecutionError, ToolNotFound
 
@@ -81,6 +82,48 @@ def _touches_changed(finding: Finding, changed: set[str]) -> bool:
     return any(part in finding.identity for part in changed) if changed else False
 
 
+def _run_adapter(
+    adapter: Adapter, root: Path, config: Config, files: list[str] | None
+) -> tuple[list[Finding], str | None]:
+    """Прогнать один детектор: находки либо причина пропуска (не оба сразу).
+
+    Сбой детектора НЕ превращается в молчаливый пустой список: без пометки
+    о пропуске delta-гейт ложно зеленел бы на неполном наборе находок.
+    """
+    if files is not None and not adapter.file_scoped:
+        # deptry/knip считают по графу всего проекта — на срезе файлов
+        # дадут ложные «неиспользуемые». Честнее пропустить с пометкой.
+        return [], f"{adapter.name}: пропущен в инкрементальном режиме"
+    if not adapter.is_available():
+        return [], f"{adapter.name}: тул не установлен"
+    try:
+        return adapter.run(root, config, files=files), None
+    except ToolNotFound as exc:
+        return [], f"{adapter.name}: тул не найден ({exc})"
+    except ToolExecutionError as exc:
+        return [], f"{adapter.name}: сбой запуска — {exc}"
+    except Exception as exc:  # noqa: BLE001 — Python-API адаптеры (lizard,
+        # interrogate) кидают произвольные исключения; один сломанный
+        # детектор не должен ронять весь прогон — фиксируем как пропуск.
+        return [], f"{adapter.name}: сбой детектора — {exc!r}"
+
+
+def _filter_findings(
+    findings: list[Finding], root: Path, config: Config, files: list[str] | None
+) -> list[Finding]:
+    """Нормализовать пути и отсеять игнорируемое и не задетое изменениями."""
+    findings = _normalize_paths(findings, root)
+    findings = [
+        f for f in findings if not is_ignored(Path(f.file).parts, config.ignore)
+    ]
+    if files is None:
+        return findings
+    # Часть детекторов сканирует root целиком (aislop, jscpd) — срезаем
+    # находки, не задевшие изменённые файлы, единообразно для всех.
+    changed = set(files)
+    return [f for f in findings if _touches_changed(f, changed)]
+
+
 def run(
     root: Path,
     config: Config | None = None,
@@ -95,7 +138,7 @@ def run(
     """
     root = root.resolve()
     config = config or load_config(root)
-    registry = registry if registry is not None else default_registry
+    registry = registry if registry is not None else register_all()
 
     languages = config.languages or lang_detect.detect(root, config.ignore)
     enabled = config.enabled_categories()
@@ -109,36 +152,17 @@ def run(
     for adapter in registry.for_categories(enabled):
         if not adapter.applies_to(languages):
             continue
-        if files is not None and not adapter.file_scoped:
-            # deptry/knip считают по графу всего проекта — на срезе файлов
-            # дадут ложные «неиспользуемые». Честнее пропустить с пометкой.
-            skipped.append(f"{adapter.name}: пропущен в инкрементальном режиме")
+        adapter_findings, skip_note = _run_adapter(adapter, root, config, files)
+        if skip_note:
+            skipped.append(skip_note)
             continue
-        if not adapter.is_available():
-            skipped.append(f"{adapter.name}: тул не установлен")
-            continue
-        try:
-            findings.extend(adapter.run(root, config, files=files))
-            measured.add(adapter.category)
-        except ToolNotFound as exc:
-            skipped.append(f"{adapter.name}: тул не найден ({exc})")
-        except ToolExecutionError as exc:
-            # Сбой детектора — НЕ молчаливый [] (иначе delta-гейт ложно зеленеет).
-            skipped.append(f"{adapter.name}: сбой запуска — {exc}")
-        except Exception as exc:  # noqa: BLE001 — Python-API адаптеры (lizard,
-            # interrogate) кидают произвольные исключения; один сломанный
-            # детектор не должен ронять весь прогон — фиксируем как пропуск.
-            skipped.append(f"{adapter.name}: сбой детектора — {exc!r}")
+        findings.extend(adapter_findings)
+        # Мультикатегорийный детектор (aislop) кладёт находки не только в свою
+        # «домашнюю» категорию — измеренной считается любая, где он что-то нашёл.
+        measured.add(adapter.category)
+        measured.update(f.category for f in adapter_findings)
 
-    findings = _normalize_paths(findings, root)
-    findings = [
-        f for f in findings if not is_ignored(Path(f.file).parts, config.ignore)
-    ]
-    if files is not None:
-        # Часть детекторов сканирует root целиком (aislop, jscpd) — срезаем
-        # находки, не задевшие изменённые файлы, единообразно для всех.
-        changed = set(files)
-        findings = [f for f in findings if _touches_changed(f, changed)]
+    findings = _filter_findings(findings, root, config, files)
     report = Report(
         repo=root.name,
         languages=languages,

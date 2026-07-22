@@ -18,6 +18,7 @@ _SEVERITY_ORDER = {Severity.ERROR: 0, Severity.WARN: 1, Severity.INFO: 2}
 
 
 def _score_emoji(score: float) -> str:
+    """Значок score: ✅/⚠️/❌ по тем же порогам, что и в консоли."""
     if score >= 90:
         return "✅"
     if score >= 70:
@@ -26,6 +27,7 @@ def _score_emoji(score: float) -> str:
 
 
 def _summary_section(report: Report) -> list[str]:
+    """Шапка сводки: итоговый score и таблица категорий."""
     lines = [
         f"## slopcheck — `{report.repo}`",
         "",
@@ -56,6 +58,7 @@ def _summary_section(report: Report) -> list[str]:
 
 
 def _findings_section(report: Report) -> list[str]:
+    """Секция топа находок (или пометка, что находок нет)."""
     findings = sorted(report.findings, key=lambda f: _SEVERITY_ORDER[f.severity])
     if not findings:
         return ["", "_Находок нет._"]
@@ -80,4 +83,6 @@ def render(result: RunResult) -> str:
     if result.skipped:
         lines += ["", "### Пропущенные детекторы", ""]
         lines += [f"- {note}" for note in result.skipped]
+    stamp = result.report.generated_at.strftime("%Y-%m-%d %H:%M UTC")
+    lines += ["", f"_Отчёт сформирован {stamp}._"]
     return "\n".join(lines) + "\n"

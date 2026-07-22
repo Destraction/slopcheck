@@ -19,7 +19,9 @@ from slopcheck.runner import RunResult
 class LLMReviewer(Protocol):
     """Контракт LLM-ревьюера: по результату прогона даёт доп. находки."""
 
-    def review(self, result: RunResult, config: Config) -> list[Finding]: ...
+    def review(self, result: RunResult, config: Config) -> list[Finding]:
+        """Вернуть находки ревью по результату прогона детекторов."""
+        ...
 
 
 class StubReviewer:
@@ -30,6 +32,7 @@ class StubReviewer:
     """
 
     def review(self, result: RunResult, config: Config) -> list[Finding]:
+        """Находок не даёт: заглушка существует ради интерфейса."""
         return []
 
 

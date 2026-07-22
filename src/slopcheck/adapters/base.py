@@ -45,6 +45,24 @@ class Adapter(ABC):
             return list(files)
         return [f for f in files if lang_for_path(f) in self.languages]
 
+    def resolve_targets(
+        self, root: Path, files: list[str] | None, *, absolute: bool = False
+    ) -> list[str] | None:
+        """Что передать тулу: весь `root` либо релевантный срез файлов.
+
+        None означает «работы нет» — в инкрементальном режиме ни один
+        изменённый файл не относится к языкам адаптера, и запускать тул
+        не на чем (пустой список аргументов заставил бы его сканировать cwd).
+
+        `absolute` — для тулов, которые зовутся Python-API и не знают про cwd.
+        """
+        if files is None:
+            return [str(root)]
+        selected = self.select_files(files)
+        if not selected:
+            return None
+        return [str(root / f) for f in selected] if absolute else selected
+
     @abstractmethod
     def is_available(self) -> bool:
         """Установлен ли требуемый внешний тул."""

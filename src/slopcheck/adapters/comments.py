@@ -18,7 +18,6 @@ from pathlib import Path
 from slopcheck.adapters.base import Adapter
 from slopcheck.config import Config
 from slopcheck.models import Category, Finding, Severity
-from slopcheck.registry import default_registry
 from slopcheck.subprocess_util import ToolExecutionError, crashed, run_tool, tool_available
 
 _SARIF_LEVEL_TO_SEVERITY = {
@@ -75,6 +74,7 @@ def parse_sarif(sarif_json: str, tool: str, category: Category) -> list[Finding]
 
 
 def _first_location(result: dict) -> tuple[str, int]:
+    """Файл и строка первой физической локации SARIF-результата."""
     locations = result.get("locations") or []
     if not locations:
         return ("?", 0)
@@ -82,6 +82,38 @@ def _first_location(result: dict) -> tuple[str, int]:
     uri = (phys.get("artifactLocation") or {}).get("uri", "?")
     line = (phys.get("region") or {}).get("startLine", 0) or 0
     return (uri, int(line))
+
+
+# Куда относить находку aislop по фрагменту её rule_id. Проверяется по
+# вхождению подстроки, сверху вниз; что не совпало — COMMENTS (aislop прежде
+# всего про нарративные комментарии и прочий текстовый slop).
+_AISLOP_RULE_CATEGORIES: tuple[tuple[str, Category], ...] = (
+    ("unused-import", Category.DEAD_CODE),
+    ("f401", Category.DEAD_CODE),
+    ("unused", Category.DEAD_CODE),
+    ("dead-code", Category.DEAD_CODE),
+    ("duplicate", Category.DUPLICATION),
+    ("copy-paste", Category.DUPLICATION),
+    ("debug", Category.COMPLEXITY),
+    ("swallowed", Category.COMPLEXITY),
+    ("complexity", Category.COMPLEXITY),
+    ("oversized", Category.COMPLEXITY),
+    ("as-any", Category.COMPLEXITY),
+)
+
+
+def category_for_aislop_rule(rule_id: str | None) -> Category:
+    """Категория slopcheck для правила aislop.
+
+    aislop покрывает все четыре категории сразу, поэтому его находки нельзя
+    сваливать в COMMENTS: иначе «мёртвый импорт» не попадёт в dead_code,
+    а счёт по категориям перестанет отражать реальность.
+    """
+    rule = (rule_id or "").lower()
+    for fragment, category in _AISLOP_RULE_CATEGORIES:
+        if fragment in rule:
+            return category
+    return Category.COMMENTS
 
 
 class AislopAdapter(Adapter):
@@ -92,11 +124,13 @@ class AislopAdapter(Adapter):
     languages = frozenset()  # мультиязычен
 
     def is_available(self) -> bool:
+        """Есть ли в PATH бинарник aislop."""
         return tool_available("aislop")
 
     def run(
         self, root: Path, config: Config, files: list[str] | None = None
     ) -> list[Finding]:
+        """Прогнать aislop и вернуть его SARIF-находки."""
         # aislop сканирует путь целиком; в инкрементальном режиме находки
         # вне изменённых файлов отсечёт центральный фильтр runner'а.
         result = run_tool(["aislop", "scan", str(root), "--sarif"], cwd=root)
@@ -106,7 +140,23 @@ class AislopAdapter(Adapter):
             raise ToolExecutionError(f"aislop упал: {result.stderr.strip()[:200]}")
         if not result.stdout.strip():
             return []
-        return parse_sarif(result.stdout, tool="aislop", category=Category.COMMENTS)
+        findings = parse_sarif(result.stdout, tool="aislop", category=Category.COMMENTS)
+        ignored = {rule.lower() for rule in config.aislop_ignore_rules}
+        kept: list[Finding] = []
+        for f in findings:
+            if (f.rule_id or "").lower() in ignored:
+                continue
+            f.category = category_for_aislop_rule(f.rule_id)
+            kept.append(f)
+        return kept
+
+
+def _is_test_file(path: str) -> bool:
+    """Тестовый ли файл: `test_*.py`, `*_test.py` или что-то в каталоге `tests`."""
+    p = Path(path)
+    if p.name.startswith("test_") or p.stem.endswith("_test"):
+        return True
+    return any(part in {"test", "tests"} for part in p.parts)
 
 
 class InterrogateAdapter(Adapter):
@@ -117,24 +167,30 @@ class InterrogateAdapter(Adapter):
     languages = frozenset({"python"})
 
     def is_available(self) -> bool:
+        """interrogate зовём как библиотеку — проверяем импортируемость."""
         return importlib.util.find_spec("interrogate") is not None
 
     def run(
         self, root: Path, config: Config, files: list[str] | None = None
     ) -> list[Finding]:
+        """Посчитать покрытие докстрингами; находка = непокрытый узел."""
         from interrogate.coverage import InterrogateCoverage
 
-        if files is None:
-            paths = [str(root)]
-        else:
-            paths = [str(root / f) for f in self.select_files(files)]
-            if not paths:
-                return []
-        cov = InterrogateCoverage(paths=paths)
+        paths = self.resolve_targets(root, files, absolute=True)
+        if paths is None:
+            return []
+        # interrogate матчит исключения как `fnmatch(path, pattern + "*")`,
+        # т.е. по префиксу пути — паттерн конфига оборачиваем в glob-компонент,
+        # иначе `.venv` не отсеется и мы прочитаем полдиска ради находок,
+        # которые runner всё равно выбросит.
+        excluded = tuple(f"*/{pattern}/" for pattern in config.ignore)
+        cov = InterrogateCoverage(paths=paths, excluded=excluded)
         results = cov.get_coverage()
 
         findings: list[Finding] = []
         for file_result in results.file_results:
+            if config.docstrings_skip_tests and _is_test_file(file_result.filename):
+                continue
             for node in file_result.nodes:
                 if node.covered or node.lineno is None:
                     continue
@@ -152,5 +208,5 @@ class InterrogateAdapter(Adapter):
         return findings
 
 
-for _adapter in (AislopAdapter(), InterrogateAdapter()):
-    default_registry.register(_adapter)
+# Адаптеры модуля; регистрирует их `slopcheck.adapters.register_all`.
+ADAPTERS = (AislopAdapter(), InterrogateAdapter())

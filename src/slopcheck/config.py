@@ -38,6 +38,16 @@ class Config(BaseModel):
             ".venv",
             "venv",
             "migrations",
+            "__pycache__",
+            ".pytest_cache",
+            ".mypy_cache",
+            ".ruff_cache",
+            ".tox",
+            "htmlcov",
+            ".next",
+            # Рабочие копии агентских worktree внутри репо: тот же код второй
+            # раз — иначе весь проект «дублирует сам себя».
+            ".claude",
         ]
     )
     # Явный список языков; пустой → автодетект (languages.detect).
@@ -48,6 +58,44 @@ class Config(BaseModel):
     # токенов; ниже поднимает чувствительность к мелким копипастам.
     dup_min_tokens: int = Field(default=50, ge=1)
     dup_min_lines: int = Field(default=5, ge=1)
+    # Форматы jscpd, дубли в которых не считаются slop'ом. Проза повторяется
+    # по делу (шаблонные абзацы, одинаковые команды в примерах), а токенайзер
+    # markdown ещё и склеивает соседние блоки кода — сплошные ложные срабатывания.
+    dup_ignore_formats: list[str] = Field(default_factory=lambda: ["markdown"])
+    # Правила aislop, которые не считаются slop'ом. По умолчанию — проверка
+    # форматирования: это дело форматтера проекта, а не гейта на slop, и она
+    # даёт находку на каждый файл, топя настоящие.
+    aislop_ignore_rules: list[str] = Field(
+        default_factory=lambda: ["python-formatting"]
+    )
+    # Декораторы, регистрирующие функцию во фреймворке: вызова в коде нет,
+    # мёртвым такой код не является (typer/click/flask/fastapi/pytest).
+    dead_code_ignore_decorators: list[str] = Field(
+        default_factory=lambda: [
+            "@app.*",
+            "@*.command",
+            "@*.callback",
+            "@*.route",
+            "@*.get",
+            "@*.post",
+            "@*.put",
+            "@*.patch",
+            "@*.delete",
+            "@*.middleware",
+            "@*.errorhandler",
+            "@*.task",
+            "@*.fixture",
+            "@*.hookimpl",
+            "@*.validator",
+            "@*.setter",
+        ]
+    )
+    # Имена, которые vulture не считает мёртвыми (поля моделей, читаемые только
+    # при сериализации, magic-атрибуты фреймворков и пр.).
+    dead_code_ignore_names: list[str] = Field(default_factory=list)
+    # Тесты в покрытие докстрингами не считаем: имя теста и есть его описание,
+    # требование докстринга на каждый тест — шум, топящий реальные находки.
+    docstrings_skip_tests: bool = True
     # Настройки по каждой категории.
     categories: dict[Category, CategoryConfig] = Field(
         default_factory=lambda: {cat: CategoryConfig() for cat in Category}

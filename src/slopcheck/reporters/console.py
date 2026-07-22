@@ -19,6 +19,7 @@ _SEVERITY_STYLE = {
 
 
 def _score_style(score: float) -> str:
+    """Цвет rich для score: зелёный/жёлтый/красный по порогам."""
     if score >= 90:
         return "bold green"
     if score >= 70:
@@ -27,6 +28,7 @@ def _score_style(score: float) -> str:
 
 
 def _summary_table(report: Report) -> Table:
+    """Таблица категорий: score, число находок, разбивка по severity."""
     table = Table(title=f"slopcheck: {report.repo}")
     table.add_column("Категория")
     table.add_column("Score", justify="right")
@@ -49,6 +51,7 @@ def _summary_table(report: Report) -> Table:
 
 
 def _findings_table(report: Report) -> Table:
+    """Таблица топа находок, отсортированного по severity."""
     table = Table(title="Топ находок")
     table.add_column("Sev")
     table.add_column("Категория")

@@ -24,10 +24,8 @@ def relativize(path_str: str, root: Path) -> str:
         return path_str
     resolved = path.resolve()
     root = root.resolve()
-    try:
+    if resolved.is_relative_to(root):
         return str(resolved.relative_to(root))
-    except ValueError:
-        pass
     try:
         common = os.path.commonpath([str(resolved), str(root)])
     except ValueError:

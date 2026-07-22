@@ -4,13 +4,11 @@
 #   docker build -t slopcheck .
 #   docker run --rm -v "$PWD":/src slopcheck run /src
 #
-# Node — для jscpd/knip; Python-детекторы — из extra [detectors];
-# aislop (бинарник) ставится best-effort и при недоступности просто пропускается
-# адаптером (graceful skip).
+# Node — для jscpd/knip/aislop; Python-детекторы — из extra [detectors].
 
 FROM node:20-bookworm-slim
 
-# Версия aislop для загрузки бинарника (переопределяется --build-arg).
+# Версия aislop (переопределяется --build-arg для пина).
 ARG AISLOP_VERSION=latest
 
 RUN apt-get update \
@@ -18,15 +16,13 @@ RUN apt-get update \
         python3 python3-venv git curl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Node-детекторы глобально.
-RUN npm install -g jscpd@4 knip@5
+# Node-детекторы глобально. aislop распространяется npm-пакетом (не релизным
+# бинарником) и на постинсталле дотягивает свои бинарники сам.
+RUN npm install -g jscpd@4 knip@5 "aislop@${AISLOP_VERSION}"
 
-# aislop: best-effort загрузка релизного бинарника (сборку не валит).
-RUN set -eux; \
-    arch="$(uname -m)"; \
-    url="https://github.com/scanaislop/aislop/releases/download/${AISLOP_VERSION}/aislop-${arch}-unknown-linux-gnu"; \
-    (curl -fsSL "$url" -o /usr/local/bin/aislop && chmod +x /usr/local/bin/aislop) \
-        || echo "aislop не установлен — адаптер будет пропущен";
+# Детектор AI-slop — смысл всего инструмента: если он не встал, образ
+# бесполезен и молча зеленел бы гейт. Валим сборку сразу.
+RUN aislop --version
 
 # Изолированный venv для slopcheck и Python-детекторов.
 ENV VIRTUAL_ENV=/opt/venv

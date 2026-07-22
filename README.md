@@ -15,7 +15,15 @@ Claude). Разовая настройка — выполнить `gemini` в т
 ## Статус
 
 v1 готов: 4 категории детекторов, отчёты (console/json/sarif/md), delta-гейт, Docker, GitHub Action.
-v2 (в работе): semgrep-адаптер смеллов (`slopcheck/rules/smells.yml`, категория complexity) — антипаттерны в Python (проглоченные исключения, изменяемые дефолты, `== None`), JS/TS (пустой catch, `debugger`, нестрогое `== null`) и Go (проигнорированная ошибка `_ =`, `panic`).
+
+v2 (в работе), уже сделано:
+- semgrep-адаптер смеллов (`slopcheck/rules/smells.yml`, категория complexity) — антипаттерны в Python (проглоченные исключения, изменяемые дефолты, `== None`), JS/TS (пустой catch, `debugger`, нестрогое `== null`) и Go (проигнорированная ошибка `_ =`, `panic`);
+- LLM-ревью на локальном Gemini CLI (`--llm-review`);
+- инкрементальный режим `--changed` (staged / относительно ref);
+- находки aislop разносятся по категориям (мёртвый импорт → dead_code, debug-print → complexity), а не сваливаются в comments;
+- шумовые срабатывания вычищены дефолтами конфига (см. таблицу ниже).
+
+Осталось: покрытие доками JS/TS (eslint-plugin-jsdoc), HTML-дашборд, автофикс в CI (сейчас — локальный скилл).
 
 ## Установка (dev)
 
@@ -35,8 +43,9 @@ pip install vulture deptry semgrep   # dead_code, зависимости, сме
 npm install -g jscpd                 # duplication
 ```
 
-`lizard` и `interrogate` приезжают вместе с пакетом. `aislop` — best-effort,
-его отсутствие не критично.
+`lizard` и `interrogate` приезжают вместе с пакетом. `aislop` ставится из npm
+(`npm install -g aislop`) — без него не проверяется главная категория, ради
+которой всё затевалось, поэтому в Docker-образе он обязателен.
 
 > Непроверенная категория **не получает 100** и **не идёт в итоговый счёт** —
 > она помечается «не проверялась», а под таблицей печатается предупреждение,
@@ -61,9 +70,29 @@ docker build -t slopcheck .
 docker run --rm -v "$PWD":/src slopcheck run /src --format console
 ```
 
-Образ несёт node-детекторы (jscpd, knip), Python-детекторы (vulture, deptry,
-interrogate, lizard) и best-effort бинарник aislop. Недоступный детектор
-пропускается с пометкой в отчёте.
+Образ несёт node-детекторы (jscpd, knip, aislop), Python-детекторы (vulture,
+deptry, interrogate, lizard, semgrep). Сборка падает, если не встал aislop:
+молча пропущенный детектор AI-slop делает зелёный гейт бессмысленным.
+Недоступный локально (вне Docker) детектор пропускается с пометкой в отчёте.
+
+## Конфиг `.slopcheck.yml`
+
+`slopcheck init-config` пишет файл со всеми полями и дефолтами. Ключевое:
+
+| Поле | Дефолт | Зачем |
+| --- | --- | --- |
+| `ignore` | node_modules, .venv, `.claude`, кэши… | пути вне анализа; список **замещается**, а не дополняется |
+| `gate_severity` | `warn` | с какого уровня новая находка валит гейт |
+| `dup_min_tokens` / `dup_min_lines` | 50 / 5 | порог чувствительности jscpd |
+| `dup_ignore_formats` | `[markdown]` | форматы, где повтор — норма (проза, примеры команд) |
+| `aislop_ignore_rules` | `[python-formatting]` | правила aislop не по делу: форматирование — забота форматтера |
+| `dead_code_ignore_decorators` | typer/click/flask/fastapi/pytest | функция, зарегистрированная декоратором, не мёртвая |
+| `dead_code_ignore_names` | — | точечные исключения по имени |
+| `docstrings_skip_tests` | `true` | докстринги в тестах не требуются: имя теста и есть описание |
+| `categories` | все включены, вес 1.0 | включение/вес категории в итоговом счёте |
+
+Имена без подчёркивания vulture считает используемыми только по факту вызова:
+намеренно неиспользуемый параметр называйте `_kw`, а не `kw`.
 
 ## CI (GitHub Actions)
 

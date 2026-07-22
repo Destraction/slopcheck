@@ -18,7 +18,6 @@ from pathlib import Path
 from slopcheck.adapters.base import Adapter
 from slopcheck.config import Config
 from slopcheck.models import Category, Finding, Severity
-from slopcheck.registry import default_registry
 from slopcheck.subprocess_util import (
     ToolExecutionError,
     crashed,
@@ -77,21 +76,24 @@ class VultureAdapter(Adapter):
     languages = frozenset({"python"})
 
     def is_available(self) -> bool:
+        """Есть ли в PATH бинарник vulture."""
         return tool_available("vulture")
 
     def run(
         self, root: Path, config: Config, files: list[str] | None = None
     ) -> list[Finding]:
-        if files is None:
-            targets = [str(root)]
-        else:
-            targets = self.select_files(files)
-            if not targets:
-                return []
+        """Прогнать vulture и вернуть неиспользуемый Python-код."""
+        targets = self.resolve_targets(root, files)
+        if targets is None:
+            return []
         cmd = ["vulture", *targets]
         excludes = vulture_excludes(config.ignore)
         if excludes:
             cmd += ["--exclude", ",".join(excludes)]
+        if config.dead_code_ignore_decorators:
+            cmd += ["--ignore-decorators", ",".join(config.dead_code_ignore_decorators)]
+        if config.dead_code_ignore_names:
+            cmd += ["--ignore-names", ",".join(config.dead_code_ignore_names)]
         result = run_tool(cmd, cwd=root)
         # Коды vulture: 0 — мёртвого кода нет, 3 — найден (штатно); 1/2 — сбой.
         if crashed(result, ok_returncodes=(0, 3)):
@@ -132,11 +134,13 @@ class DeptryAdapter(Adapter):
     file_scoped = False
 
     def is_available(self) -> bool:
+        """Есть ли в PATH бинарник deptry."""
         return tool_available("deptry")
 
     def run(
         self, root: Path, config: Config, files: list[str] | None = None
     ) -> list[Finding]:
+        """Прогнать deptry и вернуть проблемы зависимостей."""
         with tempfile.TemporaryDirectory() as tmp:
             report = Path(tmp) / "deptry.json"
             result = run_tool(["deptry", str(root), "--json-output", str(report)], cwd=root)
@@ -215,11 +219,13 @@ class KnipAdapter(Adapter):
     file_scoped = False
 
     def is_available(self) -> bool:
+        """Есть ли в PATH бинарник knip."""
         return tool_available("knip")
 
     def run(
         self, root: Path, config: Config, files: list[str] | None = None
     ) -> list[Finding]:
+        """Прогнать knip и вернуть неиспользуемые файлы/экспорты JS/TS."""
         result = run_tool(
             ["knip", "--reporter", "json", "--directory", str(root)], cwd=root
         )
@@ -234,5 +240,5 @@ class KnipAdapter(Adapter):
         return parse_knip(result.stdout)
 
 
-for _adapter in (VultureAdapter(), DeptryAdapter(), KnipAdapter()):
-    default_registry.register(_adapter)
+# Адаптеры модуля; регистрирует их `slopcheck.adapters.register_all`.
+ADAPTERS = (VultureAdapter(), DeptryAdapter(), KnipAdapter())

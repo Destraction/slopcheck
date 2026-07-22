@@ -1,6 +1,6 @@
 """Реестр адаптеров.
 
-Реальные адаптеры (F4–F7) регистрируются в `default_registry`. Runner берёт
+Адаптеры регистрируются явным `slopcheck.adapters.register_all()`. Runner берёт
 из реестра адаптеры включённых категорий. Тесты создают отдельный Registry,
 чтобы не зависеть от глобального состояния.
 """
@@ -15,6 +15,7 @@ class Registry:
     """Коллекция адаптеров с выборкой по категории."""
 
     def __init__(self) -> None:
+        """Создать пустой реестр."""
         self._adapters: list[Adapter] = []
 
     def register(self, adapter: Adapter) -> Adapter:
@@ -23,6 +24,7 @@ class Registry:
         return adapter
 
     def all(self) -> list[Adapter]:
+        """Все зарегистрированные адаптеры в порядке регистрации."""
         return list(self._adapters)
 
     def for_categories(self, categories: list[Category]) -> list[Adapter]:

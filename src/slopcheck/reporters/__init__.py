@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import sys
+
 from slopcheck.reporters import console, json_report, markdown, sarif
 from slopcheck.runner import RunResult
 
@@ -18,6 +20,7 @@ _TEXT = {
 
 
 def available_formats() -> list[str]:
+    """Имена поддерживаемых форматов вывода."""
     return sorted({*_PRINTERS, *_TEXT})
 
 
@@ -27,6 +30,8 @@ def emit(result: RunResult, fmt: str) -> None:
         _PRINTERS[fmt](result)
         return
     if fmt in _TEXT:
-        print(_TEXT[fmt](result))
+        # Не print: JSON/SARIF/MD уходят в пайп как есть, без переносов и
+        # разметки, которые могли бы добавить print-обёртки поверх stdout.
+        sys.stdout.write(_TEXT[fmt](result) + "\n")
         return
     raise ValueError(f"неизвестный формат отчёта: {fmt} (доступно: {available_formats()})")
