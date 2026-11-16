@@ -232,9 +232,9 @@ def test_same_place_findings_are_collapsed(tmp_path: Path) -> None:
             "multi",
             Category.DEAD_CODE,
             [
-                _at(Category.DEAD_CODE, 3, Severity.WARN, "aislop"),
-                _at(Category.DEAD_CODE, 3, Severity.ERROR, "vulture"),
-                _at(Category.DEAD_CODE, 9, Severity.WARN, "vulture"),
+                _at(Category.DEAD_CODE, 3, Severity.WARN, "aislop", rule_id="ruff/F401"),
+                _at(Category.DEAD_CODE, 3, Severity.ERROR, "vulture", rule_id="unused-code"),
+                _at(Category.DEAD_CODE, 9, Severity.WARN, "vulture", rule_id="unused-code"),
             ],
         )
     )
@@ -316,3 +316,33 @@ def test_ignore_rules_drop_findings_of_any_adapter(tmp_path: Path) -> None:
 
     result = run(tmp_path, Config(ignore_rules=["jsdoc/*"]), registry)
     assert [f.rule_id for f in result.report.findings] == ["@typescript-eslint/no-explicit-any"]
+
+
+def test_different_defects_on_same_line_survive(tmp_path: Path) -> None:
+    """Пустой catch и неопределённая функция в одной строке — две проблемы."""
+    registry = Registry()
+    registry.register(
+        _FakeAdapter(
+            "multi",
+            Category.COMPLEXITY,
+            [
+                _at(Category.COMPLEXITY, 7, Severity.ERROR, "aislop", rule_id="eslint/no-undef"),
+                _at(Category.COMPLEXITY, 7, Severity.WARN, "eslint", rule_id="no-empty"),
+                _at(Category.COMPLEXITY, 7, Severity.WARN, "semgrep", rule_id="empty-catch"),
+            ],
+        )
+    )
+    rules = sorted(f.rule_id for f in run(tmp_path, Config(), registry).report.findings)
+    # no-empty и empty-catch — один дефект от двух тулов, no-undef — другой.
+    assert rules == ["eslint/no-undef", "no-empty"]
+
+
+def test_defect_class_strips_namespaces_and_aliases() -> None:
+    from slopcheck.runner import defect_class
+
+    def cls(rule: str) -> str:
+        return defect_class(_at(Category.DEAD_CODE, 1, Severity.WARN, "t", rule_id=rule))
+
+    assert cls("@typescript-eslint/no-unused-vars") == cls("eslint/no-unused-vars") == "unused"
+    assert cls("govet/unreachable") == cls("no-unreachable") == "unreachable"
+    assert cls("react/jsx-key") == "react/jsx-key"

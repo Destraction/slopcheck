@@ -108,15 +108,55 @@ def _run_adapter(
         return [], f"{adapter.name}: сбой детектора — {exc!r}"
 
 
+# Пространства имён правил разных тулов: `eslint/no-empty` от aislop и
+# `no-empty` от eslint — одно и то же правило.
+_RULE_NAMESPACES = (
+    "@typescript-eslint/", "typescript-eslint/", "eslint/", "ai-slop/", "ruff/",
+    "govet/", "revive/", "staticcheck/", "golangci-lint/",
+)
+# Синонимы одного дефекта у разных тулов → общий класс.
+_DEFECT_ALIASES = {
+    "no-unused-vars": "unused",
+    "unused-import": "unused",
+    "unused-code": "unused",
+    "f401": "unused",
+    "f841": "unused",
+    "no-empty": "empty-block",
+    "empty-catch": "empty-block",
+    "empty-block": "empty-block",
+    "swallowed-exception": "empty-block",
+    "no-unreachable": "unreachable",
+    "unreachable-code": "unreachable",
+    "console-leftover": "console",
+    "no-console": "console",
+    "debugger-statement": "debugger",
+    "no-debugger": "debugger",
+    "bare-panic-go": "panic",
+    "go-library-panic": "panic",
+}
+
+
+def defect_class(finding: Finding) -> str:
+    """Класс дефекта находки: правило без пространства имён тула, синонимы сведены."""
+    rule = (finding.rule_id or finding.tool).lower()
+    for namespace in _RULE_NAMESPACES:
+        if rule.startswith(namespace):
+            rule = rule[len(namespace):]
+            break
+    return _DEFECT_ALIASES.get(rule, rule)
+
+
 def _dedupe(findings: list[Finding]) -> list[Finding]:
-    """Схлопнуть находки разных тулов об одном и том же месте.
+    """Схлопнуть находки разных тулов об одном и том же дефекте.
 
     aislop встраивает ruff/eslint, поэтому неиспользуемый импорт приезжает и
     от него, и от vulture/knip — без склейки один дефект штрафует счёт дважды.
-    Ключ — категория, файл, строка и `identity`; находки без строки (file-level,
-    напр. «неиспользуемый файл» knip) не склеиваем: их на файл может быть много.
-    identity в ключе бережёт парные находки: два разных клона могут начинаться
-    на одной строке, и это две разные проблемы. Из совпавших остаётся severe.
+    Ключ — категория, файл, строка, класс дефекта (`defect_class`) и
+    `identity`. Без класса дефекта склеивались РАЗНЫЕ проблемы одной строки:
+    пустой catch исчезал за `no-undef` той же строки. Находки без строки
+    (file-level, напр. «неиспользуемый файл» knip) не склеиваем: их на файл
+    может быть много. identity бережёт парные находки: два разных клона могут
+    начинаться на одной строке. Из совпавших остаётся самая серьёзная.
     """
     best: dict[tuple, int] = {}
     result: list[Finding] = []
@@ -124,7 +164,7 @@ def _dedupe(findings: list[Finding]) -> list[Finding]:
         if not f.line:
             result.append(f)
             continue
-        key = (f.category, f.file, f.line, f.identity)
+        key = (f.category, f.file, f.line, defect_class(f), f.identity)
         index = best.get(key)
         if index is None:
             best[key] = len(result)
