@@ -274,8 +274,8 @@ src/slopcheck/
 
 ## Список фич
 
-- [ ] **G1. Бенч-каркас.** `bench/corpus.yml`, `bench/run.py`, формат разметки, отчёт «правило → находок / размечено / доля шума». Проверка: прогон на корпусе печатает таблицу; повторный прогон по кэшу клонов работает без сети. Файлы: `bench/*`. Зависит: —.
-- [ ] **G2. Общий `ignore_rules` + `hook_severity` в конфиге.** Проверка: правило из `ignore_rules` исчезает из находок любого адаптера; старое `aislop_ignore_rules` работает. Файлы: `config.py`, `runner.py`, README. Зависит: —.
+- [x] **G1. Бенч-каркас.** `bench/corpus.yml`, `bench/run.py`, формат разметки, отчёт «правило → находок / размечено / доля шума». Проверка: прогон на корпусе печатает таблицу; повторный прогон по кэшу клонов работает без сети. Файлы: `bench/*`. Зависит: —.
+- [x] **G2. Общий `ignore_rules` + `hook_severity` в конфиге.** Проверка: правило из `ignore_rules` исчезает из находок любого адаптера; старое `aislop_ignore_rules` работает. Файлы: `config.py`, `runner.py`, README. Зависит: —.
 - [ ] **G3. Дельта рабочего дерева против HEAD.** `agent_check.py` и `slopcheck check-changed [--staged]`. Проверка: репо с долгом в файле плюс новая находка в том же файле → выводится только новая; untracked-файл учитывается; без HEAD база пустая. Файлы: `agent_check.py`, `gitchanged.py`, `cli.py`. Зависит: G2.
 - [ ] **G4. Stop-хук Claude Code и pre-commit.** `slopcheck hook claude`, `install-hook claude|git`, `.pre-commit-hooks.yaml`. Проверка: тесты на JSON хука (нет конфига, `stop_hook_active`, есть находки → exit 2), идемпотентность установки, живой прогон pre-commit. Файлы: `hooks/`, `cli.py`, README, GUIDE. Зависит: G3.
 - [ ] **G5. Несуществующие пакеты (`--check-deps`).** Проверка: фикстуры манифестов и импортов, сеть замокана (404 → ERROR, 200 → чисто, сетевая ошибка → skip); живой тест под маркером `network`; без флага ни одного запроса. Файлы: `adapters/depsexist.py`, `cli.py`, `config.py`, consumer-workflow. Зависит: G2.
