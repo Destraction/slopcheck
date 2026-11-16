@@ -1,0 +1,5 @@
+cases:
+  - file: internal/ratelimit/limiter.go
+    line: 92
+    kind: over-defensive
+    why: secs < 1 недостижимо — wait > 0 при отказе, Ceil уже даёт ≥ 1

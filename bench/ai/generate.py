@@ -25,7 +25,7 @@ SEEDS = AI / "seeds"
 OUT = AI / "out"
 WORK = Path.home() / ".cache" / "slopcheck-bench" / "ai"
 # Lock-файлы и сумма модулей — шум для патча: их генерирует менеджер пакетов.
-_PATCH_EXCLUDES = (":!package-lock.json", ":!pnpm-lock.yaml", ":!yarn.lock", ":!go.sum")
+_PATCH_EXCLUDES = (":!package-lock.json", ":!pnpm-lock.yaml", ":!yarn.lock", ":!go.sum", ":!*.tsbuildinfo")
 _GIT_ID = ("-c", "user.name=seed", "-c", "user.email=seed@localhost")
 
 

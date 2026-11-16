@@ -58,7 +58,8 @@ testpaths = ["tests"]
 [tool.deptry]
 # slopcheck — первопартийный пакет; без этого deptry ложно считает
 # `import slopcheck` транзитивной зависимостью (DEP003) во всех своих файлах.
-known_first_party = ["slopcheck"]
+# generate, recall — локальные модули бенча (bench/ai), не пакеты PyPI.
+known_first_party = ["slopcheck", "generate", "recall"]
 
 [tool.deptry.per_rule_ignores]
 # Детекторы и pytest — CLI-тулы, вызываются как subprocess, а не импортируются;

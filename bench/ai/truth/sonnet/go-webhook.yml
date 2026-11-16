@@ -1,0 +1,5 @@
+cases:
+  - file: internal/notes/webhook.go
+    line: 77
+    kind: over-defensive
+    why: context.WithTimeout(n.client.Timeout) поверх http.Client с тем же Timeout — двойной таймаут

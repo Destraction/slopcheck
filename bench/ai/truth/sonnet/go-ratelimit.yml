@@ -1,0 +1,5 @@
+cases:
+  - file: internal/ratelimit/ratelimit.go
+    line: 71
+    kind: over-defensive
+    why: secs < 1 недостижимо — wait > 0 при отказе, округление вверх уже даёт ≥ 1

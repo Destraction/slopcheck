@@ -1,0 +1,9 @@
+cases:
+  - file: src/components/NoteForm.tsx
+    line: 6
+    kind: unused-code
+    why: export MAX_BODY_LENGTH — снаружи не используется (тест проверяет литерал)
+  - file: src/components/NoteForm.tsx
+    line: 11
+    kind: unused-code
+    why: export validate — снаружи не используется

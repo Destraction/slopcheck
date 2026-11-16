@@ -1,0 +1,9 @@
+cases:
+  - file: internal/notes/webhook.go
+    line: 17
+    kind: needless-abstraction
+    why: интерфейс Notifier с единственной реализацией Webhook, моков в тестах нет
+  - file: internal/notes/webhook.go
+    line: 35
+    kind: error-no-wrap
+    why: ошибка url.Parse отброшена — fmt.Errorf("invalid webhook url") без %w

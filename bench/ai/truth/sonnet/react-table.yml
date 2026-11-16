@@ -1,0 +1,5 @@
+cases:
+  - file: src/components/NoteList.tsx
+    line: 5
+    kind: unused-code
+    why: export PAGE_SIZE «на вырост» — снаружи модуля не используется

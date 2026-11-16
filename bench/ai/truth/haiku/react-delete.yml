@@ -1,0 +1,9 @@
+cases:
+  - file: src/components/ConfirmDialog.tsx
+    line: 7
+    kind: unused-code
+    why: проп cancelLabel «на вырост» — ни один вызов его не передаёт
+  - file: src/components/NoteItem.tsx
+    line: 23
+    kind: over-defensive
+    why: if (!onDelete) return — кнопка удаления и так рендерится только при onDelete

@@ -1,0 +1,5 @@
+cases:
+  - file: internal/notes/auth.go
+    line: 16
+    kind: over-defensive
+    why: got == "" лишнее — ConstantTimeCompare пустой строки с непустым ключом и так даёт 0

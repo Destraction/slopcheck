@@ -1,0 +1,5 @@
+cases:
+  - file: src/theme.ts
+    line: 3
+    kind: unused-code
+    why: (при сверке) export type Theme — снаружи не используется

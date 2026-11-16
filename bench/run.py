@@ -7,7 +7,11 @@
         только таблица по уже сохранённым находкам и разметке;
     uv run python bench/run.py label NAME [--per-rule 15]
         дописать в bench/labels/<name>.yml неразмеченные находки (verdict: "?")
-        — до N на правило, для ручной разметки useful|noise.
+        — до N на правило, для ручной разметки useful|noise;
+    uv run python bench/run.py recall [--rerun] [--unmatched]
+        полнота на корпусе ИИ-кода (bench/ai): --rerun заново прогоняет
+        slopcheck по патчам агентов, --unmatched печатает новые находки
+        без пары в разметке.
 
 Ключ находки — `Finding.key()` (категория|правило|файл|identity-или-сообщение):
 он не содержит номера строки, поэтому разметка переживает сдвиги кода.
@@ -223,7 +227,19 @@ def main() -> None:
     label_p = sub.add_parser("label")
     label_p.add_argument("name")
     label_p.add_argument("--per-rule", type=int, default=15)
+    recall_p = sub.add_parser("recall")
+    recall_p.add_argument("--rerun", action="store_true")
+    recall_p.add_argument("--unmatched", action="store_true")
     args = parser.parse_args()
+
+    if args.cmd == "recall":
+        sys.path.insert(0, str(BENCH / "ai"))
+        import recall
+
+        if args.rerun:
+            recall.rerun()
+        recall.report(args.unmatched)
+        return
 
     repos = load_corpus()
     if args.cmd == "run":

@@ -1,1 +1,3 @@
 out/
+# Прогоны slopcheck по патчам агентов — производные, пересоздаются recall --rerun.
+ai/results/

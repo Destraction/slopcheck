@@ -1,0 +1,6 @@
+cases:
+  - file: src/api.test.ts
+    line: 25
+    end_line: 34
+    kind: duplicate
+    why: блок beforeEach/afterEach с моком fetch скопирован между двумя describe (стр. 25 и 65) вместо общего верхнего уровня

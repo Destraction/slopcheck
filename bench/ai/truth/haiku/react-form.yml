@@ -1,0 +1,13 @@
+cases:
+  - file: src/components/NoteForm.tsx
+    line: 7
+    kind: unused-code
+    why: export BODY_MAX_LENGTH — снаружи модуля не используется
+  - file: src/components/NoteForm.tsx
+    line: 12
+    kind: unused-code
+    why: export validateNote — снаружи модуля не используется
+  - file: src/components/NoteForm.test.tsx
+    line: 2
+    kind: unused-code
+    why: (при сверке) импорт describe не используется

@@ -1,0 +1,9 @@
+cases:
+  - file: src/useFetch.ts
+    line: 35
+    kind: suppression
+    why: eslint-disable exhaustive-deps вместо стабильного fetcher (useRef/параметр в deps)
+  - file: src/useFetch.ts
+    line: 3
+    kind: unused-code
+    why: (при сверке) export type FetchState — снаружи не используется

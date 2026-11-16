@@ -1,0 +1,5 @@
+cases:
+  - file: internal/notes/handler_test.go
+    line: 42
+    kind: restating-comment
+    why: декоративный разделитель «// --- расширенные тесты HTTP-слоя ---»

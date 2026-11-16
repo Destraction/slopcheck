@@ -51,3 +51,30 @@ def test_collect_stats_counts_noise_among_warn_plus(tmp_path, monkeypatch) -> No
     assert stats["eslint:r1"].noise_share == 0.5
     # info-находка в итог warn+ не входит.
     assert totals == {"labeled": 2, "noise": 1}
+
+
+# Корпус ИИ-кода: сопоставление находки со случаем из разметки.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "bench" / "ai"))
+import recall  # noqa: E402
+
+
+def _raw(rule: str, file: str, line: int, tool: str = "knip") -> dict:
+    return {"tool": tool, "rule_id": rule, "file": file, "line": line, "severity": "warn",
+            "message": "m", "category": "dead_code"}
+
+
+def test_case_covers_by_file_line_and_kind() -> None:
+    case = recall.Case(file="src/a.ts", line=10, kind="unused-code")
+    assert case.covers(_raw("knip-exports", "src/a.ts", 12))
+    assert not case.covers(_raw("knip-exports", "src/a.ts", 13))  # дальше ±2
+    assert not case.covers(_raw("knip-exports", "src/b.ts", 10))  # другой файл
+    assert not case.covers(_raw("trivial-comment", "src/a.ts", 10, tool="aislop"))  # правило не про этот тип
+
+
+def test_summary_recall_and_precision() -> None:
+    summary = recall.Summary()
+    cases = [recall.Case(file="a.ts", line=1, kind="unused-code"),
+             recall.Case(file="a.ts", line=20, kind="over-defensive")]
+    summary.account("m/t", cases, [_raw("knip-exports", "a.ts", 1), _raw("knip-types", "b.ts", 5)], verbose=False)
+    assert (summary.overall.total, summary.overall.warn_plus) == (2, 1)
+    assert (summary.warn_matched, summary.warn_new) == (1, 2)
