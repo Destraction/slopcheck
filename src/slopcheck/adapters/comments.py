@@ -17,6 +17,7 @@ from pathlib import Path
 
 from slopcheck.adapters.base import Adapter
 from slopcheck.config import Config
+from slopcheck.languages import is_test_file
 from slopcheck.models import Category, Finding, Severity
 from slopcheck.subprocess_util import ToolExecutionError, crashed, run_tool, tool_available
 
@@ -151,14 +152,6 @@ class AislopAdapter(Adapter):
         return kept
 
 
-def _is_test_file(path: str) -> bool:
-    """Тестовый ли файл: `test_*.py`, `*_test.py` или что-то в каталоге `tests`."""
-    p = Path(path)
-    if p.name.startswith("test_") or p.stem.endswith("_test"):
-        return True
-    return any(part in {"test", "tests"} for part in p.parts)
-
-
 class InterrogateAdapter(Adapter):
     """Покрытие Python-докстрингами (interrogate)."""
 
@@ -189,7 +182,7 @@ class InterrogateAdapter(Adapter):
 
         findings: list[Finding] = []
         for file_result in results.file_results:
-            if config.docstrings_skip_tests and _is_test_file(file_result.filename):
+            if config.docstrings_skip_tests and is_test_file(file_result.filename):
                 continue
             for node in file_result.nodes:
                 if node.covered or node.lineno is None:

@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import re
 from fnmatch import fnmatch
 from pathlib import Path
 
@@ -37,6 +38,21 @@ _EXT_TO_LANG: dict[str, str] = {
 def lang_for_path(path: str | Path) -> str | None:
     """Канонический язык файла по расширению (None — не кодовый файл)."""
     return _EXT_TO_LANG.get(Path(path).suffix.lower())
+
+
+def is_test_file(path: str | Path) -> bool:
+    """Тестовый ли файл: соглашения Python, Go и JS/TS плюс каталоги тестов.
+
+    `test_*.py`, `*_test.py`, `*_test.go`, `*.test.tsx`, `*.spec.ts`,
+    всё внутри `tests/`, `test/`, `__tests__/`.
+    """
+    p = Path(path)
+    name = p.name
+    if name.startswith("test_") or p.stem.endswith("_test"):
+        return True
+    if re.search(r"\.(test|spec)\.[cm]?[jt]sx?$", name):
+        return True
+    return any(part in {"test", "tests", "__tests__"} for part in p.parts)
 
 
 # Каталоги, всегда пропускаемые при детекте (независимо от конфига).

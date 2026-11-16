@@ -17,6 +17,8 @@ class Adapter(ABC):
       - `name` — идентификатор адаптера (для отчёта о skip);
       - `category` — категория, в которую попадают его находки;
       - `languages` — языки, к которым применим (пустой набор = любой язык);
+      - `measures` — дополнительные категории, которые адаптер проверяет
+        (golangci-lint и eslint дают и мёртвый код, и доки, и смеллы);
       - `file_scoped` — умеет ли работать по списку файлов. False — детектор
         анализирует проект целиком (deptry, knip); в инкрементальном режиме
         такой пропускается с пометкой.
@@ -26,7 +28,12 @@ class Adapter(ABC):
     name: str = "adapter"
     category: Category
     languages: frozenset[str] = frozenset()
+    measures: frozenset[Category] = frozenset()
     file_scoped: bool = True
+
+    def categories(self) -> frozenset[Category]:
+        """Все категории, которые адаптер проверяет: домашняя плюс `measures`."""
+        return self.measures | {self.category}
 
     def applies_to(self, languages: list[str]) -> bool:
         """Актуален ли адаптер для набора языков репозитория."""

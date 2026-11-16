@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from slopcheck.languages import detect
+import pytest
+
+from slopcheck.languages import detect, is_test_file
 
 
 def _touch(root: Path, rel: str) -> None:
@@ -39,3 +41,21 @@ def test_detect_respects_ignore(tmp_path: Path) -> None:
 
 def test_detect_empty_repo(tmp_path: Path) -> None:
     assert detect(tmp_path) == []
+
+
+@pytest.mark.parametrize(
+    ("path", "expected"),
+    [
+        ("pkg/server_test.go", True),
+        ("src/App.test.tsx", True),
+        ("src/api.spec.ts", True),
+        ("src/__tests__/App.tsx", True),
+        ("tests/helpers.py", True),
+        ("test_cli.py", True),
+        ("src/App.tsx", False),
+        ("pkg/server.go", False),
+        ("src/testing.ts", False),
+    ],
+)
+def test_is_test_file(path: str, expected: bool) -> None:
+    assert is_test_file(path) is expected

@@ -17,6 +17,7 @@ from pathlib import Path
 
 from slopcheck.adapters.base import Adapter
 from slopcheck.config import Config
+from slopcheck.languages import is_ignored
 from slopcheck.models import Category, Finding, Severity
 from slopcheck.subprocess_util import (
     ToolExecutionError,
@@ -196,8 +197,12 @@ def _knip_entry_fields(entry: object) -> tuple[str, int]:
     return str(entry), 0
 
 
-def parse_knip(report_json: str) -> list[Finding]:
-    """Разобрать JSON-отчёт knip (неиспользуемые файлы/экспорты/зависимости)."""
+def parse_knip(report_json: str, prefix: str = "") -> list[Finding]:
+    """Разобрать JSON-отчёт knip (неиспользуемые файлы/экспорты/зависимости).
+
+    knip пишет пути относительно своего `--directory`; `prefix` — путь этого
+    каталога от корня репозитория (`web/`), чтобы находка указывала на файл.
+    """
     data = json.loads(report_json)
     findings: list[Finding] = []
 
@@ -206,7 +211,7 @@ def parse_knip(report_json: str) -> list[Finding]:
             Finding(
                 category=Category.DEAD_CODE,
                 tool="knip",
-                file=str(unused_file),
+                file=prefix + str(unused_file),
                 line=0,
                 message="Неиспользуемый файл",
                 severity=Severity.WARN,
@@ -215,7 +220,7 @@ def parse_knip(report_json: str) -> list[Finding]:
         )
 
     for issue in data.get("issues", []):
-        file = issue.get("file", "?")
+        file = prefix + issue.get("file", "?")
         for kind, label in _KNIP_ISSUE_KINDS.items():
             for entry in issue.get(kind, []) or []:
                 name, line = _knip_entry_fields(entry)
@@ -249,9 +254,21 @@ class KnipAdapter(Adapter):
     def run(
         self, root: Path, config: Config, files: list[str] | None = None
     ) -> list[Finding]:
-        """Прогнать knip и вернуть неиспользуемые файлы/экспорты JS/TS."""
+        """Прогнать knip в каждом JS/TS-проекте репозитория."""
+        # Без package.json (одиночные скрипты, конфиги) графа проекта нет —
+        # проверять нечего, как deptry без манифеста; это не сбой.
+        projects = package_dirs(root, config.ignore)
+        findings: list[Finding] = []
+        for project in projects:
+            rel = project.relative_to(root).as_posix()
+            prefix = "" if rel == "." else f"{rel}/"
+            findings += self._run_project(project, prefix)
+        return findings
+
+    def _run_project(self, project: Path, prefix: str) -> list[Finding]:
+        """Один прогон knip по каталогу с package.json."""
         result = run_tool(
-            ["knip", "--reporter", "json", "--directory", str(root)], cwd=root
+            ["knip", "--reporter", "json", "--directory", str(project)], cwd=project
         )
         # Коды knip: 0 — чисто, 1 — есть находки (штатно); прочие — сбой.
         if crashed(result, ok_returncodes=(0, 1)):
@@ -261,7 +278,27 @@ class KnipAdapter(Adapter):
                 # Код «есть находки» без вывода — недостоверный результат.
                 raise ToolExecutionError("knip вернул код 1 без JSON-вывода")
             return []
-        return parse_knip(result.stdout)
+        return parse_knip(result.stdout, prefix)
+
+
+def package_dirs(root: Path, ignore: list[str]) -> list[Path]:
+    """Каталоги JS/TS-проектов для knip.
+
+    package.json в корне — один проект (workspaces монорепо knip разберёт сам).
+    Иначе — каждый верхнеуровневый package.json: раскладка «бэкенд на Go +
+    фронт в web/» иначе роняла knip с «Unable to find package.json».
+    """
+    if (root / "package.json").exists():
+        return [root]
+    found: list[Path] = []
+    candidates = sorted(root.rglob("package.json"), key=lambda p: len(p.parts))
+    for manifest in candidates:
+        if is_ignored(manifest.relative_to(root).parts, ignore):
+            continue
+        project = manifest.parent
+        if not any(parent in found for parent in project.parents):
+            found.append(project)
+    return sorted(found)
 
 
 # Адаптеры модуля; регистрирует их `slopcheck.adapters.register_all`.

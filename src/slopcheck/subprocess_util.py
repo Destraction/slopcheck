@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 from dataclasses import dataclass
@@ -43,10 +44,12 @@ def run_tool(
     cwd: Path | None = None,
     timeout: float = 300.0,
     input_text: str | None = None,
+    env: dict[str, str] | None = None,
 ) -> ToolResult:
     """Запустить внешний тул `cmd`.
 
     `input_text` подаётся в stdin процесса (напр. код для gemini -p).
+    `env` — переменные поверх окружения текущего процесса.
 
     Raises:
         ToolNotFound: если бинарника нет в PATH.
@@ -65,6 +68,7 @@ def run_tool(
             timeout=timeout,
             check=False,
             input=input_text,
+            env={**os.environ, **env} if env else None,
         )
     except subprocess.TimeoutExpired as exc:
         raise ToolExecutionError(

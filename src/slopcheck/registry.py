@@ -28,9 +28,9 @@ class Registry:
         return list(self._adapters)
 
     def for_categories(self, categories: list[Category]) -> list[Adapter]:
-        """Адаптеры, чья категория входит в `categories`."""
+        """Адаптеры, проверяющие хотя бы одну из `categories`."""
         wanted = set(categories)
-        return [a for a in self._adapters if a.category in wanted]
+        return [a for a in self._adapters if a.categories() & wanted]
 
 
 # Глобальный реестр, в который регистрируются реальные адаптеры.

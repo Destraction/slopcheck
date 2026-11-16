@@ -92,9 +92,25 @@ config + пути → languages.detect → runner выбирает адапте�
 | Категория | Тулы | Языки |
 |---|---|---|
 | Дубли | jscpd | мультиязык (223 формата) |
-| Мёртвый код + зависимости | knip; vulture; deptry | JS/TS; Python |
-| Комментарии + доки | aislop; interrogate | мультиязык; Python (v2: semgrep, eslint-jsdoc) |
-| Сложность | lizard | мультиязык (v2: semgrep-смеллы) |
+| Мёртвый код + зависимости | knip; vulture; deptry; golangci-lint; eslint | JS/TS; Python; Go; JS/TS |
+| Комментарии + доки | aislop; interrogate; golangci-lint (revive exported); eslint (jsdoc) | мультиязык; Python; Go; JS/TS |
+| Сложность | lizard; semgrep-смеллы; golangci-lint; eslint (React-хуки, any) | мультиязык; Python/JS/TS/Go; Go; JS/TS |
+
+golangci-lint и eslint — мультикатегорийные: один прогон даёт находки трёх
+категорий (атрибут адаптера `measures`), раскладка — по линтеру/правилу.
+Наборы правил лежат в пакете (`rules/golangci.yml`, `rules/eslint.config.cjs`).
+
+**Решения по Go/React (16.11.2026, мои):**
+- Go — golangci-lint v2, а не отдельные staticcheck/revive/errcheck: один бинарник,
+  один JSON. Код не компилируется → находка typecheck → сбой детектора
+  (категории непроверены), а не «чисто».
+- golangci-lint и knip запускаются в каждом модуле/проекте (`go.mod`,
+  верхнеуровневый `package.json`): раскладка «Go в корне + фронт в `web/`».
+  Нет `package.json` → knip проверять нечего (как deptry); нет `go.mod` → сбой.
+- ESLint с пакетным конфигом, конфиг проекта не читается. Плагины — глобальный
+  npm (путь через `SLOPCHECK_NODE_MODULES`/`npm root -g`), `basePath` — корень
+  репозитория, иначе ESLint 9 пропускает файлы вне каталога конфига.
+  `eslint-disable` чужих правил и ошибки парсинга — не находки.
 
 Адаптер объявляет, для каких языков применим, и `is_available()` (тул установлен?). Отсутствует → skip + пометка в отчёте (грациозная деградация внутри Docker не нужна, но CLI без Docker так переживёт нехватку тула).
 

@@ -7,11 +7,19 @@
 
 from __future__ import annotations
 
-from slopcheck.adapters import comments, complexity, deadcode, duplication, smells
+from slopcheck.adapters import (
+    comments,
+    complexity,
+    deadcode,
+    duplication,
+    eslint,
+    golangci,
+    smells,
+)
 from slopcheck.adapters.base import Adapter
 from slopcheck.registry import Registry, default_registry
 
-_MODULES = (duplication, deadcode, comments, complexity, smells)
+_MODULES = (duplication, deadcode, comments, complexity, smells, golangci, eslint)
 
 
 def all_adapters() -> list[Adapter]:

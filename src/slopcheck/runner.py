@@ -183,9 +183,10 @@ def run(
             skipped.append(skip_note)
             continue
         findings.extend(adapter_findings)
-        # Мультикатегорийный детектор (aislop) кладёт находки не только в свою
-        # «домашнюю» категорию — измеренной считается любая, где он что-то нашёл.
-        measured.add(adapter.category)
+        # Мультикатегорийный детектор кладёт находки не только в «домашнюю»
+        # категорию: измерены объявленные им (`measures`) и любая, где он
+        # что-то нашёл (aislop заранее не знает, что найдёт).
+        measured.update(adapter.categories())
         measured.update(f.category for f in adapter_findings)
 
     findings = _filter_findings(findings, root, config, files)

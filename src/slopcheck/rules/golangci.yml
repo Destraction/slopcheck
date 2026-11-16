@@ -1,0 +1,25 @@
+# Конфиг golangci-lint (v2) для slopcheck: только то, что про slop.
+# Сложность и дубли не включаем — их меряют lizard и jscpd для всех языков.
+# Категорию и severity находки задаёт адаптер (adapters/golangci.py).
+version: "2"
+linters:
+  default: none
+  enable:
+    - errcheck     # проигнорированная ошибка
+    - govet        # подозрительные конструкции, недостижимый код
+    - ineffassign  # присваивание, которое никто не читает
+    - staticcheck  # баги, упрощения, стиль доков
+    - unused       # неиспользуемые функции, типы, поля
+    - revive
+  settings:
+    revive:
+      rules:
+        - name: exported     # экспорт без doc-комментария
+        - name: empty-block  # пустой if err != nil {}
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+output:
+  formats:
+    json:
+      path: stdout

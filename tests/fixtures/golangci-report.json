@@ -1,0 +1,104 @@
+{
+ "Issues": [
+  {
+   "FromLinter": "errcheck",
+   "Text": "Error return value of `f.Close` is not checked",
+   "Severity": "",
+   "Pos": {
+    "Filename": "/repo/goapp/main.go",
+    "Offset": 281,
+    "Line": 19,
+    "Column": 9
+   }
+  },
+  {
+   "FromLinter": "errcheck",
+   "Text": "Error return value of `s.Start` is not checked",
+   "Severity": "",
+   "Pos": {
+    "Filename": "/repo/goapp/main.go",
+    "Offset": 394,
+    "Line": 29,
+    "Column": 9
+   }
+  },
+  {
+   "FromLinter": "govet",
+   "Text": "unreachable: unreachable code",
+   "Severity": "",
+   "Pos": {
+    "Filename": "/repo/goapp/store/store.go",
+    "Offset": 240,
+    "Line": 17,
+    "Column": 2
+   }
+  },
+  {
+   "FromLinter": "ineffassign",
+   "Text": "ineffectual assignment to x",
+   "Severity": "",
+   "Pos": {
+    "Filename": "/repo/goapp/main.go",
+    "Offset": 285,
+    "Line": 20,
+    "Column": 2
+   }
+  },
+  {
+   "FromLinter": "revive",
+   "Text": "empty-block: this block is empty, you can remove it",
+   "Severity": "warning",
+   "Pos": {
+    "Filename": "/repo/goapp/main.go",
+    "Offset": 268,
+    "Line": 17,
+    "Column": 16
+   }
+  },
+  {
+   "FromLinter": "revive",
+   "Text": "exported: exported type Store should have comment or be unexported",
+   "Severity": "warning",
+   "Pos": {
+    "Filename": "/repo/goapp/store/store.go",
+    "Offset": 38,
+    "Line": 5,
+    "Column": 6
+   }
+  },
+  {
+   "FromLinter": "revive",
+   "Text": "exported: exported method Store.Has should have comment or be unexported",
+   "Severity": "warning",
+   "Pos": {
+    "Filename": "/repo/goapp/store/store.go",
+    "Offset": 70,
+    "Line": 7,
+    "Column": 1
+   }
+  },
+  {
+   "FromLinter": "staticcheck",
+   "Text": "S1003: should use strings.Contains(x, \"a\") instead",
+   "Severity": "",
+   "Pos": {
+    "Filename": "/repo/goapp/store/store.go",
+    "Offset": 111,
+    "Line": 8,
+    "Column": 5
+   }
+  },
+  {
+   "FromLinter": "unused",
+   "Text": "func unusedHelper is unused",
+   "Severity": "",
+   "Pos": {
+    "Filename": "/repo/goapp/main.go",
+    "Offset": 141,
+    "Line": 12,
+    "Column": 6
+   }
+  }
+ ],
+ "Report": {}
+}

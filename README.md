@@ -21,9 +21,16 @@ v2 (в работе), уже сделано:
 - LLM-ревью на локальном Gemini CLI (`--llm-review`);
 - инкрементальный режим `--changed` (staged / относительно ref);
 - находки aislop разносятся по категориям (мёртвый импорт → dead_code, debug-print → complexity), а не сваливаются в comments;
-- шумовые срабатывания вычищены дефолтами конфига (см. таблицу ниже).
+- шумовые срабатывания вычищены дефолтами конфига (см. таблицу ниже);
+- **Go** — golangci-lint v2 с пакетным набором: проигнорированные ошибки (errcheck),
+  неиспользуемый код (unused, ineffassign), пустые `if err != nil {}`, баги
+  staticcheck, экспорт без doc-комментария (revive);
+- **React/TS** — ESLint с пакетным конфигом: правила хуков и зависимости
+  `useEffect`, `key={index}`, список без `key`, `any`, `@ts-ignore`, пустые catch,
+  неиспользуемые переменные, экспорт без JSDoc;
+- knip и golangci-lint находят проекты в подкаталогах (Go в корне, фронт в `web/`).
 
-Осталось: покрытие доками JS/TS (eslint-plugin-jsdoc), HTML-дашборд, автофикс в CI (сейчас — локальный скилл).
+Осталось: HTML-дашборд, автофикс в CI (сейчас — локальный скилл).
 
 ## Установка (dev)
 
@@ -40,8 +47,16 @@ slopcheck version
 
 ```bash
 pip install vulture deptry semgrep   # dead_code, зависимости, смеллы
-npm install -g jscpd                 # duplication
+npm install -g jscpd knip            # duplication, мёртвый код JS/TS
+# React/TS:
+npm install -g eslint@9 typescript typescript-eslint \
+  eslint-plugin-react eslint-plugin-react-hooks eslint-plugin-jsdoc
+# Go (нужен и сам Go-тулчейн):
+brew install golangci-lint           # v2
 ```
+
+Go-код должен компилироваться (`go build ./...`): иначе golangci-lint
+не запускает линтеры, и slopcheck честно помечает Go-проверки пропущенными.
 
 `lizard` и `interrogate` приезжают вместе с пакетом. `aislop` ставится из npm
 (`npm install -g aislop`) — без него не проверяется главная категория, ради
@@ -70,8 +85,10 @@ docker build -t slopcheck .
 docker run --rm -v "$PWD":/src slopcheck run /src --format console
 ```
 
-Образ несёт node-детекторы (jscpd, knip, aislop), Python-детекторы (vulture,
-deptry, interrogate, lizard, semgrep). Сборка падает, если не встал aislop:
+Образ несёт node-детекторы (jscpd, knip, aislop, eslint с плагинами),
+Go-тулчейн с golangci-lint и Python-детекторы (vulture, deptry, interrogate,
+lizard, semgrep). Зависимости Go-модулей качаются при прогоне, поэтому
+контейнеру нужна сеть. Сборка падает, если не встал aislop:
 молча пропущенный детектор AI-slop делает зелёный гейт бессмысленным.
 Недоступный локально (вне Docker) детектор пропускается с пометкой в отчёте.
 

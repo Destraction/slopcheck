@@ -122,7 +122,7 @@ def test_unavailable_detector_marks_category_unmeasured(tmp_path) -> None:
     from slopcheck.registry import Registry
     from slopcheck.runner import run
 
-    class MissingTool:
+    class MissingTool(Adapter):
         name = "missing"
         category = Category.DUPLICATION
         languages = frozenset({"python"})
@@ -156,7 +156,7 @@ def test_crashed_detector_also_marks_category_unmeasured(tmp_path) -> None:
     from slopcheck.runner import run
     from slopcheck.subprocess_util import ToolExecutionError
 
-    class BrokenTool:
+    class BrokenTool(Adapter):
         name = "broken"
         category = Category.DEAD_CODE
         languages = frozenset({"python"})
@@ -272,3 +272,30 @@ def test_file_level_findings_are_not_collapsed(tmp_path: Path) -> None:
         )
     )
     assert len(run(tmp_path, Config(), registry).report.findings) == 2
+
+
+def test_declared_measures_mark_category_measured_without_findings(tmp_path: Path) -> None:
+    """Мультикатегорийный детектор без находок всё равно проверил свои категории.
+
+    golangci-lint, не нашедший мёртвого кода, — это чистый dead_code,
+    а не «не проверялось».
+    """
+    adapter = _FakeAdapter("multi", Category.COMPLEXITY, [])
+    adapter.measures = frozenset({Category.DEAD_CODE})
+    registry = Registry()
+    registry.register(adapter)
+
+    result = run(tmp_path, Config(), registry)
+    by_cat = {c.category: c for c in result.report.categories}
+    assert by_cat[Category.DEAD_CODE].measured
+    assert not by_cat[Category.COMMENTS].measured
+
+
+def test_adapter_selected_by_measured_category_when_home_disabled() -> None:
+    """Выключенная «домашняя» категория не выключает остальные проверки адаптера."""
+    adapter = _FakeAdapter("multi", Category.COMPLEXITY, [])
+    adapter.measures = frozenset({Category.DEAD_CODE})
+    registry = Registry()
+    registry.register(adapter)
+    assert registry.for_categories([Category.DEAD_CODE]) == [adapter]
+    assert registry.for_categories([Category.DUPLICATION]) == []

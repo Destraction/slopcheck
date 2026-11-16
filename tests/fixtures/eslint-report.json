@@ -1,0 +1,74 @@
+[
+ {
+  "filePath": "/repo/web/src/App.tsx",
+  "messages": [
+   {
+    "ruleId": "jsdoc/require-jsdoc",
+    "severity": 1,
+    "message": "Missing JSDoc comment.",
+    "line": 3,
+    "column": 8
+   },
+   {
+    "ruleId": "@typescript-eslint/no-explicit-any",
+    "severity": 1,
+    "message": "Unexpected any. Specify a different type.",
+    "line": 3,
+    "column": 45
+   },
+   {
+    "ruleId": "@typescript-eslint/no-explicit-any",
+    "severity": 1,
+    "message": "Unexpected any. Specify a different type.",
+    "line": 4,
+    "column": 36
+   },
+   {
+    "ruleId": "react-hooks/exhaustive-deps",
+    "severity": 1,
+    "message": "React Hook useEffect has a missing dependency: 'id'. Either include it or remove the dependency array.",
+    "line": 8,
+    "column": 6
+   },
+   {
+    "ruleId": "react/no-array-index-key",
+    "severity": 1,
+    "message": "Do not use Array index in keys",
+    "line": 13,
+    "column": 18
+   },
+   {
+    "ruleId": "@next/next/no-img-element",
+    "severity": 2,
+    "message": "Definition for rule '@next/next/no-img-element' was not found.",
+    "line": 1,
+    "column": 1
+   }
+  ]
+ },
+ {
+  "filePath": "/repo/web/src/broken.ts",
+  "messages": [
+   {
+    "ruleId": null,
+    "fatal": true,
+    "severity": 2,
+    "message": "Parsing error: Variable declaration expected.",
+    "line": 1,
+    "column": 13
+   }
+  ]
+ },
+ {
+  "filePath": "/repo/web/src/App.test.tsx",
+  "messages": [
+   {
+    "ruleId": "jsdoc/require-jsdoc",
+    "severity": 1,
+    "message": "Missing JSDoc comment.",
+    "line": 3,
+    "column": 8
+   }
+  ]
+ }
+]

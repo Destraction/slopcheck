@@ -31,6 +31,8 @@ slopcheck — «привратник качества» кода. Это кон�
 | `complexity`  | переусложнённые функции (слишком длинные/ветвистые)              |
 | `comments`    | закомментированный код, мусорные комментарии                     |
 | `smells`      | типовые «запахи» по правилам из `src/slopcheck/rules/smells.yml` |
+| `golangci`    | Go: проигнорированные ошибки, неиспользуемый код, пустые `if err != nil {}`, экспорт без doc-комментария |
+| `eslint`      | React/TS: зависимости `useEffect`, правила хуков, `key={index}`, `any`, `@ts-ignore`, пустые catch, экспорт без JSDoc |
 
 Плюс опционально **LLM-ревью** (`--llm-review`) — код смотрит Gemini и находит то,
 что регулярками не поймать. Если ключа/квоты нет, LLM-часть тихо пропускается,
@@ -155,8 +157,12 @@ Concurrency без cancel — параллельные пуши собирают
 
 - `cli.py` — команды: `run` (отчёт), `gate` (delta-гейт против baseline),
   `init-config` и пр.
-- `adapters/` — детекторы: `duplication`, `deadcode`, `complexity`, `comments`, `smells`.
+- `adapters/` — детекторы: `duplication`, `deadcode`, `complexity`, `comments`, `smells`,
+  `golangci` (Go), `eslint` (JS/TS/React).
 - `rules/smells.yml` — декларативные правила «запахов».
+- `rules/golangci.yml`, `rules/eslint.config.cjs` — наборы правил для Go и React.
+  Конфиги линтеров из проверяемого репозитория не читаются: все проекты меряются
+  одной линейкой.
 - `reporters/` — форматы вывода: `console`, `json`, `md` (markdown), `sarif`.
 - `baseline.py` + `gate` — сравнение находок с baseline: падаем только на новых.
 - `scoring.py` — веса/скоринг находок.

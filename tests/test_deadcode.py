@@ -15,6 +15,7 @@ from slopcheck.adapters.deadcode import (
     VultureAdapter,
     parse_deptry,
     parse_knip,
+    package_dirs,
     parse_vulture,
 )
 from slopcheck.config import Config
@@ -138,3 +139,35 @@ def test_has_dependency_manifest_detects_sources(tmp_path: Path) -> None:
     other.mkdir()
     (other / "requirements.txt").write_text("requests\n", encoding="utf-8")
     assert has_dependency_manifest(other)
+
+
+def test_parse_knip_prefixes_subproject_paths() -> None:
+    findings = parse_knip((FIXTURES / "knip-report.json").read_text(encoding="utf-8"), "web/")
+    assert all(f.file.startswith("web/") for f in findings)
+    assert "web/src/orphan.ts" in {f.file for f in findings}
+
+
+def test_package_dirs_root_project_wins(tmp_path: Path) -> None:
+    (tmp_path / "package.json").write_text("{}")
+    (tmp_path / "packages" / "ui").mkdir(parents=True)
+    (tmp_path / "packages" / "ui" / "package.json").write_text("{}")
+    assert package_dirs(tmp_path, []) == [tmp_path]
+
+
+def test_package_dirs_finds_frontend_in_subfolder(tmp_path: Path) -> None:
+    """Go-бэкенд в корне, React-фронт в web/ — knip идёт в web/."""
+    (tmp_path / "go.mod").write_text("module x\n")
+    (tmp_path / "web" / "node_modules" / "react").mkdir(parents=True)
+    (tmp_path / "web" / "package.json").write_text("{}")
+    (tmp_path / "web" / "node_modules" / "react" / "package.json").write_text("{}")
+    (tmp_path / "web" / "sub").mkdir()
+    (tmp_path / "web" / "sub" / "package.json").write_text("{}")
+    assert package_dirs(tmp_path, []) == [tmp_path / "web"]
+
+
+def test_knip_without_package_json_is_empty_not_failure(tmp_path: Path) -> None:
+    """Одиночный .cjs без package.json: графа проекта нет, knip не запускается."""
+    from slopcheck.adapters.deadcode import KnipAdapter
+
+    (tmp_path / "eslint.config.cjs").write_text("module.exports = [];\n")
+    assert KnipAdapter().run(tmp_path, Config()) == []
