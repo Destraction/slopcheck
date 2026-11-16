@@ -299,3 +299,20 @@ def test_adapter_selected_by_measured_category_when_home_disabled() -> None:
     registry.register(adapter)
     assert registry.for_categories([Category.DEAD_CODE]) == [adapter]
     assert registry.for_categories([Category.DUPLICATION]) == []
+
+
+def test_ignore_rules_drop_findings_of_any_adapter(tmp_path: Path) -> None:
+    """`ignore_rules` выключает правило централизованно, для любого детектора."""
+    noisy = Finding(
+        category=Category.COMMENTS, tool="eslint", file="a.ts", line=1,
+        message="Missing JSDoc", rule_id="jsdoc/require-jsdoc",
+    )
+    kept = Finding(
+        category=Category.COMPLEXITY, tool="eslint", file="a.ts", line=2,
+        message="any", rule_id="@typescript-eslint/no-explicit-any",
+    )
+    registry = Registry()
+    registry.register(_FakeAdapter("eslint", Category.COMPLEXITY, [noisy, kept]))
+
+    result = run(tmp_path, Config(ignore_rules=["jsdoc/*"]), registry)
+    assert [f.rule_id for f in result.report.findings] == ["@typescript-eslint/no-explicit-any"]

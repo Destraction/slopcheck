@@ -141,15 +141,11 @@ class AislopAdapter(Adapter):
             raise ToolExecutionError(f"aislop упал: {result.stderr.strip()[:200]}")
         if not result.stdout.strip():
             return []
+        # Выключенные правила (`ignore_rules`) отсекает центральный фильтр runner'а.
         findings = parse_sarif(result.stdout, tool="aislop", category=Category.COMMENTS)
-        ignored = {rule.lower() for rule in config.aislop_ignore_rules}
-        kept: list[Finding] = []
         for f in findings:
-            if (f.rule_id or "").lower() in ignored:
-                continue
             f.category = category_for_aislop_rule(f.rule_id)
-            kept.append(f)
-        return kept
+        return findings
 
 
 class InterrogateAdapter(Adapter):

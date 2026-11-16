@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+from fnmatch import fnmatch
 from pathlib import Path
 
 import yaml
@@ -62,6 +63,14 @@ class Config(BaseModel):
     # по делу (шаблонные абзацы, одинаковые команды в примерах), а токенайзер
     # markdown ещё и склеивает соседние блоки кода — сплошные ложные срабатывания.
     dup_ignore_formats: list[str] = Field(default_factory=lambda: ["markdown"])
+    # Правила любых детекторов, которые не считаются slop'ом: точный rule_id
+    # (`react/no-array-index-key`) или glob (`jsdoc/*`), без учёта регистра.
+    # Выключает шумное правило без правки кода slopcheck.
+    ignore_rules: list[str] = Field(default_factory=list)
+    # Порог находок, которые хук агента (`slopcheck hook claude`) и
+    # `check-changed` возвращают на починку.
+    hook_severity: Severity = Severity.WARN
+    # Устаревший алиас `ignore_rules` (только для aislop), читается вместе с ним.
     # Правила aislop, которые не считаются slop'ом. По умолчанию — проверка
     # форматирования: это дело форматтера проекта, а не гейта на slop, и она
     # даёт находку на каждый файл, топя настоящие.
@@ -100,6 +109,14 @@ class Config(BaseModel):
     categories: dict[Category, CategoryConfig] = Field(
         default_factory=lambda: {cat: CategoryConfig() for cat in Category}
     )
+
+    def rule_ignored(self, rule_id: str | None) -> bool:
+        """Выключено ли правило через `ignore_rules` / `aislop_ignore_rules`."""
+        if not rule_id:
+            return False
+        rule = rule_id.lower()
+        patterns = (p.lower() for p in [*self.ignore_rules, *self.aislop_ignore_rules])
+        return any(fnmatch(rule, pattern) for pattern in patterns)
 
     def enabled_categories(self) -> list[Category]:
         """Категории, включённые в конфиге (в стабильном порядке enum)."""

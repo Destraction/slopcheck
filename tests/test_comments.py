@@ -143,8 +143,8 @@ def _aislop_sarif(*rule_ids: str) -> str:
     return '{"runs": [{"results": [%s]}]}' % results
 
 
-def test_aislop_run_applies_categories_and_ignores(monkeypatch) -> None:
-    """Игнор-правила отсекаются, остальным проставляется своя категория."""
+def test_aislop_run_applies_categories(monkeypatch) -> None:
+    """Каждой находке aislop проставляется своя категория; игнор — забота runner'а."""
     from slopcheck.adapters import comments as mod
     from slopcheck.adapters.comments import AislopAdapter
     from slopcheck.subprocess_util import ToolResult
@@ -153,9 +153,6 @@ def test_aislop_run_applies_categories_and_ignores(monkeypatch) -> None:
     monkeypatch.setattr(
         mod, "run_tool", lambda *_a, **_kw: ToolResult(returncode=1, stdout=sarif, stderr="")
     )
-    (finding,) = AislopAdapter().run(Path("."), Config())
-    assert finding.rule_id == "ruff/F401"
-    assert finding.category is Category.DEAD_CODE
-
-    both = AislopAdapter().run(Path("."), Config(aislop_ignore_rules=[]))
-    assert len(both) == 2
+    findings = {f.rule_id: f for f in AislopAdapter().run(Path("."), Config())}
+    assert findings["ruff/F401"].category is Category.DEAD_CODE
+    assert set(findings) == {"python-formatting", "ruff/F401"}

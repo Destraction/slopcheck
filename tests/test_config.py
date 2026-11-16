@@ -55,3 +55,23 @@ def test_dump_default_is_reloadable() -> None:
     text = dump_default_config()
     reloaded = Config.model_validate(yaml.safe_load(text))
     assert reloaded == default_config()
+
+
+def test_rule_ignored_exact_glob_and_legacy_alias() -> None:
+    from slopcheck.config import Config
+
+    cfg = Config(ignore_rules=["jsdoc/*", "React/No-Array-Index-Key"])
+    assert cfg.rule_ignored("jsdoc/require-jsdoc")
+    assert cfg.rule_ignored("react/no-array-index-key")
+    assert not cfg.rule_ignored("react/jsx-key")
+    assert not cfg.rule_ignored(None)
+    # Дефолт устаревшего aislop_ignore_rules продолжает работать.
+    assert cfg.rule_ignored("python-formatting")
+    assert not Config(aislop_ignore_rules=[]).rule_ignored("python-formatting")
+
+
+def test_hook_severity_default_warn() -> None:
+    from slopcheck.config import Config
+    from slopcheck.models import Severity
+
+    assert Config().hook_severity is Severity.WARN

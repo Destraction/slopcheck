@@ -102,7 +102,9 @@ lizard, semgrep). Зависимости Go-модулей качаются пр
 | `gate_severity` | `warn` | с какого уровня новая находка валит гейт |
 | `dup_min_tokens` / `dup_min_lines` | 50 / 5 | порог чувствительности jscpd |
 | `dup_ignore_formats` | `[markdown]` | форматы, где повтор — норма (проза, примеры команд) |
-| `aislop_ignore_rules` | `[python-formatting]` | правила aislop не по делу: форматирование — забота форматтера |
+| `ignore_rules` | — | правила любых детекторов, выключенные целиком: rule_id или glob (`jsdoc/*`), без учёта регистра |
+| `aislop_ignore_rules` | `[python-formatting]` | устаревший алиас `ignore_rules`, читается вместе с ним; форматирование — забота форматтера |
+| `hook_severity` | `warn` | с какого уровня новая находка возвращается агенту хуком и `check-changed` |
 | `dead_code_ignore_decorators` | typer/click/flask/fastapi/pytest | функция, зарегистрированная декоратором, не мёртвая |
 | `dead_code_ignore_names` | — | точечные исключения по имени |
 | `docstrings_skip_tests` | `true` | докстринги в тестах не требуются: имя теста и есть описание |

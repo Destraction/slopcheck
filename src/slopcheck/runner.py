@@ -137,10 +137,13 @@ def _dedupe(findings: list[Finding]) -> list[Finding]:
 def _filter_findings(
     findings: list[Finding], root: Path, config: Config, files: list[str] | None
 ) -> list[Finding]:
-    """Нормализовать пути и отсеять игнорируемое, дубли и не задетое изменениями."""
+    """Нормализовать пути, отсеять игнорируемые пути и правила, дубли и не задетое изменениями."""
     findings = _dedupe(_normalize_paths(findings, root))
     findings = [
-        f for f in findings if not is_ignored(Path(f.file).parts, config.ignore)
+        f
+        for f in findings
+        if not is_ignored(Path(f.file).parts, config.ignore)
+        and not config.rule_ignored(f.rule_id)
     ]
     if files is None:
         return findings
