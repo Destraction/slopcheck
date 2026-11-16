@@ -12,6 +12,7 @@ from pathlib import Path
 from slopcheck import languages as lang_detect
 from slopcheck.adapters import register_all
 from slopcheck.adapters.base import Adapter
+from slopcheck.calibrate import calibrate
 from slopcheck.languages import is_ignored
 from slopcheck.config import Config, load_config
 from slopcheck.models import SEVERITY_RANK, Category, CategoryResult, Finding, Report
@@ -178,7 +179,7 @@ def _filter_findings(
     findings: list[Finding], root: Path, config: Config, files: list[str] | None
 ) -> list[Finding]:
     """Нормализовать пути, отсеять игнорируемые пути и правила, дубли и не задетое изменениями."""
-    findings = _dedupe(_normalize_paths(findings, root))
+    findings = calibrate(_dedupe(_normalize_paths(findings, root)), root)
     findings = [
         f
         for f in findings

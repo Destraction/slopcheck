@@ -12,6 +12,19 @@ linters:
     - unused       # неиспользуемые функции, типы, поля
     - revive
   settings:
+    errcheck:
+      # Ошибки, которые в Go идиоматично не проверяют (корпус: 45 из 45 находок
+      # errcheck — вывод в writer и закрытие файла после чтения).
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - (io.Closer).Close
+        - (*os.File).Close
+        - os.Setenv
+        - os.Unsetenv
+        - os.Remove
+        - os.RemoveAll
     revive:
       rules:
         - name: exported     # экспорт без doc-комментария

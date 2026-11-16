@@ -77,7 +77,7 @@ def test_live_run(tmp_path: Path) -> None:
     (tmp_path / "x.go").write_text(
         "package x\n\nimport \"os\"\n\n"
         "func unused() {}\n\n"
-        "func Open() {\n\tos.Remove(\"f\")\n}\n"
+        "func Open() {\n\tos.Chdir(\"f\")\n}\n"
     )
     rules = {f.rule_id for f in GolangciLintAdapter().run(tmp_path, Config())}
     assert {"unused", "errcheck", "revive/exported"} <= rules

@@ -32,6 +32,52 @@ uv run python bench/run.py label cobra --per-rule 15
 Подтверждённый шум закрепляется тестом в `tests/noise/`: фикстура с кодом,
 на котором находки быть не должно.
 
+## Калибровка (G9, 16.11.2026)
+
+Разметка — `labels/*.yml`: каждая находка из выборки (до 15 на правило в
+репозитории) просмотрена в контексте кода, у вердикта есть причина `why`.
+Признаки шума перенесены в `src/slopcheck/calibrate.py` (понизить до info
+или отбросить) и в конфиги детекторов; каждый закреплён тестом в
+`tests/noise/`.
+
+| | до | после |
+|---|---:|---:|
+| находок всего | 1518 | 1233 |
+| из них warn+ | 1171 | 427 |
+| размечено warn+ | 789 | 336 |
+| шум среди размеченных warn+ | 484 (61%) | 34 (10%) |
+
+Порог DoD — 20%.
+
+Что убрано и почему:
+
+| признак | было | поправка |
+|---|---|---|
+| дубли в lock-файлах, Markdown, YAML CI | jscpd: 228 шумных | отбрасываются |
+| повторы, `any`, сложность в тестах | jscpd, no-explicit-any, lizard | info в тестовых файлах |
+| `fmt.Fprint*`, `Close`, `os.Setenv/Remove` без проверки | errcheck: 45 из 45 — шум | `exclude-functions` в golangci.yml |
+| явное `_ = f()` | swallowed-error-go: 27 из 27 намеренные | info |
+| импорт каталога под `baseUrl` («types») | hallucinated-import: 11 из 11 | отбрасывается; заодно починен разбор tsconfig с `"@/*"` в строках (ломал и `--check-deps`) |
+| пустой `catch` с комментарием «почему» | empty-catch: 2 из 3 | отбрасывается |
+| параметр сигнатуры / catch не используется | no-unused-vars: 10 из 17 | info |
+| `panic("…")` на ошибке программиста | go-library-panic: 8 из 13 | info; `panic(err)` остаётся warn |
+| рендер-функция в пропе (`Cell()`) | no-unstable-nested-components: 6 из 8 | `allowAsProps` |
+| a11y, публичные URL, thenable, dev-зависимости без node_modules | 100% шум | info |
+| HTML через `DOMPurify.sanitize` | no-danger | info |
+
+Остаток шума (warn+), признак не выделен без потери настоящих находок:
+
+- `knip-exports` в вендоренном UI-ките (`components/ui` в стиле shadcn):
+  12 из 15. Экспорт и правда не используется, но это API набора
+  компонентов. В своём проекте — `ignore` на каталог кита;
+- `react/no-array-index-key` с составным ключом (`title + index`): 4 из 12;
+- `set-state-in-effect` для флага `mounted`: 2 из 3;
+- единичные: `console.log` при старте сервера, пояснительные комментарии,
+  которые aislop считает нарративом.
+
+`jsdoc/require-jsdoc` (298, info) и `revive/exported` (info) — на счёт и
+гейт не влияют. Это стиль документации, а не slop.
+
 ## Пополнение корпуса
 
 Добавьте запись в `corpus.yml` (`name`, `url`, `commit`, опционально `path`).

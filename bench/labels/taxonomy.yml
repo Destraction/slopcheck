@@ -1,0 +1,823 @@
+- key: complexity|ai-slop/hallucinated-import|components/billing-form.tsx|Imports "types" but it's not declared in package.json
+  rule: aislop:ai-slop/hallucinated-import
+  where: components/billing-form.tsx:5
+  verdict: noise
+  why: локальный каталог через baseUrl, не пакет
+- key: complexity|ai-slop/hallucinated-import|components/main-nav.tsx|Imports "types" but it's not declared in package.json
+  rule: aislop:ai-slop/hallucinated-import
+  where: components/main-nav.tsx:7
+  verdict: noise
+  why: локальный каталог через baseUrl, не пакет
+- key: complexity|ai-slop/hallucinated-import|components/mobile-nav.tsx|Imports "types" but it's not declared in package.json
+  rule: aislop:ai-slop/hallucinated-import
+  where: components/mobile-nav.tsx:4
+  verdict: noise
+  why: локальный каталог через baseUrl, не пакет
+- key: complexity|ai-slop/hallucinated-import|components/nav.tsx|Imports "types" but it's not declared in package.json
+  rule: aislop:ai-slop/hallucinated-import
+  where: components/nav.tsx:6
+  verdict: noise
+  why: локальный каталог через baseUrl, не пакет
+- key: complexity|ai-slop/hallucinated-import|components/sidebar-nav.tsx|Imports "types" but it's not declared in package.json
+  rule: aislop:ai-slop/hallucinated-import
+  where: components/sidebar-nav.tsx:6
+  verdict: noise
+  why: локальный каталог через baseUrl, не пакет
+- key: complexity|ai-slop/hallucinated-import|config/dashboard.ts|Imports "types" but it's not declared in package.json
+  rule: aislop:ai-slop/hallucinated-import
+  where: config/dashboard.ts:1
+  verdict: noise
+  why: локальный каталог через baseUrl, не пакет
+- key: complexity|ai-slop/hallucinated-import|config/docs.ts|Imports "types" but it's not declared in package.json
+  rule: aislop:ai-slop/hallucinated-import
+  where: config/docs.ts:1
+  verdict: noise
+  why: локальный каталог через baseUrl, не пакет
+- key: complexity|ai-slop/hallucinated-import|config/marketing.ts|Imports "types" but it's not declared in package.json
+  rule: aislop:ai-slop/hallucinated-import
+  where: config/marketing.ts:1
+  verdict: noise
+  why: локальный каталог через baseUrl, не пакет
+- key: complexity|ai-slop/hallucinated-import|config/site.ts|Imports "types" but it's not declared in package.json
+  rule: aislop:ai-slop/hallucinated-import
+  where: config/site.ts:1
+  verdict: noise
+  why: локальный каталог через baseUrl, не пакет
+- key: complexity|ai-slop/hallucinated-import|config/subscriptions.ts|Imports "types" but it's not declared in package.json
+  rule: aislop:ai-slop/hallucinated-import
+  where: config/subscriptions.ts:1
+  verdict: noise
+  why: локальный каталог через baseUrl, не пакет
+- key: complexity|ai-slop/hallucinated-import|lib/subscription.ts|Imports "types" but it's not declared in package.json
+  rule: aislop:ai-slop/hallucinated-import
+  where: lib/subscription.ts:3
+  verdict: noise
+  why: локальный каталог через baseUrl, не пакет
+- key: complexity|ai-slop/hardcoded-url|app/layout.tsx|Hardcoded environment URL in production code
+  rule: aislop:ai-slop/hardcoded-url
+  where: app/layout.tsx:43
+  verdict: noise
+  why: публичный URL сервиса в конфиге/константе
+- key: complexity|ai-slop/hardcoded-url|config/site.ts|Hardcoded environment URL in production code
+  rule: aislop:ai-slop/hardcoded-url
+  where: config/site.ts:7
+  verdict: noise
+  why: публичный URL сервиса в конфиге/константе
+- key: comments|ai-slop/todo-stub|app/api/posts/[postId]/route.ts|Unresolved TODO/FIXME/HACK comment indicates incomplete
+    code
+  rule: aislop:ai-slop/todo-stub
+  where: app/api/posts/[postId]/route.ts:62
+  verdict: useful
+  why: незакрытый TODO/FIXME
+- key: comments|ai-slop/todo-stub|lib/subscription.ts|Unresolved TODO/FIXME/HACK comment indicates incomplete code
+  rule: aislop:ai-slop/todo-stub
+  where: lib/subscription.ts:2
+  verdict: useful
+  why: незакрытый TODO/FIXME
+- key: comments|ai-slop/todo-stub|lib/toc.ts|Unresolved TODO/FIXME/HACK comment indicates incomplete code
+  rule: aislop:ai-slop/todo-stub
+  where: lib/toc.ts:2
+  verdict: useful
+  why: незакрытый TODO/FIXME
+- key: comments|ai-slop/todo-stub|lib/validations/post.ts|Unresolved TODO/FIXME/HACK comment indicates incomplete code
+  rule: aislop:ai-slop/todo-stub
+  where: lib/validations/post.ts:6
+  verdict: useful
+  why: незакрытый TODO/FIXME
+- key: comments|ai-slop/trivial-comment|app/api/posts/[postId]/route.ts|Trivial comment that restates the code
+  rule: aislop:ai-slop/trivial-comment
+  where: app/api/posts/[postId]/route.ts:19
+  verdict: useful
+  why: комментарий пересказывает код
+- key: comments|ai-slop/trivial-comment|app/api/users/[userId]/route.ts|Trivial comment that restates the code
+  rule: aislop:ai-slop/trivial-comment
+  where: app/api/users/[userId]/route.ts:19
+  verdict: useful
+  why: комментарий пересказывает код
+- key: complexity|ai-slop/unsafe-type-assertion|lib/auth.ts|'as any' bypasses type safety
+  rule: aislop:ai-slop/unsafe-type-assertion
+  where: lib/auth.ts:17
+  verdict: useful
+  why: any в рабочем коде
+- key: dead_code|ai-slop/unused-import|app/(dashboard)/dashboard/billing/page.tsx|Imported symbol 'Card' is never used
+  rule: aislop:ai-slop/unused-import
+  where: app/(dashboard)/dashboard/billing/page.tsx:8
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: dead_code|ai-slop/unused-import|components/mode-toggle.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: components/mode-toggle.tsx:3
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: dead_code|ai-slop/unused-import|components/theme-provider.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: components/theme-provider.tsx:3
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: duplication|code-quality/duplicate-block|components/ui/alert-dialog.tsx|Duplicate code block — extract a shared helper
+  rule: aislop:code-quality/duplicate-block
+  where: components/ui/alert-dialog.tsx:74
+  verdict: noise
+  why: вендоренный UI-кит
+- key: duplication|code-quality/duplicate-block|components/ui/dialog.tsx|Duplicate code block — extract a shared helper
+  rule: aislop:code-quality/duplicate-block
+  where: components/ui/dialog.tsx:80
+  verdict: noise
+  why: вендоренный UI-кит
+- key: duplication|code-quality/duplicate-block|components/ui/sheet.tsx|Duplicate code block — extract a shared helper
+  rule: aislop:code-quality/duplicate-block
+  where: components/ui/sheet.tsx:185
+  verdict: noise
+  why: вендоренный UI-кит
+- key: dead_code|eslint/no-unused-expressions|app/(docs)/docs/[[...slug]]/page.tsx|Expected expression to be used
+  rule: aislop:eslint/no-unused-expressions
+  where: app/(docs)/docs/[[...slug]]/page.tsx:27
+  verdict: useful
+  why: выражение без эффекта — потерян return
+- key: dead_code|eslint/no-unused-expressions|app/(docs)/guides/[...slug]/page.tsx|Expected expression to be used
+  rule: aislop:eslint/no-unused-expressions
+  where: app/(docs)/guides/[...slug]/page.tsx:29
+  verdict: useful
+  why: выражение без эффекта — потерян return
+- key: dead_code|eslint/no-unused-expressions|app/(marketing)/[...slug]/page.tsx|Expected expression to be used
+  rule: aislop:eslint/no-unused-expressions
+  where: app/(marketing)/[...slug]/page.tsx:24
+  verdict: useful
+  why: выражение без эффекта — потерян return
+- key: dead_code|eslint/no-unused-expressions|app/(marketing)/blog/[...slug]/page.tsx|Expected expression to be used
+  rule: aislop:eslint/no-unused-expressions
+  where: app/(marketing)/blog/[...slug]/page.tsx:27
+  verdict: useful
+  why: выражение без эффекта — потерян return
+- key: dead_code|eslint/no-unused-vars|app/(dashboard)/dashboard/billing/page.tsx|Identifier 'Card' is imported but never
+    used.
+  rule: aislop:eslint/no-unused-vars
+  where: app/(dashboard)/dashboard/billing/page.tsx:9
+  verdict: useful
+  why: неиспользуемая переменная
+- key: dead_code|eslint/no-unused-vars|app/(dashboard)/dashboard/billing/page.tsx|Identifier 'CardContent' is imported but
+    never used.
+  rule: aislop:eslint/no-unused-vars
+  where: app/(dashboard)/dashboard/billing/page.tsx:10
+  verdict: useful
+  why: неиспользуемая переменная
+- key: dead_code|eslint/no-unused-vars|app/(dashboard)/dashboard/billing/page.tsx|Identifier 'CardDescription' is imported
+    but never used.
+  rule: aislop:eslint/no-unused-vars
+  where: app/(dashboard)/dashboard/billing/page.tsx:11
+  verdict: useful
+  why: неиспользуемая переменная
+- key: dead_code|eslint/no-unused-vars|app/(dashboard)/dashboard/billing/page.tsx|Identifier 'CardHeader' is imported but
+    never used.
+  rule: aislop:eslint/no-unused-vars
+  where: app/(dashboard)/dashboard/billing/page.tsx:12
+  verdict: useful
+  why: неиспользуемая переменная
+- key: dead_code|eslint/no-unused-vars|app/(dashboard)/dashboard/billing/page.tsx|Identifier 'CardTitle' is imported but never
+    used.
+  rule: aislop:eslint/no-unused-vars
+  where: app/(dashboard)/dashboard/billing/page.tsx:13
+  verdict: useful
+  why: неиспользуемая переменная
+- key: dead_code|eslint/no-unused-vars|app/(dashboard)/dashboard/settings/loading.tsx|Identifier 'Card' is imported but never
+    used.
+  rule: aislop:eslint/no-unused-vars
+  where: app/(dashboard)/dashboard/settings/loading.tsx:1
+  verdict: useful
+  why: неиспользуемая переменная
+- key: dead_code|eslint/no-unused-vars|app/(marketing)/page.tsx|Catch parameter 'error' is caught but never used.
+  rule: aislop:eslint/no-unused-vars
+  where: app/(marketing)/page.tsx:30
+  verdict: noise
+  why: параметр сигнатуры фреймворка / catch / исключение из rest
+- key: dead_code|eslint/no-unused-vars|app/api/og/route.tsx|Catch parameter 'error' is caught but never used.
+  rule: aislop:eslint/no-unused-vars
+  where: app/api/og/route.tsx:143
+  verdict: noise
+  why: параметр сигнатуры фреймворка / catch / исключение из rest
+- key: dead_code|eslint/no-unused-vars|app/api/posts/route.ts|Catch parameter 'error' is caught but never used.
+  rule: aislop:eslint/no-unused-vars
+  where: app/api/posts/route.ts:36
+  verdict: noise
+  why: параметр сигнатуры фреймворка / catch / исключение из rest
+- key: dead_code|eslint/no-unused-vars|app/api/users/stripe/route.ts|Parameter 'req' is declared but never used. Unused parameters
+    should start with a '_'.
+  rule: aislop:eslint/no-unused-vars
+  where: app/api/users/stripe/route.ts:12
+  verdict: noise
+  why: параметр сигнатуры фреймворка / catch / исключение из rest
+- key: dead_code|eslint/no-unused-vars|app/layout.tsx|Identifier 'absoluteUrl' is imported but never used.
+  rule: aislop:eslint/no-unused-vars
+  where: app/layout.tsx:6
+  verdict: useful
+  why: неиспользуемая переменная
+- key: dead_code|eslint/no-unused-vars|components/ui/alert-dialog.tsx|Parameter 'children' is declared but never used. Unused
+    parameters should start with a '_'.
+  rule: aislop:eslint/no-unused-vars
+  where: components/ui/alert-dialog.tsx:29
+  verdict: noise
+  why: параметр сигнатуры фреймворка / catch / исключение из rest
+- key: dead_code|eslint/no-unused-vars|components/ui/calendar.tsx|Parameter 'props' is declared but never used. Unused parameters
+    should start with a '_'.
+  rule: aislop:eslint/no-unused-vars
+  where: components/ui/calendar.tsx:55
+  verdict: noise
+  why: параметр сигнатуры фреймворка / catch / исключение из rest
+- key: dead_code|eslint/no-unused-vars|components/ui/radio-group.tsx|Parameter 'children' is declared but never used. Unused
+    parameters should start with a '_'.
+  rule: aislop:eslint/no-unused-vars
+  where: components/ui/radio-group.tsx:26
+  verdict: noise
+  why: параметр сигнатуры фреймворка / catch / исключение из rest
+- key: dead_code|eslint/no-unused-vars|components/ui/sheet.tsx|Parameter 'children' is declared but never used. Unused parameters
+    should start with a '_'.
+  rule: aislop:eslint/no-unused-vars
+  where: components/ui/sheet.tsx:45
+  verdict: noise
+  why: параметр сигнатуры фреймворка / catch / исключение из rest
+- key: complexity|jsx-a11y/anchor-has-content|components/mdx-components.tsx|Missing accessible content when using `a` elements.
+  rule: aislop:jsx-a11y/anchor-has-content
+  where: components/mdx-components.tsx:65
+  verdict: noise
+  why: a11y вне задач slop-гейта; содержимое через props
+- key: complexity|jsx-a11y/heading-has-content|components/empty-placeholder.tsx|Headings must have content and the content
+    must be accessible by a screen reader.
+  rule: aislop:jsx-a11y/heading-has-content
+  where: components/empty-placeholder.tsx:59
+  verdict: noise
+  why: a11y вне задач slop-гейта; содержимое через props
+- key: complexity|jsx-a11y/heading-has-content|components/mdx-components.tsx|Headings must have content and the content must
+    be accessible by a screen reader.
+  rule: aislop:jsx-a11y/heading-has-content
+  where: components/mdx-components.tsx:11
+  verdict: noise
+  why: a11y вне задач slop-гейта; содержимое через props
+- key: complexity|jsx-a11y/heading-has-content|components/ui/alert.tsx|Headings must have content and the content must be
+    accessible by a screen reader.
+  rule: aislop:jsx-a11y/heading-has-content
+  where: components/ui/alert.tsx:39
+  verdict: noise
+  why: a11y вне задач slop-гейта; содержимое через props
+- key: complexity|jsx-a11y/heading-has-content|components/ui/card.tsx|Headings must have content and the content must be accessible
+    by a screen reader.
+  rule: aislop:jsx-a11y/heading-has-content
+  where: components/ui/card.tsx:36
+  verdict: noise
+  why: a11y вне задач slop-гейта; содержимое через props
+- key: complexity|jsx-a11y/no-autofocus|components/editor.tsx|The `autoFocus` attribute is found here, which can cause usability
+    issues for sighted and non-sighted users.
+  rule: aislop:jsx-a11y/no-autofocus
+  where: components/editor.tsx:150
+  verdict: noise
+  why: a11y вне задач slop-гейта; содержимое через props
+- key: complexity|jsx-a11y/prefer-tag-over-role|components/icons.tsx|Prefer `img` over `role` attribute `img`.
+  rule: aislop:jsx-a11y/prefer-tag-over-role
+  where: components/icons.tsx:59
+  verdict: noise
+  why: a11y вне задач slop-гейта; содержимое через props
+- key: complexity|react/jsx-key|components/sidebar-nav.tsx|Missing "key" prop for element in iterator.
+  rule: aislop:react/jsx-key
+  where: components/sidebar-nav.tsx:43
+  verdict: useful
+  why: нет key в списке
+- key: complexity|react/refs|components/editor.tsx|Cannot access refs during render
+  rule: aislop:react/refs
+  where: components/editor.tsx:124
+  verdict: noise
+  why: идиома MDX/react-hook-form, не дефект
+- key: complexity|react/set-state-in-effect|components/editor.tsx|Calling setState synchronously within an effect can trigger
+    cascading renders
+  rule: aislop:react/set-state-in-effect
+  where: components/editor.tsx:71
+  verdict: noise
+  why: идиома mounted для гидрации
+- key: complexity|react/set-state-in-effect|hooks/use-mounted.ts|Calling setState synchronously within an effect can trigger
+    cascading renders
+  rule: aislop:react/set-state-in-effect
+  where: hooks/use-mounted.ts:7
+  verdict: noise
+  why: идиома mounted для гидрации
+- key: complexity|react/static-components|components/mdx-components.tsx|Cannot create components during render
+  rule: aislop:react/static-components
+  where: components/mdx-components.tsx:164
+  verdict: noise
+  why: идиома MDX/react-hook-form, не дефект
+- key: complexity|security/dependency-audit-skipped|package.json|Dependency audit did not complete (pnpm audit)
+  rule: aislop:security/dependency-audit-skipped
+  where: package.json:1
+  verdict: noise
+  why: служебное сообщение aislop, не находка в коде
+- key: complexity|@typescript-eslint/ban-ts-comment|lib/subscription.ts|Do not use "@ts-nocheck" because it alters compilation
+    errors.
+  rule: eslint:@typescript-eslint/ban-ts-comment
+  where: lib/subscription.ts:1
+  verdict: useful
+  why: '@ts-nocheck глушит типы'
+- key: complexity|@typescript-eslint/ban-ts-comment|lib/toc.ts|Do not use "@ts-nocheck" because it alters compilation errors.
+  rule: eslint:@typescript-eslint/ban-ts-comment
+  where: lib/toc.ts:1
+  verdict: useful
+  why: '@ts-nocheck глушит типы'
+- key: complexity|@typescript-eslint/no-explicit-any|lib/auth.ts|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: lib/auth.ts:17
+  verdict: useful
+  why: any в рабочем коде
+- key: dead_code|@typescript-eslint/no-unused-vars|components/ui/use-toast.ts|'actionTypes' is assigned a value but only used
+    as a type. Allowed unused vars must match /^_/u.
+  rule: eslint:@typescript-eslint/no-unused-vars
+  where: components/ui/use-toast.ts:16
+  verdict: noise
+  why: используется как тип
+- key: dead_code|@typescript-eslint/no-unused-vars|types/index.d.ts|'Icon' is defined but never used. Allowed unused vars
+    must match /^_/u.
+  rule: eslint:@typescript-eslint/no-unused-vars
+  where: types/index.d.ts:2
+  verdict: useful
+  why: неиспользуемый импорт
+- key: dead_code|@typescript-eslint/no-unused-vars|types/next-auth.d.ts|'JWT' is defined but never used. Allowed unused vars
+    must match /^_/u.
+  rule: eslint:@typescript-eslint/no-unused-vars
+  where: types/next-auth.d.ts:2
+  verdict: useful
+  why: неиспользуемый импорт
+- key: comments|jsdoc/require-jsdoc|app/(auth)/layout.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: app/(auth)/layout.tsx:5
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|app/(auth)/login/page.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: app/(auth)/login/page.tsx:14
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|app/(auth)/register/page.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: app/(auth)/register/page.tsx:13
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|app/(dashboard)/dashboard/billing/loading.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: app/(dashboard)/dashboard/billing/loading.tsx:5
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|app/(dashboard)/dashboard/billing/page.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: app/(dashboard)/dashboard/billing/page.tsx:25
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|app/(dashboard)/dashboard/layout.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: app/(dashboard)/dashboard/layout.tsx:14
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|app/(dashboard)/dashboard/loading.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: app/(dashboard)/dashboard/loading.tsx:6
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|app/(dashboard)/dashboard/page.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: app/(dashboard)/dashboard/page.tsx:16
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|app/(dashboard)/dashboard/settings/loading.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: app/(dashboard)/dashboard/settings/loading.tsx:6
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|app/(dashboard)/dashboard/settings/page.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: app/(dashboard)/dashboard/settings/page.tsx:14
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|app/(docs)/docs/[[...slug]]/page.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: app/(docs)/docs/[[...slug]]/page.tsx:33
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|app/(docs)/docs/layout.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: app/(docs)/docs/layout.tsx:8
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|app/(docs)/guides/[...slug]/page.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: app/(docs)/guides/[...slug]/page.tsx:35
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|app/(docs)/guides/layout.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: app/(docs)/guides/layout.tsx:5
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|app/(docs)/guides/page.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: app/(docs)/guides/page.tsx:14
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: "complexity|react-hooks/set-state-in-effect|components/editor.tsx|Error: Calling setState synchronously within an effect\
+    \ can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as\
+    \ manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should\
+    \ do one or both of the following:\n* Update external systems with the latest state from React.\n* Subscribe for updates\
+    \ from some external system, calling setState in a callback function when external state changes.\n\nCalling setState\
+    \ synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\
+    \n/Users/imarkov/.cache/slopcheck-bench/taxonomy/components/editor.tsx:71:7\n  69 |   React.useEffect(() => {\n  70 |\
+    \     if (typeof window !== \"undefined\") {\n> 71 |       setIsMounted(true)\n     |       ^^^^^^^^^^^^ Avoid calling\
+    \ setState() directly within an effect\n  72 |     }\n  73 |   }, [])\n  74 |"
+  rule: eslint:react-hooks/set-state-in-effect
+  where: components/editor.tsx:71
+  verdict: noise
+  why: идиома mounted для гидрации
+- key: "complexity|react-hooks/set-state-in-effect|hooks/use-mounted.ts|Error: Calling setState synchronously within an effect\
+    \ can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as\
+    \ manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should\
+    \ do one or both of the following:\n* Update external systems with the latest state from React.\n* Subscribe for updates\
+    \ from some external system, calling setState in a callback function when external state changes.\n\nCalling setState\
+    \ synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\
+    \n/Users/imarkov/.cache/slopcheck-bench/taxonomy/hooks/use-mounted.ts:7:5\n   5 |\n   6 |   React.useEffect(() => {\n\
+    >  7 |     setMounted(true)\n     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect\n   8 |   }, [])\n\
+    \   9 |\n  10 |   return mounted"
+  rule: eslint:react-hooks/set-state-in-effect
+  where: hooks/use-mounted.ts:7
+  verdict: noise
+  why: идиома mounted для гидрации
+- key: complexity|react/jsx-key|components/sidebar-nav.tsx|Missing "key" prop for element in iterator
+  rule: eslint:react/jsx-key
+  where: components/sidebar-nav.tsx:60
+  verdict: useful
+  why: нет key в списке
+- key: complexity|react/no-array-index-key|components/main-nav.tsx|Do not use Array index in keys
+  rule: eslint:react/no-array-index-key
+  where: components/main-nav.tsx:34
+  verdict: useful
+  why: key={index}
+- key: complexity|react/no-array-index-key|components/mobile-nav.tsx|Do not use Array index in keys
+  rule: eslint:react/no-array-index-key
+  where: components/mobile-nav.tsx:32
+  verdict: useful
+  why: key={index}
+- key: complexity|react/no-array-index-key|components/nav.tsx|Do not use Array index in keys
+  rule: eslint:react/no-array-index-key
+  where: components/nav.tsx:27
+  verdict: useful
+  why: key={index}
+- key: complexity|react/no-array-index-key|components/sidebar-nav.tsx|Do not use Array index in keys
+  rule: eslint:react/no-array-index-key
+  where: components/sidebar-nav.tsx:19
+  verdict: useful
+  why: key={index}
+- key: complexity|react/no-array-index-key|components/toc.tsx|Do not use Array index in keys
+  rule: eslint:react/no-array-index-key
+  where: components/toc.tsx:94
+  verdict: useful
+  why: key={index}
+- key: complexity|react/no-unstable-nested-components|components/ui/calendar.tsx|Do not define components during render. React
+    will see a new component type on every render and destroy the entire subtree’s DOM nodes and state (https://reactjs.org/docs/reconciliation.html#elements-of-different-types).
+    Instead, move this component definition out of the parent component “Calendar” and pass data as props. If you want to
+    allow component creation in props, set allowAsProps option to true.
+  rule: eslint:react/no-unstable-nested-components
+  where: components/ui/calendar.tsx:55
+  verdict: useful
+  why: компонент внутри рендера
+- key: duplication|duplicate-block|app/api/posts/[postId]/route.ts|app/api/posts/[postId]/route.ts|app/api/posts/[postId]/route.ts
+  rule: jscpd:duplicate-block
+  where: app/api/posts/[postId]/route.ts:14
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|app/api/posts/[postId]/route.ts|app/api/posts/[postId]/route.ts|app/api/users/[userId]/route.ts
+  rule: jscpd:duplicate-block
+  where: app/api/posts/[postId]/route.ts:69
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|app/api/posts/[postId]/route.ts|app/api/posts/[postId]/route.ts|app/api/users/stripe/route.ts
+  rule: jscpd:duplicate-block
+  where: app/api/posts/[postId]/route.ts:34
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|contentlayer.config.js|contentlayer.config.js|contentlayer.config.js
+  rule: jscpd:duplicate-block
+  where: contentlayer.config.js:41
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|pnpm-lock.yaml|pnpm-lock.yaml|pnpm-lock.yaml
+  rule: jscpd:duplicate-block
+  where: pnpm-lock.yaml:877
+  verdict: noise
+  why: lock-файл
+- key: 'dead_code|knip-dependencies|package.json|неиспользуемая зависимость: @editorjs/paragraph'
+  rule: knip:knip-dependencies
+  where: package.json:26
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-dependencies|package.json|неиспользуемая зависимость: @radix-ui/react-accessible-icon'
+  rule: knip:knip-dependencies
+  where: package.json:31
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-dependencies|package.json|неиспользуемая зависимость: @radix-ui/react-accordion'
+  rule: knip:knip-dependencies
+  where: package.json:32
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-dependencies|package.json|неиспользуемая зависимость: @radix-ui/react-aspect-ratio'
+  rule: knip:knip-dependencies
+  where: package.json:34
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-dependencies|package.json|неиспользуемая зависимость: @radix-ui/react-checkbox'
+  rule: knip:knip-dependencies
+  where: package.json:36
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-dependencies|package.json|неиспользуемая зависимость: @radix-ui/react-collapsible'
+  rule: knip:knip-dependencies
+  where: package.json:37
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-dependencies|package.json|неиспользуемая зависимость: @radix-ui/react-context-menu'
+  rule: knip:knip-dependencies
+  where: package.json:38
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-dependencies|package.json|неиспользуемая зависимость: @radix-ui/react-dialog'
+  rule: knip:knip-dependencies
+  where: package.json:39
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-dependencies|package.json|неиспользуемая зависимость: @radix-ui/react-hover-card'
+  rule: knip:knip-dependencies
+  where: package.json:41
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-dependencies|package.json|неиспользуемая зависимость: @radix-ui/react-menubar'
+  rule: knip:knip-dependencies
+  where: package.json:43
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-dependencies|package.json|неиспользуемая зависимость: @radix-ui/react-navigation-menu'
+  rule: knip:knip-dependencies
+  where: package.json:44
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-dependencies|package.json|неиспользуемая зависимость: @radix-ui/react-popover'
+  rule: knip:knip-dependencies
+  where: package.json:45
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-dependencies|package.json|неиспользуемая зависимость: @radix-ui/react-progress'
+  rule: knip:knip-dependencies
+  where: package.json:46
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-dependencies|package.json|неиспользуемая зависимость: @radix-ui/react-radio-group'
+  rule: knip:knip-dependencies
+  where: package.json:47
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-dependencies|package.json|неиспользуемая зависимость: @radix-ui/react-scroll-area'
+  rule: knip:knip-dependencies
+  where: package.json:48
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-devDependencies|package.json|неиспользуемая dev-зависимость: @commitlint/cli'
+  rule: knip:knip-devDependencies
+  where: package.json:91
+  verdict: noise
+  why: инструмент из конфигов; без node_modules knip их не видит
+- key: 'dead_code|knip-devDependencies|package.json|неиспользуемая dev-зависимость: @tailwindcss/line-clamp'
+  rule: knip:knip-devDependencies
+  where: package.json:94
+  verdict: noise
+  why: инструмент из конфигов; без node_modules knip их не видит
+- key: 'dead_code|knip-devDependencies|package.json|неиспользуемая dev-зависимость: @types/react-dom'
+  rule: knip:knip-devDependencies
+  where: package.json:98
+  verdict: noise
+  why: инструмент из конфигов; без node_modules knip их не видит
+- key: 'dead_code|knip-devDependencies|package.json|неиспользуемая dev-зависимость: eslint'
+  rule: knip:knip-devDependencies
+  where: package.json:100
+  verdict: noise
+  why: инструмент из конфигов; без node_modules knip их не видит
+- key: 'dead_code|knip-devDependencies|package.json|неиспользуемая dev-зависимость: eslint-plugin-react'
+  rule: knip:knip-devDependencies
+  where: package.json:103
+  verdict: noise
+  why: инструмент из конфигов; без node_modules knip их не видит
+- key: 'dead_code|knip-devDependencies|package.json|неиспользуемая dev-зависимость: husky'
+  rule: knip:knip-devDependencies
+  where: package.json:105
+  verdict: noise
+  why: инструмент из конфигов; без node_modules knip их не видит
+- key: 'dead_code|knip-devDependencies|package.json|неиспользуемая dev-зависимость: prettier-plugin-tailwindcss'
+  rule: knip:knip-devDependencies
+  where: package.json:109
+  verdict: noise
+  why: инструмент из конфигов; без node_modules knip их не видит
+- key: 'dead_code|knip-devDependencies|package.json|неиспользуемая dev-зависимость: pretty-quick'
+  rule: knip:knip-devDependencies
+  where: package.json:110
+  verdict: noise
+  why: инструмент из конфигов; без node_modules knip их не видит
+- key: 'dead_code|knip-devDependencies|package.json|неиспользуемая dev-зависимость: prisma'
+  rule: knip:knip-devDependencies
+  where: package.json:111
+  verdict: noise
+  why: инструмент из конфигов; без node_modules knip их не видит
+- key: 'dead_code|knip-devDependencies|package.json|неиспользуемая dev-зависимость: rehype'
+  rule: knip:knip-devDependencies
+  where: package.json:112
+  verdict: noise
+  why: инструмент из конфигов; без node_modules knip их не видит
+- key: 'dead_code|knip-devDependencies|package.json|неиспользуемая dev-зависимость: rehype-autolink-headings'
+  rule: knip:knip-devDependencies
+  where: package.json:113
+  verdict: noise
+  why: инструмент из конфигов; без node_modules knip их не видит
+- key: 'dead_code|knip-devDependencies|package.json|неиспользуемая dev-зависимость: rehype-pretty-code'
+  rule: knip:knip-devDependencies
+  where: package.json:114
+  verdict: noise
+  why: инструмент из конфигов; без node_modules knip их не видит
+- key: 'dead_code|knip-devDependencies|package.json|неиспользуемая dev-зависимость: rehype-slug'
+  rule: knip:knip-devDependencies
+  where: package.json:115
+  verdict: noise
+  why: инструмент из конфигов; без node_modules knip их не видит
+- key: 'dead_code|knip-devDependencies|package.json|неиспользуемая dev-зависимость: remark-gfm'
+  rule: knip:knip-devDependencies
+  where: package.json:117
+  verdict: noise
+  why: инструмент из конфигов; без node_modules knip их не видит
+- key: 'dead_code|knip-exports|components/pager.tsx|неиспользуемый экспорт: flatten'
+  rule: knip:knip-exports
+  where: components/pager.tsx:60
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-exports|components/pager.tsx|неиспользуемый экспорт: getPagerForDoc'
+  rule: knip:knip-exports
+  where: components/pager.tsx:44
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-exports|components/sidebar-nav.tsx|неиспользуемый экспорт: DocsSidebarNavItems'
+  rule: knip:knip-exports
+  where: components/sidebar-nav.tsx:37
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-exports|components/ui/alert-dialog.tsx|неиспользуемый экспорт: AlertDialogTrigger'
+  rule: knip:knip-exports
+  where: components/ui/alert-dialog.tsx:142
+  verdict: noise
+  why: API вендоренного UI-кита
+- key: 'dead_code|knip-exports|components/ui/dropdown-menu.tsx|неиспользуемый экспорт: DropdownMenuCheckboxItem'
+  rule: knip:knip-exports
+  where: components/ui/dropdown-menu.tsx:189
+  verdict: noise
+  why: API вендоренного UI-кита
+- key: 'dead_code|knip-exports|components/ui/dropdown-menu.tsx|неиспользуемый экспорт: DropdownMenuGroup'
+  rule: knip:knip-exports
+  where: components/ui/dropdown-menu.tsx:194
+  verdict: noise
+  why: API вендоренного UI-кита
+- key: 'dead_code|knip-exports|components/ui/dropdown-menu.tsx|неиспользуемый экспорт: DropdownMenuLabel'
+  rule: knip:knip-exports
+  where: components/ui/dropdown-menu.tsx:191
+  verdict: noise
+  why: API вендоренного UI-кита
+- key: 'dead_code|knip-exports|components/ui/dropdown-menu.tsx|неиспользуемый экспорт: DropdownMenuPortal'
+  rule: knip:knip-exports
+  where: components/ui/dropdown-menu.tsx:195
+  verdict: noise
+  why: API вендоренного UI-кита
+- key: 'dead_code|knip-exports|components/ui/dropdown-menu.tsx|неиспользуемый экспорт: DropdownMenuRadioGroup'
+  rule: knip:knip-exports
+  where: components/ui/dropdown-menu.tsx:199
+  verdict: noise
+  why: API вендоренного UI-кита
+- key: 'dead_code|knip-exports|components/ui/dropdown-menu.tsx|неиспользуемый экспорт: DropdownMenuRadioItem'
+  rule: knip:knip-exports
+  where: components/ui/dropdown-menu.tsx:190
+  verdict: noise
+  why: API вендоренного UI-кита
+- key: 'dead_code|knip-exports|components/ui/dropdown-menu.tsx|неиспользуемый экспорт: DropdownMenuShortcut'
+  rule: knip:knip-exports
+  where: components/ui/dropdown-menu.tsx:193
+  verdict: noise
+  why: API вендоренного UI-кита
+- key: 'dead_code|knip-exports|components/ui/dropdown-menu.tsx|неиспользуемый экспорт: DropdownMenuSub'
+  rule: knip:knip-exports
+  where: components/ui/dropdown-menu.tsx:196
+  verdict: noise
+  why: API вендоренного UI-кита
+- key: 'dead_code|knip-exports|components/ui/dropdown-menu.tsx|неиспользуемый экспорт: DropdownMenuSubContent'
+  rule: knip:knip-exports
+  where: components/ui/dropdown-menu.tsx:197
+  verdict: noise
+  why: API вендоренного UI-кита
+- key: 'dead_code|knip-exports|components/ui/dropdown-menu.tsx|неиспользуемый экспорт: DropdownMenuSubTrigger'
+  rule: knip:knip-exports
+  where: components/ui/dropdown-menu.tsx:198
+  verdict: noise
+  why: API вендоренного UI-кита
+- key: 'dead_code|knip-exports|components/ui/use-toast.ts|неиспользуемый экспорт: reducer'
+  rule: knip:knip-exports
+  where: components/ui/use-toast.ts:72
+  verdict: noise
+  why: API вендоренного UI-кита
+- key: 'dead_code|knip-types|components/icons.tsx|неиспользуемый тип: Icon'
+  rule: knip:knip-types
+  where: components/icons.tsx:29
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-types|components/sidebar-nav.tsx|неиспользуемый тип: DocsSidebarNavProps'
+  rule: knip:knip-types
+  where: components/sidebar-nav.tsx:9
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: 'dead_code|knip-types|components/ui/input.tsx|неиспользуемый тип: InputProps'
+  rule: knip:knip-types
+  where: components/ui/input.tsx:5
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: dead_code|unused-file|components/ui/accordion.tsx|Неиспользуемый файл
+  rule: knip:unused-file
+  where: components/ui/accordion.tsx:0
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: dead_code|unused-file|components/ui/aspect-ratio.tsx|Неиспользуемый файл
+  rule: knip:unused-file
+  where: components/ui/aspect-ratio.tsx:0
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: dead_code|unused-file|components/ui/badge.tsx|Неиспользуемый файл
+  rule: knip:unused-file
+  where: components/ui/badge.tsx:0
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: dead_code|unused-file|components/ui/calendar.tsx|Неиспользуемый файл
+  rule: knip:unused-file
+  where: components/ui/calendar.tsx:0
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: dead_code|unused-file|components/ui/checkbox.tsx|Неиспользуемый файл
+  rule: knip:unused-file
+  where: components/ui/checkbox.tsx:0
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: dead_code|unused-file|components/ui/collapsible.tsx|Неиспользуемый файл
+  rule: knip:unused-file
+  where: components/ui/collapsible.tsx:0
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: dead_code|unused-file|components/ui/command.tsx|Неиспользуемый файл
+  rule: knip:unused-file
+  where: components/ui/command.tsx:0
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: dead_code|unused-file|components/ui/context-menu.tsx|Неиспользуемый файл
+  rule: knip:unused-file
+  where: components/ui/context-menu.tsx:0
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: dead_code|unused-file|components/ui/dialog.tsx|Неиспользуемый файл
+  rule: knip:unused-file
+  where: components/ui/dialog.tsx:0
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: dead_code|unused-file|components/ui/hover-card.tsx|Неиспользуемый файл
+  rule: knip:unused-file
+  where: components/ui/hover-card.tsx:0
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: dead_code|unused-file|components/ui/menubar.tsx|Неиспользуемый файл
+  rule: knip:unused-file
+  where: components/ui/menubar.tsx:0
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: dead_code|unused-file|components/ui/navigation-menu.tsx|Неиспользуемый файл
+  rule: knip:unused-file
+  where: components/ui/navigation-menu.tsx:0
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: dead_code|unused-file|components/ui/popover.tsx|Неиспользуемый файл
+  rule: knip:unused-file
+  where: components/ui/popover.tsx:0
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: dead_code|unused-file|components/ui/progress.tsx|Неиспользуемый файл
+  rule: knip:unused-file
+  where: components/ui/progress.tsx:0
+  verdict: useful
+  why: неиспользуемый код/зависимость
+- key: dead_code|unused-file|contentlayer.config.js|Неиспользуемый файл
+  rule: knip:unused-file
+  where: contentlayer.config.js:0
+  verdict: noise
+  why: конфиг, читаемый фреймворком
+- key: 'comments|trivial-comment|app/api/posts/[postId]/route.ts|Комментарий пересказывает следующую строку кода: «Check if
+    the user has access to this post.»'
+  rule: restating-comments:trivial-comment
+  where: app/api/posts/[postId]/route.ts:22
+  verdict: useful
+  why: комментарий пересказывает код

@@ -1,0 +1,361 @@
+- key: complexity|ai-slop/go-library-panic|cobra.go|`panic()` in package `cobra` (non-main, non-test). Library code should
+    return errors, not unwind the goroutine.
+  rule: aislop:ai-slop/go-library-panic
+  where: cobra.go:150
+  verdict: noise
+  why: panic на ошибке программиста — идиома
+- key: complexity|ai-slop/go-library-panic|command.go|`panic()` in package `cobra` (non-main, non-test). Library code should
+    return errors, not unwind the goroutine.
+  rule: aislop:ai-slop/go-library-panic
+  where: command.go:1345
+  verdict: noise
+  why: panic на ошибке программиста — идиома
+- key: complexity|ai-slop/go-library-panic|flag_groups.go|`panic()` in package `cobra` (non-main, non-test). Library code
+    should return errors, not unwind the goroutine.
+  rule: aislop:ai-slop/go-library-panic
+  where: flag_groups.go:38
+  verdict: noise
+  why: panic на ошибке программиста — идиома
+- key: comments|ai-slop/meta-comment|command.go|Meta/plan comment (before/after state narration)
+  rule: aislop:ai-slop/meta-comment
+  where: command.go:212
+  verdict: noise
+  why: doc-комментарий поля
+- key: comments|ai-slop/narrative-comment|completions.go|Narrative comment block (decorative separator)
+  rule: aislop:ai-slop/narrative-comment
+  where: completions.go:86
+  verdict: useful
+  why: декоративный разделитель
+- key: comments|ai-slop/todo-stub|cobra.go|Unresolved TODO/FIXME/HACK comment indicates incomplete code
+  rule: aislop:ai-slop/todo-stub
+  where: cobra.go:109
+  verdict: useful
+  why: незакрытый TODO/FIXME
+- key: comments|ai-slop/todo-stub|command.go|Unresolved TODO/FIXME/HACK comment indicates incomplete code
+  rule: aislop:ai-slop/todo-stub
+  where: command.go:829
+  verdict: useful
+  why: незакрытый TODO/FIXME
+- key: comments|ai-slop/trivial-comment|powershell_completions.go|Trivial comment that restates the code
+  rule: aislop:ai-slop/trivial-comment
+  where: powershell_completions.go:57
+  verdict: useful
+  why: комментарий пересказывает код
+- key: 'complexity|complexity/file-too-large|bash_completions.go|File too large (max: 600)'
+  rule: aislop:complexity/file-too-large
+  where: bash_completions.go:1
+  verdict: useful
+  why: размер/сигнатура выше порога
+- key: 'complexity|complexity/file-too-large|command.go|File too large (max: 600)'
+  rule: aislop:complexity/file-too-large
+  where: command.go:1
+  verdict: useful
+  why: размер/сигнатура выше порога
+- key: 'complexity|complexity/file-too-large|completions.go|File too large (max: 600)'
+  rule: aislop:complexity/file-too-large
+  where: completions.go:1
+  verdict: useful
+  why: размер/сигнатура выше порога
+- key: 'complexity|complexity/function-too-long|command.go|Function too long (max: 80)'
+  rule: aislop:complexity/function-too-long
+  where: command.go:905
+  verdict: useful
+  why: сложная функция
+- key: 'complexity|complexity/function-too-long|completions.go|Function too long (max: 80)'
+  rule: aislop:complexity/function-too-long
+  where: completions.go:316
+  verdict: useful
+  why: сложная функция
+- key: 'complexity|complexity/function-too-long|powershell_completions.go|Function too long (max: 80)'
+  rule: aislop:complexity/function-too-long
+  where: powershell_completions.go:28
+  verdict: useful
+  why: сложная функция
+- key: complexity|errcheck|active_help_test.go|Error return value of `os.Setenv` is not checked
+  rule: golangci-lint:errcheck
+  where: active_help_test.go:281
+  verdict: noise
+  why: идиоматично не проверяют (fmt.Fprint/Close/Setenv/Remove)
+- key: complexity|errcheck|active_help_test.go|Error return value of `os.Unsetenv` is not checked
+  rule: golangci-lint:errcheck
+  where: active_help_test.go:348
+  verdict: noise
+  why: идиоматично не проверяют (fmt.Fprint/Close/Setenv/Remove)
+- key: complexity|errcheck|bash_completions.go|Error return value of `outFile.Close` is not checked
+  rule: golangci-lint:errcheck
+  where: bash_completions.go:706
+  verdict: noise
+  why: идиоматично не проверяют (fmt.Fprint/Close/Setenv/Remove)
+- key: complexity|errcheck|bash_completionsV2.go|Error return value of `outFile.Close` is not checked
+  rule: golangci-lint:errcheck
+  where: bash_completionsV2.go:475
+  verdict: noise
+  why: идиоматично не проверяют (fmt.Fprint/Close/Setenv/Remove)
+- key: complexity|errcheck|bash_completions_test.go|Error return value of `stdin.Close` is not checked
+  rule: golangci-lint:errcheck
+  where: bash_completions_test.go:71
+  verdict: noise
+  why: идиоматично не проверяют (fmt.Fprint/Close/Setenv/Remove)
+- key: complexity|errcheck|cobra_test.go|Error return value of `os.RemoveAll` is not checked
+  rule: golangci-lint:errcheck
+  where: cobra_test.go:257
+  verdict: noise
+  why: идиоматично не проверяют (fmt.Fprint/Close/Setenv/Remove)
+- key: complexity|errcheck|cobra_test.go|Error return value of `os.Remove` is not checked
+  rule: golangci-lint:errcheck
+  where: cobra_test.go:293
+  verdict: noise
+  why: идиоматично не проверяют (fmt.Fprint/Close/Setenv/Remove)
+- key: complexity|errcheck|command.go|Error return value of `fmt.Fprint` is not checked
+  rule: golangci-lint:errcheck
+  where: command.go:1436
+  verdict: noise
+  why: идиоматично не проверяют (fmt.Fprint/Close/Setenv/Remove)
+- key: complexity|errcheck|command.go|Error return value of `fmt.Fprintf` is not checked
+  rule: golangci-lint:errcheck
+  where: command.go:1978
+  verdict: noise
+  why: идиоматично не проверяют (fmt.Fprint/Close/Setenv/Remove)
+- key: complexity|errcheck|command.go|Error return value of `fmt.Fprintln` is not checked
+  rule: golangci-lint:errcheck
+  where: command.go:2038
+  verdict: noise
+  why: идиоматично не проверяют (fmt.Fprint/Close/Setenv/Remove)
+- key: complexity|errcheck|completions.go|Error return value of `f.Close` is not checked
+  rule: golangci-lint:errcheck
+  where: completions.go:965
+  verdict: noise
+  why: идиоматично не проверяют (fmt.Fprint/Close/Setenv/Remove)
+- key: complexity|errcheck|completions.go|Error return value of `fmt.Fprintf` is not checked
+  rule: golangci-lint:errcheck
+  where: completions.go:289
+  verdict: noise
+  why: идиоматично не проверяют (fmt.Fprint/Close/Setenv/Remove)
+- key: complexity|errcheck|completions.go|Error return value of `fmt.Fprintln` is not checked
+  rule: golangci-lint:errcheck
+  where: completions.go:283
+  verdict: noise
+  why: идиоматично не проверяют (fmt.Fprint/Close/Setenv/Remove)
+- key: complexity|errcheck|doc/man_docs.go|Error return value of `f.Close` is not checked
+  rule: golangci-lint:errcheck
+  where: doc/man_docs.go:76
+  verdict: noise
+  why: идиоматично не проверяют (fmt.Fprint/Close/Setenv/Remove)
+- key: complexity|errcheck|doc/man_docs_test.go|Error return value of `os.RemoveAll` is not checked
+  rule: golangci-lint:errcheck
+  where: doc/man_docs_test.go:171
+  verdict: noise
+  why: идиоматично не проверяют (fmt.Fprint/Close/Setenv/Remove)
+- key: 'comments|revive/exported|args.go|exported: exported type PositionalArgs should have comment or be unexported'
+  rule: golangci-lint:revive/exported
+  where: args.go:22
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: 'comments|revive/exported|command.go|exported: exported const FlagSetByCobraAnnotation should have comment (or a comment
+    on this block) or be unexported'
+  rule: golangci-lint:revive/exported
+  where: command.go:34
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: 'comments|revive/exported|command.go|exported: exported method Command.ValidateArgs should have comment or be unexported'
+  rule: golangci-lint:revive/exported
+  where: command.go:1172
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: 'comments|revive/exported|completions.go|exported: exported method CompletionOptions.SetDefaultShellCompDirective should
+    have comment or be unexported'
+  rule: golangci-lint:revive/exported
+  where: completions.go:123
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: duplication|duplicate-block|active_help_test.go|active_help_test.go|active_help_test.go
+  rule: jscpd:duplicate-block
+  where: active_help_test.go:69
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|args_test.go|args_test.go|command_test.go
+  rule: jscpd:duplicate-block
+  where: args_test.go:421
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|bash_completions.go|bash_completions.go|bash_completionsV2.go
+  rule: jscpd:duplicate-block
+  where: bash_completions.go:105
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|bash_completionsV2.go|bash_completionsV2.go|zsh_completions.go
+  rule: jscpd:duplicate-block
+  where: bash_completionsV2.go:98
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|command_test.go|command_test.go|command_test.go
+  rule: jscpd:duplicate-block
+  where: command_test.go:48
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|command_test.go|command_test.go|doc/cmd_test.go
+  rule: jscpd:duplicate-block
+  where: command_test.go:72
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|completions.go|completions.go|completions.go
+  rule: jscpd:duplicate-block
+  where: completions.go:863
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|completions_test.go|completions_test.go|completions_test.go
+  rule: jscpd:duplicate-block
+  where: completions_test.go:27
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|completions_test.go|completions_test.go|fish_completions_test.go
+  rule: jscpd:duplicate-block
+  where: completions_test.go:1544
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|doc/man_docs.go|doc/man_docs.go|doc/md_docs.go
+  rule: jscpd:duplicate-block
+  where: doc/man_docs.go:224
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|doc/man_docs_test.go|doc/man_docs_test.go|doc/man_docs_test.go
+  rule: jscpd:duplicate-block
+  where: doc/man_docs_test.go:40
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|doc/man_docs_test.go|doc/man_docs_test.go|doc/md_docs_test.go
+  rule: jscpd:duplicate-block
+  where: doc/man_docs_test.go:76
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|doc/man_docs_test.go|doc/man_docs_test.go|doc/rest_docs_test.go
+  rule: jscpd:duplicate-block
+  where: doc/man_docs_test.go:75
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|doc/man_docs_test.go|doc/man_docs_test.go|doc/yaml_docs_test.go
+  rule: jscpd:duplicate-block
+  where: doc/man_docs_test.go:217
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|doc/md_docs.go|doc/md_docs.go|doc/rest_docs.go
+  rule: jscpd:duplicate-block
+  where: doc/md_docs.go:90
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: complexity|high-complexity|command.go|ExecuteC
+  rule: lizard:high-complexity
+  where: command.go:1084
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|command.go|Traverse
+  rule: lizard:high-complexity
+  where: command.go:821
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|command.go|argsMinusFirstX
+  rule: lizard:high-complexity
+  where: command.go:715
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|command.go|defaultUsageFunc
+  rule: lizard:high-complexity
+  where: command.go:1974
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|command.go|execute
+  rule: lizard:high-complexity
+  where: command.go:905
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|command.go|stripFlags
+  rule: lizard:high-complexity
+  where: command.go:674
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|completions.go|checkIfFlagCompletion
+  rule: lizard:high-complexity
+  where: completions.go:657
+  verdict: useful
+  why: сложная функция
+- key: 'complexity|high-complexity|completions.go|Высокая цикломатическая сложность (19): '
+  rule: lizard:high-complexity
+  where: completions.go:748
+  verdict: useful
+  why: сложная функция
+- key: 'complexity|high-complexity|completions.go|Высокая цикломатическая сложность (47): '
+  rule: lizard:high-complexity
+  where: completions.go:316
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|completions_test.go|TestNoCmdNameCompletionInGo
+  rule: lizard:high-complexity
+  where: completions_test.go:157
+  verdict: noise
+  why: сложность теста из ассертов
+- key: complexity|high-complexity|doc/md_docs.go|GenMarkdownCustom
+  rule: lizard:high-complexity
+  where: doc/md_docs.go:57
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|doc/rest_docs.go|GenReSTCustom
+  rule: lizard:high-complexity
+  where: doc/rest_docs.go:62
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|doc/yaml_docs.go|GenYamlCustom
+  rule: lizard:high-complexity
+  where: doc/yaml_docs.go:93
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|flag_groups.go|enforceFlagGroupsForCompletion
+  rule: lizard:high-complexity
+  where: flag_groups.go:225
+  verdict: useful
+  why: сложная функция
+- key: 'complexity|high-complexity|flag_groups_test.go|Высокая цикломатическая сложность (11): '
+  rule: lizard:high-complexity
+  where: flag_groups_test.go:164
+  verdict: noise
+  why: сложность теста из ассертов
+- key: 'comments|trivial-comment|command.go|Комментарий пересказывает следующую строку кода: «initialize the default completion
+    command»'
+  rule: restating-comments:trivial-comment
+  where: command.go:1112
+  verdict: useful
+  why: комментарий пересказывает код
+- key: 'complexity|bare-panic-go|command.go|panic() в коде — предпочтительнее возврат error.
+
+    '
+  rule: semgrep:bare-panic-go
+  where: command.go:1209
+  verdict: useful
+  why: panic в библиотеке
+- key: 'complexity|bare-panic-go|flag_groups.go|panic() в коде — предпочтительнее возврат error.
+
+    '
+  rule: semgrep:bare-panic-go
+  where: flag_groups.go:42
+  verdict: useful
+  why: panic в библиотеке
+- key: 'complexity|swallowed-error-go|command.go|Возврат присвоен _ — возможная ошибка проигнорирована.
+
+    '
+  rule: semgrep:swallowed-error-go
+  where: command.go:1230
+  verdict: noise
+  why: явное `_ =` — осознанный игнор
+- key: 'complexity|swallowed-error-go|completions.go|Возврат присвоен _ — возможная ошибка проигнорирована.
+
+    '
+  rule: semgrep:swallowed-error-go
+  where: completions.go:372
+  verdict: noise
+  why: явное `_ =` — осознанный игнор
+- key: 'complexity|swallowed-error-go|flag_groups.go|Возврат присвоен _ — возможная ошибка проигнорирована.
+
+    '
+  rule: semgrep:swallowed-error-go
+  where: flag_groups.go:247
+  verdict: noise
+  why: явное `_ =` — осознанный игнор

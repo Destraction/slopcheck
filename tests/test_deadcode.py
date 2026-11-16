@@ -92,6 +92,7 @@ def test_deptry_live(tmp_path: Path) -> None:
     assert any("requests" in f.message for f in findings)
 
 
+@pytest.mark.skipif(shutil.which("vulture") is None, reason="vulture не установлен")
 def test_vulture_ignores_registered_decorated_functions(tmp_path: Path) -> None:
     """Функция, зарегистрированная декоратором фреймворка, не мёртвая."""
     (tmp_path / "cli.py").write_text(
@@ -105,6 +106,7 @@ def test_vulture_ignores_registered_decorated_functions(tmp_path: Path) -> None:
     assert "version" not in messages
 
 
+@pytest.mark.skipif(shutil.which("vulture") is None, reason="vulture не установлен")
 def test_vulture_ignore_names_from_config(tmp_path: Path) -> None:
     """Имена из dead_code_ignore_names vulture не считает мёртвыми."""
     (tmp_path / "mod.py").write_text(

@@ -1,0 +1,179 @@
+- key: complexity|ai-slop/hardcoded-url|url.go|Hardcoded environment URL in production code
+  rule: aislop:ai-slop/hardcoded-url
+  where: url.go:25
+  verdict: noise
+  why: публичный URL сервиса в конфиге/константе
+- key: comments|ai-slop/narrative-comment|ui/stash.go|Narrative comment block (justification prose)
+  rule: aislop:ai-slop/narrative-comment
+  where: ui/stash.go:822
+  verdict: noise
+  why: пояснение «почему» — полезный комментарий
+- key: comments|ai-slop/trivial-comment|log.go|Trivial comment that restates the code
+  rule: aislop:ai-slop/trivial-comment
+  where: log.go:29
+  verdict: useful
+  why: комментарий пересказывает код
+- key: 'complexity|complexity/file-too-large|ui/stash.go|File too large (max: 600)'
+  rule: aislop:complexity/file-too-large
+  where: ui/stash.go:1
+  verdict: useful
+  why: размер/сигнатура выше порога
+- key: 'complexity|complexity/function-too-long|ui/stash.go|Function too long (max: 80)'
+  rule: aislop:complexity/function-too-long
+  where: ui/stash.go:450
+  verdict: useful
+  why: сложная функция
+- key: 'complexity|complexity/function-too-long|ui/styles.go|Function too long (max: 80)'
+  rule: aislop:complexity/function-too-long
+  where: ui/styles.go:56
+  verdict: useful
+  why: сложная функция
+- key: 'complexity|complexity/function-too-long|ui/ui.go|Function too long (max: 80)'
+  rule: aislop:complexity/function-too-long
+  where: ui/ui.go:196
+  verdict: useful
+  why: сложная функция
+- key: complexity|go-formatting|console_windows.go|Go file is not formatted correctly
+  rule: aislop:go-formatting
+  where: console_windows.go:1
+  verdict: useful
+  why: файл не по gofmt
+- key: 'complexity|staticcheck/S1025|ui/stash.go|S1025: the argument is already a string, there''s no need to use fmt.Sprintf'
+  rule: golangci-lint:staticcheck/S1025
+  where: ui/stash.go:771
+  verdict: useful
+  why: лишний fmt.Sprintf
+- key: duplication|duplicate-block|github.go|github.go|gitlab.go
+  rule: jscpd:duplicate-block
+  where: github.go:14
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|ui/rawpaint_test.go|ui/rawpaint_test.go|ui/ui_test.go
+  rule: jscpd:duplicate-block
+  where: ui/rawpaint_test.go:33
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: complexity|high-complexity|main.go|executeCLI
+  rule: lizard:high-complexity
+  where: main.go:274
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|main.go|sourceFromArg
+  rule: lizard:high-complexity
+  where: main.go:74
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|main.go|validateOptions
+  rule: lizard:high-complexity
+  where: main.go:166
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|ui/pager.go|glamourRender
+  rule: lizard:high-complexity
+  where: ui/pager.go:354
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|ui/pager.go|update
+  rule: lizard:high-complexity
+  where: ui/pager.go:130
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|ui/stashhelp.go|helpView
+  rule: lizard:high-complexity
+  where: ui/stashhelp.go:83
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|ui/stashitem.go|stashItemView
+  rule: lizard:high-complexity
+  where: ui/stashitem.go:18
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|ui/ui.go|Update
+  rule: lizard:high-complexity
+  where: ui/ui.go:196
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|utils/textsize.go|scanEscape
+  rule: lizard:high-complexity
+  where: utils/textsize.go:288
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|utils/textsize.go|writeSizedLine
+  rule: lizard:high-complexity
+  where: utils/textsize.go:228
+  verdict: useful
+  why: сложная функция
+- key: 'comments|trivial-comment|ui/pager.go|Комментарий пересказывает следующую строку кода: «Logo»'
+  rule: restating-comments:trivial-comment
+  where: ui/pager.go:237
+  verdict: useful
+  why: комментарий пересказывает код
+- key: 'comments|trivial-comment|ui/pager.go|Комментарий пересказывает следующую строку кода: «Scroll percent»'
+  rule: restating-comments:trivial-comment
+  where: ui/pager.go:240
+  verdict: useful
+  why: комментарий пересказывает код
+- key: 'comments|trivial-comment|ui/stash.go|Комментарий пересказывает следующую строку кода: «Update pagination»'
+  rule: restating-comments:trivial-comment
+  where: ui/stash.go:651
+  verdict: useful
+  why: комментарий пересказывает код
+- key: 'comments|trivial-comment|ui/stashhelp.go|Комментарий пересказывает следующую строку кода: «If there are errors»'
+  rule: restating-comments:trivial-comment
+  where: ui/stashhelp.go:134
+  verdict: useful
+  why: комментарий пересказывает код
+- key: 'comments|trivial-comment|ui/stashhelp.go|Комментарий пересказывает следующую строку кода: «Merge columns»'
+  rule: restating-comments:trivial-comment
+  where: ui/stashhelp.go:249
+  verdict: useful
+  why: комментарий пересказывает код
+- key: 'complexity|bare-panic-go|ui/stashhelp.go|panic() в коде — предпочтительнее возврат error.
+
+    '
+  rule: semgrep:bare-panic-go
+  where: ui/stashhelp.go:22
+  verdict: useful
+  why: panic в библиотеке
+- key: 'complexity|swallowed-error-go|config_cmd.go|Возврат присвоен _ — возможная ошибка проигнорирована.
+
+    '
+  rule: semgrep:swallowed-error-go
+  where: config_cmd.go:79
+  verdict: noise
+  why: явное `_ =` — осознанный игнор
+- key: 'complexity|swallowed-error-go|main.go|Возврат присвоен _ — возможная ошибка проигнорирована.
+
+    '
+  rule: semgrep:swallowed-error-go
+  where: main.go:113
+  verdict: noise
+  why: явное `_ =` — осознанный игнор
+- key: 'complexity|swallowed-error-go|ui/pager.go|Возврат присвоен _ — возможная ошибка проигнорирована.
+
+    '
+  rule: semgrep:swallowed-error-go
+  where: ui/pager.go:171
+  verdict: noise
+  why: явное `_ =` — осознанный игнор
+- key: 'complexity|swallowed-error-go|ui/rawpaint.go|Возврат присвоен _ — возможная ошибка проигнорирована.
+
+    '
+  rule: semgrep:swallowed-error-go
+  where: ui/rawpaint.go:61
+  verdict: noise
+  why: явное `_ =` — осознанный игнор
+- key: 'complexity|swallowed-error-go|ui/rawpaint_unix.go|Возврат присвоен _ — возможная ошибка проигнорирована.
+
+    '
+  rule: semgrep:swallowed-error-go
+  where: ui/rawpaint_unix.go:20
+  verdict: noise
+  why: явное `_ =` — осознанный игнор
+- key: 'complexity|swallowed-error-go|utils/textsize.go|Возврат присвоен _ — возможная ошибка проигнорирована.
+
+    '
+  rule: semgrep:swallowed-error-go
+  where: utils/textsize.go:67
+  verdict: noise
+  why: явное `_ =` — осознанный игнор

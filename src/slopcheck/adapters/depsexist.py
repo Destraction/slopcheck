@@ -87,9 +87,14 @@ def npm_package_name(specifier: str) -> str | None:
     return name
 
 
+# Строка JSON целиком или комментарий: строки сохраняем, комментарии режем.
+# Без учёта строк `"@/*"` и `"**/*.ts"` читались как начало комментария.
+_JSONC_TOKEN = re.compile(r'"(?:\\.|[^"\\])*"|//[^\n]*|/\*.*?\*/', re.DOTALL)
+
+
 def _strip_jsonc(text: str) -> str:
     """tsconfig — JSON с комментариями и висячими запятыми."""
-    text = re.sub(r"//[^\n]*|/\*.*?\*/", "", text, flags=re.DOTALL)
+    text = _JSONC_TOKEN.sub(lambda m: m.group(0) if m.group(0).startswith('"') else "", text)
     return re.sub(r",(\s*[}\]])", r"\1", text)
 
 

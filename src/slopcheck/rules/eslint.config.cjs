@@ -41,7 +41,8 @@ module.exports = [
       "react/jsx-key": "warn",
       "react/no-array-index-key": "warn",
       "react/no-danger": "warn",
-      "react/no-unstable-nested-components": "warn",
+      // Рендер-функция в пропе (`Cell()`, `components={{...}}`) — не компонент внутри рендера.
+      "react/no-unstable-nested-components": ["warn", { allowAsProps: true }],
       "jsdoc/require-jsdoc": [
         "warn",
         {

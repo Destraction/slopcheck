@@ -1,0 +1,539 @@
+- key: complexity|ai-slop/console-leftover|ui/src/message/WebSocketStore.ts|console.log/debug/info statement left in production
+    code
+  rule: aislop:ai-slop/console-leftover
+  where: ui/src/message/WebSocketStore.ts:27
+  verdict: useful
+  why: console.log в рабочем коде
+- key: complexity|ai-slop/console-leftover|ui/src/snack/browserNotification.ts|console.log/debug/info statement left in production
+    code
+  rule: aislop:ai-slop/console-leftover
+  where: ui/src/snack/browserNotification.ts:12
+  verdict: useful
+  why: console.log в рабочем коде
+- key: complexity|ai-slop/empty-function|ui/src/application/AppStore.ts|Empty function body — possible stub or unfinished
+    implementation
+  rule: aislop:ai-slop/empty-function
+  where: ui/src/application/AppStore.ts:11
+  verdict: noise
+  why: пустой колбэк по умолчанию
+- key: complexity|ai-slop/empty-function|ui/src/plugin/PluginStore.ts|Empty function body — possible stub or unfinished implementation
+  rule: aislop:ai-slop/empty-function
+  where: ui/src/plugin/PluginStore.ts:9
+  verdict: noise
+  why: пустой колбэк по умолчанию
+- key: complexity|ai-slop/go-library-panic|auth/token.go|`panic()` in package `auth` (non-main, non-test). Library code should
+    return errors, not unwind the goroutine.
+  rule: aislop:ai-slop/go-library-panic
+  where: auth/token.go:102
+  verdict: noise
+  why: panic на ошибке программиста — идиома
+- key: complexity|ai-slop/go-library-panic|database/database.go|`panic()` in package `database` (non-main, non-test). Library
+    code should return errors, not unwind the goroutine.
+  rule: aislop:ai-slop/go-library-panic
+  where: database/database.go:171
+  verdict: useful
+  why: panic на ошибке окружения
+- key: complexity|ai-slop/go-library-panic|mode/mode.go|`panic()` in package `mode` (non-main, non-test). Library code should
+    return errors, not unwind the goroutine.
+  rule: aislop:ai-slop/go-library-panic
+  where: mode/mode.go:41
+  verdict: noise
+  why: panic на ошибке программиста — идиома
+- key: complexity|ai-slop/go-library-panic|router/router.go|`panic()` in package `router` (non-main, non-test). Library code
+    should return errors, not unwind the goroutine.
+  rule: aislop:ai-slop/go-library-panic
+  where: router/router.go:117
+  verdict: useful
+  why: panic на ошибке окружения
+- key: complexity|ai-slop/go-library-panic|ui/serve.go|`panic()` in package `ui` (non-main, non-test). Library code should
+    return errors, not unwind the goroutine.
+  rule: aislop:ai-slop/go-library-panic
+  where: ui/serve.go:46
+  verdict: useful
+  why: panic на ошибке окружения
+- key: complexity|ai-slop/swallowed-exception|config/file.go|Error return value is being ignored
+  rule: aislop:ai-slop/swallowed-exception
+  where: config/file.go:16
+  verdict: useful
+  why: ошибка отброшена `, _ :=`
+- key: complexity|ai-slop/unsafe-type-assertion|ui/src/layout/Navigation.tsx|'as any' bypasses type safety
+  rule: aislop:ai-slop/unsafe-type-assertion
+  where: ui/src/layout/Navigation.tsx:32
+  verdict: useful
+  why: any в рабочем коде
+- key: dead_code|ai-slop/unused-import|ui/src/application/AddApplicationDialog.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: ui/src/application/AddApplicationDialog.tsx:10
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: dead_code|ai-slop/unused-import|ui/src/application/Applications.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: ui/src/application/Applications.tsx:1
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: dead_code|ai-slop/unused-import|ui/src/application/UpdateApplicationDialog.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: ui/src/application/UpdateApplicationDialog.tsx:10
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: dead_code|ai-slop/unused-import|ui/src/client/AddClientDialog.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: ui/src/client/AddClientDialog.tsx:1
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: dead_code|ai-slop/unused-import|ui/src/client/Clients.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: ui/src/client/Clients.tsx:1
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: dead_code|ai-slop/unused-import|ui/src/client/ElevateClientDialog.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: ui/src/client/ElevateClientDialog.tsx:1
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: dead_code|ai-slop/unused-import|ui/src/client/UpdateClientDialog.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: ui/src/client/UpdateClientDialog.tsx:1
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: dead_code|ai-slop/unused-import|ui/src/common/ConfirmDialog.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: ui/src/common/ConfirmDialog.tsx:7
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: dead_code|ai-slop/unused-import|ui/src/common/ConnectionErrorBanner.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: ui/src/common/ConnectionErrorBanner.tsx:1
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: dead_code|ai-slop/unused-import|ui/src/common/ElevationForm.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: ui/src/common/ElevationForm.tsx:1
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: dead_code|ai-slop/unused-import|ui/src/common/LoadingSpinner.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: ui/src/common/LoadingSpinner.tsx:3
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: dead_code|ai-slop/unused-import|ui/src/common/TokenConfirmDialog.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: ui/src/common/TokenConfirmDialog.tsx:7
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: dead_code|ai-slop/unused-import|ui/src/message/PushMessageDialog.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: ui/src/message/PushMessageDialog.tsx:9
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: dead_code|ai-slop/unused-import|ui/src/user/Settings.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: ui/src/user/Settings.tsx:1
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: 'complexity|complexity/function-too-long|config/config.go|Function too long (max: 80)'
+  rule: aislop:complexity/function-too-long
+  where: config/config.go:100
+  verdict: useful
+  why: сложная функция
+- key: 'complexity|complexity/function-too-long|router/router.go|Function too long (max: 80)'
+  rule: aislop:complexity/function-too-long
+  where: router/router.go:28
+  verdict: useful
+  why: сложная функция
+- key: 'complexity|complexity/too-many-params|database/database.go|Function has too many parameters (max: 6)'
+  rule: aislop:complexity/too-many-params
+  where: database/database.go:33
+  verdict: useful
+  why: размер/сигнатура выше порога
+- key: complexity|@typescript-eslint/no-non-null-assertion|ui/src/index.tsx|Forbidden non-null assertion.
+  rule: eslint:@typescript-eslint/no-non-null-assertion
+  where: ui/src/index.tsx:66
+  verdict: useful
+  why: '! вместо проверки'
+- key: complexity|@typescript-eslint/no-non-null-assertion|ui/src/plugin/PluginDetailView.tsx|Forbidden non-null assertion.
+  rule: eslint:@typescript-eslint/no-non-null-assertion
+  where: ui/src/plugin/PluginDetailView.tsx:173
+  verdict: useful
+  why: '! вместо проверки'
+- key: complexity|@typescript-eslint/no-non-null-assertion|ui/src/tests/plugin.test.ts|Forbidden non-null assertion.
+  rule: eslint:@typescript-eslint/no-non-null-assertion
+  where: ui/src/tests/plugin.test.ts:138
+  verdict: noise
+  why: '! в тестах'
+- key: complexity|@typescript-eslint/no-non-null-assertion|ui/src/tests/setup.ts|Forbidden non-null assertion.
+  rule: eslint:@typescript-eslint/no-non-null-assertion
+  where: ui/src/tests/setup.ts:86
+  verdict: noise
+  why: '! в тестах'
+- key: complexity|@typescript-eslint/no-non-null-assertion|ui/src/tests/utils.ts|Forbidden non-null assertion.
+  rule: eslint:@typescript-eslint/no-non-null-assertion
+  where: ui/src/tests/utils.ts:5
+  verdict: noise
+  why: '! в тестах'
+- key: comments|jsdoc/require-jsdoc|ui/src/CurrentUser.ts|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: ui/src/CurrentUser.ts:8
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|ui/src/ElevateStore.ts|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: ui/src/ElevateStore.ts:7
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|ui/src/apiAuth.ts|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: ui/src/apiAuth.ts:5
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|ui/src/application/AddApplicationDialog.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: ui/src/application/AddApplicationDialog.tsx:17
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|ui/src/application/AppStore.ts|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: ui/src/application/AppStore.ts:10
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|ui/src/application/UpdateApplicationDialog.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: ui/src/application/UpdateApplicationDialog.tsx:20
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|ui/src/client/AddClientDialog.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: ui/src/client/AddClientDialog.tsx:16
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|ui/src/client/ClientStore.ts|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: ui/src/client/ClientStore.ts:8
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|ui/src/client/UpdateClientDialog.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: ui/src/client/UpdateClientDialog.tsx:19
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|ui/src/clipboard.ts|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: ui/src/clipboard.ts:1
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|ui/src/common/ConnectionErrorBanner.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: ui/src/common/ConnectionErrorBanner.tsx:11
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|ui/src/common/Container.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: ui/src/common/Container.tsx:15
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|ui/src/common/CopyableSecret.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: ui/src/common/CopyableSecret.tsx:15
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|ui/src/common/DefaultPage.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: ui/src/common/DefaultPage.tsx:11
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|ui/src/common/LastUsedCell.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: ui/src/common/LastUsedCell.tsx:6
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: 'complexity|react-hooks/exhaustive-deps|ui/src/application/Applications.tsx|React Hook useEffect has a missing dependency:
+    ''appStore''. Either include it or remove the dependency array.'
+  rule: eslint:react-hooks/exhaustive-deps
+  where: ui/src/application/Applications.tsx:78
+  verdict: useful
+  why: пропущенная зависимость эффекта
+- key: 'complexity|react-hooks/exhaustive-deps|ui/src/client/Clients.tsx|React Hook useEffect has a missing dependency: ''clientStore''.
+    Either include it or remove the dependency array.'
+  rule: eslint:react-hooks/exhaustive-deps
+  where: ui/src/client/Clients.tsx:37
+  verdict: useful
+  why: пропущенная зависимость эффекта
+- key: 'complexity|react-hooks/exhaustive-deps|ui/src/common/ScrollUpButton.tsx|React Hook React.useEffect has missing dependencies:
+    ''state.display'' and ''state.opacity''. Either include them or remove the dependency array.'
+  rule: eslint:react-hooks/exhaustive-deps
+  where: ui/src/common/ScrollUpButton.tsx:18
+  verdict: useful
+  why: пропущенная зависимость эффекта
+- key: 'complexity|react-hooks/exhaustive-deps|ui/src/message/Message.tsx|React Hook React.useEffect has a missing dependency:
+    ''onExpand''. Either include it or remove the dependency array. If ''onExpand'' changes too often, find the parent component
+    that defines it and wrap that definition in useCallback.'
+  rule: eslint:react-hooks/exhaustive-deps
+  where: ui/src/message/Message.tsx:152
+  verdict: useful
+  why: пропущенная зависимость эффекта
+- key: 'complexity|react-hooks/exhaustive-deps|ui/src/message/Messages.tsx|React Hook React.useEffect has a missing dependency:
+    ''messagesStore''. Either include it or remove the dependency array.'
+  rule: eslint:react-hooks/exhaustive-deps
+  where: ui/src/message/Messages.tsx:58
+  verdict: useful
+  why: пропущенная зависимость эффекта
+- key: 'complexity|react-hooks/exhaustive-deps|ui/src/plugin/PluginDetailView.tsx|React Hook React.useEffect has a missing
+    dependency: ''refreshFeatures''. Either include it or remove the dependency array.'
+  rule: eslint:react-hooks/exhaustive-deps
+  where: ui/src/plugin/PluginDetailView.tsx:33
+  verdict: useful
+  why: пропущенная зависимость эффекта
+- key: 'complexity|react-hooks/exhaustive-deps|ui/src/plugin/Plugins.tsx|React Hook React.useEffect has a missing dependency:
+    ''pluginStore''. Either include it or remove the dependency array.'
+  rule: eslint:react-hooks/exhaustive-deps
+  where: ui/src/plugin/Plugins.tsx:21
+  verdict: useful
+  why: пропущенная зависимость эффекта
+- key: 'complexity|react-hooks/exhaustive-deps|ui/src/user/Login.tsx|React Hook React.useEffect has missing dependencies:
+    ''navigate'' and ''oidcLoginUrl''. Either include them or remove the dependency array.'
+  rule: eslint:react-hooks/exhaustive-deps
+  where: ui/src/user/Login.tsx:42
+  verdict: useful
+  why: пропущенная зависимость эффекта
+- key: 'complexity|react-hooks/exhaustive-deps|ui/src/user/Users.tsx|React Hook React.useEffect has a missing dependency:
+    ''userStore''. Either include it or remove the dependency array.'
+  rule: eslint:react-hooks/exhaustive-deps
+  where: ui/src/user/Users.tsx:50
+  verdict: useful
+  why: пропущенная зависимость эффекта
+- key: complexity|react/no-unstable-nested-components|ui/src/common/Markdown.tsx|Do not define components during render. React
+    will see a new component type on every render and destroy the entire subtree’s DOM nodes and state (https://reactjs.org/docs/reconciliation.html#elements-of-different-types).
+    Instead, move this component definition out of the parent component “Markdown” and pass data as props. If you want to
+    allow component creation in props, set allowAsProps option to true.
+  rule: eslint:react/no-unstable-nested-components
+  where: ui/src/common/Markdown.tsx:27
+  verdict: noise
+  why: рендер-функция передаётся пропом
+- key: duplication|duplicate-block|api/application.go|api/application.go|api/application.go
+  rule: jscpd:duplicate-block
+  where: api/application.go:195
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|api/application.go|api/application.go|api/message.go
+  rule: jscpd:duplicate-block
+  where: api/application.go:196
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|api/application_test.go|api/application_test.go|api/application_test.go
+  rule: jscpd:duplicate-block
+  where: api/application_test.go:97
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|api/application_test.go|api/application_test.go|api/client_test.go
+  rule: jscpd:duplicate-block
+  where: api/application_test.go:156
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|api/application_test.go|api/application_test.go|api/health_test.go
+  rule: jscpd:duplicate-block
+  where: api/application_test.go:39
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|api/application_test.go|api/application_test.go|api/session_test.go
+  rule: jscpd:duplicate-block
+  where: api/application_test.go:39
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|api/client.go|api/client.go|api/client.go
+  rule: jscpd:duplicate-block
+  where: api/client.go:92
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|api/client_test.go|api/client_test.go|api/client_test.go
+  rule: jscpd:duplicate-block
+  where: api/client_test.go:67
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|api/message_test.go|api/message_test.go|api/message_test.go
+  rule: jscpd:duplicate-block
+  where: api/message_test.go:85
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|api/oidc_test.go|api/oidc_test.go|api/oidc_test.go
+  rule: jscpd:duplicate-block
+  where: api/oidc_test.go:95
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|api/oidc_test.go|api/oidc_test.go|api/user_test.go
+  rule: jscpd:duplicate-block
+  where: api/oidc_test.go:45
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|api/plugin.go|api/plugin.go|api/plugin.go
+  rule: jscpd:duplicate-block
+  where: api/plugin.go:125
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|api/plugin_test.go|api/plugin_test.go|api/plugin_test.go
+  rule: jscpd:duplicate-block
+  where: api/plugin_test.go:101
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|api/session_test.go|api/session_test.go|api/session_test.go
+  rule: jscpd:duplicate-block
+  where: api/session_test.go:61
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|api/stream/stream_test.go|api/stream/stream_test.go|api/stream/stream_test.go
+  rule: jscpd:duplicate-block
+  where: api/stream/stream_test.go:179
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: 'complexity|high-complexity|api/application.go|Высокая цикломатическая сложность (14): '
+  rule: lizard:high-complexity
+  where: api/application.go:418
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|api/oidc.go|resolveUser
+  rule: lizard:high-complexity
+  where: api/oidc.go:426
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|api/user.go|CreateUser
+  rule: lizard:high-complexity
+  where: api/user.go:188
+  verdict: useful
+  why: сложная функция
+- key: 'complexity|high-complexity|api/user.go|Высокая цикломатическая сложность (12): '
+  rule: lizard:high-complexity
+  where: api/user.go:454
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|auth/authentication.go|handleApplication
+  rule: lizard:high-complexity
+  where: auth/authentication.go:229
+  verdict: useful
+  why: сложная функция
+- key: 'complexity|high-complexity|auth/authentication.go|Высокая цикломатическая сложность (14): '
+  rule: lizard:high-complexity
+  where: auth/authentication.go:187
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|auth/token.go|ParseEnhancedToken
+  rule: lizard:high-complexity
+  where: auth/token.go:108
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|database/application_test.go|TestApplication
+  rule: lizard:high-complexity
+  where: database/application_test.go:11
+  verdict: noise
+  why: сложность теста из ассертов
+- key: complexity|high-complexity|database/client_test.go|TestClient
+  rule: lizard:high-complexity
+  where: database/client_test.go:11
+  verdict: noise
+  why: сложность теста из ассертов
+- key: complexity|high-complexity|database/database.go|New
+  rule: lizard:high-complexity
+  where: database/database.go:33
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|fracdex/fracdex.go|NKeysBetween
+  rule: lizard:high-complexity
+  where: fracdex/fracdex.go:360
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|fracdex/fracdex.go|keyBetweenInternal
+  rule: lizard:high-complexity
+  where: fracdex/fracdex.go:39
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|fracdex/fracdex.go|midpoint
+  rule: lizard:high-complexity
+  where: fracdex/fracdex.go:117
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|plugin/manager.go|initializeSingleUserPlugin
+  rule: lizard:high-complexity
+  where: plugin/manager.go:307
+  verdict: useful
+  why: сложная функция
+- key: complexity|high-complexity|ui/src/plugin/PluginDetailView.tsx|PluginDetailView
+  rule: lizard:high-complexity
+  where: ui/src/plugin/PluginDetailView.tsx:19
+  verdict: useful
+  why: сложная функция
+- key: 'complexity|bare-panic-go|auth/util.go|panic() в коде — предпочтительнее возврат error.
+
+    '
+  rule: semgrep:bare-panic-go
+  where: auth/util.go:42
+  verdict: useful
+  why: panic в библиотеке
+- key: 'complexity|bare-panic-go|plugin/example/clock/main.go|panic() в коде — предпочтительнее возврат error.
+
+    '
+  rule: semgrep:bare-panic-go
+  where: plugin/example/clock/main.go:62
+  verdict: noise
+  why: panic в main/тестовом плагине
+- key: 'complexity|bare-panic-go|plugin/example/echo/echo.go|panic() в коде — предпочтительнее возврат error.
+
+    '
+  rule: semgrep:bare-panic-go
+  where: plugin/example/echo/echo.go:118
+  verdict: useful
+  why: panic в библиотеке
+- key: 'complexity|bare-panic-go|plugin/example/minimal/main.go|panic() в коде — предпочтительнее возврат error.
+
+    '
+  rule: semgrep:bare-panic-go
+  where: plugin/example/minimal/main.go:34
+  verdict: noise
+  why: panic в main/тестовом плагине
+- key: 'complexity|bare-panic-go|plugin/testing/broken/cantinstantiate/main.go|panic() в коде — предпочтительнее возврат error.
+
+    '
+  rule: semgrep:bare-panic-go
+  where: plugin/testing/broken/cantinstantiate/main.go:35
+  verdict: noise
+  why: panic в main/тестовом плагине
+- key: 'complexity|bare-panic-go|plugin/testing/broken/malformedconstructor/main.go|panic() в коде — предпочтительнее возврат
+    error.
+
+    '
+  rule: semgrep:bare-panic-go
+  where: plugin/testing/broken/malformedconstructor/main.go:33
+  verdict: noise
+  why: panic в main/тестовом плагине
+- key: 'complexity|bare-panic-go|plugin/testing/broken/noinstance/main.go|panic() в коде — предпочтительнее возврат error.
+
+    '
+  rule: semgrep:bare-panic-go
+  where: plugin/testing/broken/noinstance/main.go:15
+  verdict: noise
+  why: panic в main/тестовом плагине
+- key: 'complexity|bare-panic-go|plugin/testing/broken/nothing/main.go|panic() в коде — предпочтительнее возврат error.
+
+    '
+  rule: semgrep:bare-panic-go
+  where: plugin/testing/broken/nothing/main.go:4
+  verdict: noise
+  why: panic в main/тестовом плагине
+- key: 'complexity|bare-panic-go|plugin/testing/broken/unknowninfo/main.go|panic() в коде — предпочтительнее возврат error.
+
+    '
+  rule: semgrep:bare-panic-go
+  where: plugin/testing/broken/unknowninfo/main.go:9
+  verdict: noise
+  why: panic в main/тестовом плагине
+- key: 'complexity|empty-catch|ui/src/ElevateStore.ts|Пустой catch — ошибка проглочена без обработки.
+
+    '
+  rule: semgrep:empty-catch
+  where: ui/src/ElevateStore.ts:78
+  verdict: noise
+  why: catch с поясняющим комментарием
+- key: 'complexity|empty-catch|ui/vite.config.ts|Пустой catch — ошибка проглочена без обработки.
+
+    '
+  rule: semgrep:empty-catch
+  where: ui/vite.config.ts:5
+  verdict: noise
+  why: catch с поясняющим комментарием

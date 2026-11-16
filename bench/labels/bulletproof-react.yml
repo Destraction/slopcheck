@@ -1,0 +1,347 @@
+- key: complexity|ai-slop/console-leftover|mock-server.ts|console.log/debug/info statement left in production code
+  rule: aislop:ai-slop/console-leftover
+  where: mock-server.ts:24
+  verdict: noise
+  why: лог запуска сервера/скрипта
+- key: complexity|ai-slop/unsafe-type-assertion|src/testing/test-utils.tsx|'as any' bypasses type safety
+  rule: aislop:ai-slop/unsafe-type-assertion
+  where: src/testing/test-utils.tsx:20
+  verdict: useful
+  why: any в рабочем коде
+- key: dead_code|ai-slop/unused-import|.storybook/preview.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: .storybook/preview.tsx:1
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: dead_code|ai-slop/unused-import|src/features/auth/components/register-form.tsx|Imported symbol 'React' is never used
+  rule: aislop:ai-slop/unused-import
+  where: src/features/auth/components/register-form.tsx:1
+  verdict: useful
+  why: 'импорт не используется (React при jsx: react-jsx)'
+- key: duplication|code-quality/duplicate-block|src/components/layouts/dashboard-layout.tsx|Duplicate code block — extract
+    a shared helper
+  rule: aislop:code-quality/duplicate-block
+  where: src/components/layouts/dashboard-layout.tsx:150
+  verdict: useful
+  why: повтор блока
+- key: duplication|code-quality/duplicate-block|src/components/ui/dialog/dialog.tsx|Duplicate code block — extract a shared
+    helper
+  rule: aislop:code-quality/duplicate-block
+  where: src/components/ui/dialog/dialog.tsx:69
+  verdict: noise
+  why: вендоренный UI-кит
+- key: duplication|code-quality/duplicate-block|src/components/ui/drawer/drawer.tsx|Duplicate code block — extract a shared
+    helper
+  rule: aislop:code-quality/duplicate-block
+  where: src/components/ui/drawer/drawer.tsx:91
+  verdict: noise
+  why: вендоренный UI-кит
+- key: duplication|code-quality/duplicate-block|src/testing/mocks/handlers/auth.ts|Duplicate code block — extract a shared
+    helper
+  rule: aislop:code-quality/duplicate-block
+  where: src/testing/mocks/handlers/auth.ts:122
+  verdict: useful
+  why: повтор блока
+- key: duplication|code-quality/duplicate-block|src/testing/mocks/handlers/discussions.ts|Duplicate code block — extract a
+    shared helper
+  rule: aislop:code-quality/duplicate-block
+  where: src/testing/mocks/handlers/discussions.ts:211
+  verdict: useful
+  why: повтор блока
+- key: duplication|code-quality/duplicate-block|src/testing/mocks/handlers/users.ts|Duplicate code block — extract a shared
+    helper
+  rule: aislop:code-quality/duplicate-block
+  where: src/testing/mocks/handlers/users.ts:94
+  verdict: useful
+  why: повтор блока
+- key: dead_code|eslint/no-unused-vars|src/testing/mocks/utils.ts|Catch parameter 'err' is caught but never used.
+  rule: aislop:eslint/no-unused-vars
+  where: src/testing/mocks/utils.ts:101
+  verdict: noise
+  why: параметр сигнатуры фреймворка / catch / исключение из rest
+- key: complexity|jsx-a11y/prefer-tag-over-role|src/features/comments/components/comments-list.tsx|Prefer `menu, ol, ul` over
+    `role` attribute `list`.
+  rule: aislop:jsx-a11y/prefer-tag-over-role
+  where: src/features/comments/components/comments-list.tsx:36
+  verdict: noise
+  why: a11y вне задач slop-гейта; содержимое через props
+- key: complexity|react/set-state-in-effect|src/components/layouts/dashboard-layout.tsx|Calling setState synchronously within
+    an effect can trigger cascading renders
+  rule: aislop:react/set-state-in-effect
+  where: src/components/layouts/dashboard-layout.tsx:45
+  verdict: useful
+  why: setState в эффекте
+- key: complexity|security/dangerously-set-innerhtml|src/components/ui/md-preview/md-preview.tsx|dangerouslySetInnerHTML can
+    lead to XSS if not sanitized
+  rule: aislop:security/dangerously-set-innerhtml
+  where: src/components/ui/md-preview/md-preview.tsx:14
+  verdict: noise
+  why: HTML уже очищен DOMPurify
+- key: 'complexity|security/dependency-audit-skipped|package.json|Dependency audit skipped (npm audit): lockfile is missing'
+  rule: aislop:security/dependency-audit-skipped
+  where: package.json:1
+  verdict: noise
+  why: служебное сообщение aislop, не находка в коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/app/router.tsx|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/app/router.tsx:14
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/components/ui/form/form.tsx|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/components/ui/form/form.tsx:183
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/lib/react-query.ts|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/lib/react-query.ts:12
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/testing/mocks/db.ts|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/testing/mocks/db.ts:52
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/testing/mocks/handlers/auth.ts|Unexpected any. Specify a different
+    type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/testing/mocks/handlers/auth.ts:104
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/testing/mocks/handlers/comments.ts|Unexpected any. Specify a different
+    type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/testing/mocks/handlers/comments.ts:67
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/testing/mocks/handlers/discussions.ts|Unexpected any. Specify a different
+    type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/testing/mocks/handlers/discussions.ts:73
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/testing/mocks/handlers/teams.ts|Unexpected any. Specify a different
+    type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/testing/mocks/handlers/teams.ts:15
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/testing/mocks/handlers/users.ts|Unexpected any. Specify a different
+    type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/testing/mocks/handlers/users.ts:40
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/testing/mocks/utils.ts|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/testing/mocks/utils.ts:6
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/testing/test-utils.tsx|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/testing/test-utils.tsx:19
+  verdict: useful
+  why: any в рабочем коде
+- key: dead_code|@typescript-eslint/no-unused-vars|e2e/tests/auth.setup.ts|'expect' is defined but never used. Allowed unused
+    vars must match /^_/u.
+  rule: eslint:@typescript-eslint/no-unused-vars
+  where: e2e/tests/auth.setup.ts:1
+  verdict: useful
+  why: неиспользуемый импорт
+- key: comments|jsdoc/require-jsdoc|generators/component/index.cjs|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: generators/component/index.cjs:33
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/app/index.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/app/index.tsx:4
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/app/provider.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/app/provider.tsx:17
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/app/router.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/app/router.tsx:24
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/app/routes/app/dashboard.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/app/routes/app/dashboard.tsx:5
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/app/routes/app/discussions/discussion.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/app/routes/app/discussions/discussion.tsx:16
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/app/routes/app/discussions/discussions.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/app/routes/app/discussions/discussions.tsx:11
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/app/routes/app/profile.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/app/routes/app/profile.tsx:18
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/app/routes/app/root.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/app/routes/app/root.tsx:5
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/app/routes/app/users.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/app/routes/app/users.tsx:8
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/app/routes/auth/login.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/app/routes/auth/login.tsx:7
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/app/routes/auth/register.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/app/routes/auth/register.tsx:9
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/app/routes/landing.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/app/routes/landing.tsx:9
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/app/routes/not-found.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/app/routes/not-found.tsx:4
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/components/errors/main.tsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/components/errors/main.tsx:3
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: "complexity|react-hooks/set-state-in-effect|src/components/layouts/dashboard-layout.tsx|Error: Calling setState synchronously\
+    \ within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external\
+    \ systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body\
+    \ of an effect should do one or both of the following:\n* Update external systems with the latest state from React.\n\
+    * Subscribe for updates from some external system, calling setState in a callback function when external state changes.\n\
+    \nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not\
+    \ recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\n/Users/imarkov/.cache/slopcheck-bench/bulletproof-react/apps/react-vite/src/components/layouts/dashboard-layout.tsx:45:5\n\
+    \  43 |\n  44 |   useEffect(() => {\n> 45 |     setProgress(0);\n     |     ^^^^^^^^^^^ Avoid calling setState() directly\
+    \ within an effect\n  46 |   }, [location?.pathname]);\n  47 |\n  48 |   useEffect(() => {"
+  rule: eslint:react-hooks/set-state-in-effect
+  where: src/components/layouts/dashboard-layout.tsx:45
+  verdict: useful
+  why: setState в эффекте
+- key: complexity|react/no-array-index-key|src/components/ui/table/table.tsx|Do not use Array index in keys
+  rule: eslint:react/no-array-index-key
+  where: src/components/ui/table/table.tsx:157
+  verdict: noise
+  why: составной ключ
+- key: complexity|react/no-danger|src/components/ui/md-preview/md-preview.tsx|Dangerous property 'dangerouslySetInnerHTML'
+    found
+  rule: eslint:react/no-danger
+  where: src/components/ui/md-preview/md-preview.tsx:14
+  verdict: noise
+  why: HTML уже очищен DOMPurify
+- key: complexity|react/no-unstable-nested-components|src/features/discussions/components/discussions-list.tsx|Do not define
+    components during render. React will see a new component type on every render and destroy the entire subtree’s DOM nodes
+    and state (https://reactjs.org/docs/reconciliation.html#elements-of-different-types). Instead, move this component definition
+    out of the parent component “DiscussionsList” and pass data as props. If you want to allow component creation in props,
+    set allowAsProps option to true.
+  rule: eslint:react/no-unstable-nested-components
+  where: src/features/discussions/components/discussions-list.tsx:53
+  verdict: noise
+  why: рендер-функция передаётся пропом
+- key: complexity|react/no-unstable-nested-components|src/features/users/components/users-list.tsx|Do not define components
+    during render. React will see a new component type on every render and destroy the entire subtree’s DOM nodes and state
+    (https://reactjs.org/docs/reconciliation.html#elements-of-different-types). Instead, move this component definition out
+    of the parent component “UsersList” and pass data as props. If you want to allow component creation in props, set allowAsProps
+    option to true.
+  rule: eslint:react/no-unstable-nested-components
+  where: src/features/users/components/users-list.tsx:47
+  verdict: noise
+  why: рендер-функция передаётся пропом
+- key: duplication|duplicate-block|e2e/tests/auth.setup.ts|e2e/tests/auth.setup.ts|e2e/tests/auth.setup.ts
+  rule: jscpd:duplicate-block
+  where: e2e/tests/auth.setup.ts:18
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|src/components/ui/dialog/__tests__/dialog.test.tsx|src/components/ui/dialog/__tests__/dialog.test.tsx|src/components/ui/dialog/confirmation-dialog/__tests__/confirmation-dialog.test.tsx
+  rule: jscpd:duplicate-block
+  where: src/components/ui/dialog/__tests__/dialog.test.tsx:55
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|src/components/ui/dialog/__tests__/dialog.test.tsx|src/components/ui/dialog/__tests__/dialog.test.tsx|src/components/ui/dialog/dialog.stories.tsx
+  rule: jscpd:duplicate-block
+  where: src/components/ui/dialog/__tests__/dialog.test.tsx:20
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|src/components/ui/form/__tests__/form.test.tsx|src/components/ui/form/__tests__/form.test.tsx|src/components/ui/form/__tests__/form.test.tsx
+  rule: jscpd:duplicate-block
+  where: src/components/ui/form/__tests__/form.test.tsx:18
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|src/features/auth/components/login-form.tsx|src/features/auth/components/login-form.tsx|src/features/auth/components/register-form.tsx
+  rule: jscpd:duplicate-block
+  where: src/features/auth/components/login-form.tsx:28
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|src/features/comments/api/create-comment.ts|src/features/comments/api/create-comment.ts|src/features/comments/api/delete-comment.ts
+  rule: jscpd:duplicate-block
+  where: src/features/comments/api/create-comment.ts:33
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|src/features/discussions/api/create-discussion.ts|src/features/discussions/api/create-discussion.ts|src/features/discussions/api/delete-discussion.ts
+  rule: jscpd:duplicate-block
+  where: src/features/discussions/api/create-discussion.ts:31
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|src/features/discussions/components/create-discussion.tsx|src/features/discussions/components/create-discussion.tsx|src/features/discussions/components/update-discussion.tsx
+  rule: jscpd:duplicate-block
+  where: src/features/discussions/components/create-discussion.tsx:62
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|src/features/discussions/components/discussions-list.tsx|src/features/discussions/components/discussions-list.tsx|src/features/users/components/users-list.tsx
+  rule: jscpd:duplicate-block
+  where: src/features/discussions/components/discussions-list.tsx:48
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|src/hooks/__tests__/use-disclosure.test.ts|src/hooks/__tests__/use-disclosure.test.ts|src/hooks/__tests__/use-disclosure.test.ts
+  rule: jscpd:duplicate-block
+  where: src/hooks/__tests__/use-disclosure.test.ts:36
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|src/lib/__tests__/authorization.test.tsx|src/lib/__tests__/authorization.test.tsx|src/lib/__tests__/authorization.test.tsx
+  rule: jscpd:duplicate-block
+  where: src/lib/__tests__/authorization.test.tsx:24
+  verdict: noise
+  why: повтор подготовки в тестах
+- key: duplication|duplicate-block|src/testing/mocks/handlers/auth.ts|src/testing/mocks/handlers/auth.ts|src/testing/mocks/handlers/auth.ts
+  rule: jscpd:duplicate-block
+  where: src/testing/mocks/handlers/auth.ts:93
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|src/testing/mocks/handlers/comments.ts|src/testing/mocks/handlers/comments.ts|src/testing/mocks/handlers/comments.ts
+  rule: jscpd:duplicate-block
+  where: src/testing/mocks/handlers/comments.ts:75
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|src/testing/mocks/handlers/comments.ts|src/testing/mocks/handlers/comments.ts|src/testing/mocks/handlers/discussions.ts
+  rule: jscpd:duplicate-block
+  where: src/testing/mocks/handlers/comments.ts:60
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: duplication|duplicate-block|src/testing/mocks/handlers/comments.ts|src/testing/mocks/handlers/comments.ts|src/testing/mocks/handlers/users.ts
+  rule: jscpd:duplicate-block
+  where: src/testing/mocks/handlers/comments.ts:75
+  verdict: useful
+  why: копипаста в рабочем коде
+- key: complexity|high-complexity|src/features/users/components/update-profile.tsx|UpdateProfile
+  rule: lizard:high-complexity
+  where: src/features/users/components/update-profile.tsx:13
+  verdict: useful
+  why: сложная функция

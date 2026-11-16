@@ -1,0 +1,353 @@
+- key: complexity|ai-slop/double-type-assertion|src/middleware/devtools.ts|Double type assertion (as unknown as X) bypasses
+    type checking
+  rule: aislop:ai-slop/double-type-assertion
+  where: src/middleware/devtools.ts:380
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|ai-slop/double-type-assertion|src/middleware/immer.ts|Double type assertion (as unknown as X) bypasses type
+    checking
+  rule: aislop:ai-slop/double-type-assertion
+  where: src/middleware/immer.ts:87
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|ai-slop/double-type-assertion|src/middleware/persist.ts|Double type assertion (as unknown as X) bypasses
+    type checking
+  rule: aislop:ai-slop/double-type-assertion
+  where: src/middleware/persist.ts:401
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|ai-slop/double-type-assertion|src/middleware/redux.ts|Double type assertion (as unknown as X) bypasses type
+    checking
+  rule: aislop:ai-slop/double-type-assertion
+  where: src/middleware/redux.ts:50
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|ai-slop/double-type-assertion|src/middleware/subscribeWithSelector.ts|Double type assertion (as unknown
+    as X) bypasses type checking
+  rule: aislop:ai-slop/double-type-assertion
+  where: src/middleware/subscribeWithSelector.ts:73
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|ai-slop/redundant-try-catch|src/middleware/persist.ts|Catch block only rethrows the same error
+  rule: aislop:ai-slop/redundant-try-catch
+  where: src/middleware/persist.ts:348
+  verdict: noise
+  why: catch переводит синхронный throw в rejected Promise
+- key: comments|ai-slop/todo-stub|src/middleware/ssrSafe.ts|Unresolved TODO/FIXME/HACK comment indicates incomplete code
+  rule: aislop:ai-slop/todo-stub
+  where: src/middleware/ssrSafe.ts:5
+  verdict: useful
+  why: незакрытый TODO/FIXME
+- key: comments|ai-slop/todo-stub|src/vanilla/shallow.ts|Unresolved TODO/FIXME/HACK comment indicates incomplete code
+  rule: aislop:ai-slop/todo-stub
+  where: src/vanilla/shallow.ts:9
+  verdict: useful
+  why: незакрытый TODO/FIXME
+- key: complexity|ai-slop/unsafe-type-assertion|src/middleware/combine.ts|'as any' bypasses type safety
+  rule: aislop:ai-slop/unsafe-type-assertion
+  where: src/middleware/combine.ts:14
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|ai-slop/unsafe-type-assertion|src/middleware/devtools.ts|'as any' bypasses type safety
+  rule: aislop:ai-slop/unsafe-type-assertion
+  where: src/middleware/devtools.ts:268
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|ai-slop/unsafe-type-assertion|src/middleware/immer.ts|'as any' bypasses type safety
+  rule: aislop:ai-slop/unsafe-type-assertion
+  where: src/middleware/immer.ts:78
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|ai-slop/unsafe-type-assertion|src/middleware/redux.ts|'as any' bypasses type safety
+  rule: aislop:ai-slop/unsafe-type-assertion
+  where: src/middleware/redux.ts:42
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|ai-slop/unsafe-type-assertion|src/middleware/subscribeWithSelector.ts|'as any' bypasses type safety
+  rule: aislop:ai-slop/unsafe-type-assertion
+  where: src/middleware/subscribeWithSelector.ts:68
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|ai-slop/unsafe-type-assertion|src/react.ts|'as any' bypasses type safety
+  rule: aislop:ai-slop/unsafe-type-assertion
+  where: src/react.ts:28
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|ai-slop/unsafe-type-assertion|src/traditional.ts|'as any' bypasses type safety
+  rule: aislop:ai-slop/unsafe-type-assertion
+  where: src/traditional.ts:33
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|ai-slop/unsafe-type-assertion|src/vanilla.ts|'as any' bypasses type safety
+  rule: aislop:ai-slop/unsafe-type-assertion
+  where: src/vanilla.ts:96
+  verdict: useful
+  why: any в рабочем коде
+- key: 'complexity|complexity/file-too-large|src/middleware/devtools.ts|File too large (max: 400)'
+  rule: aislop:complexity/file-too-large
+  where: src/middleware/devtools.ts:1
+  verdict: useful
+  why: размер/сигнатура выше порога
+- key: complexity|unicorn/no-thenable|src/middleware/persist.ts|Do not add `then` to an object.
+  rule: aislop:unicorn/no-thenable
+  where: src/middleware/persist.ts:152
+  verdict: noise
+  why: намеренный thenable в библиотеке
+- key: complexity|@typescript-eslint/no-explicit-any|src/middleware/combine.ts|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/middleware/combine.ts:14
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/middleware/devtools.ts|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/middleware/devtools.ts:11
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/middleware/immer.ts|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/middleware/immer.ts:36
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/middleware/persist.ts|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/middleware/persist.ts:155
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/middleware/redux.ts|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/middleware/redux.ts:42
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/middleware/subscribeWithSelector.ts|Unexpected any. Specify a different
+    type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/middleware/subscribeWithSelector.ts:51
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/react.ts|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/react.ts:28
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/traditional.ts|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/traditional.ts:33
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|src/vanilla.ts|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: src/vanilla.ts:96
+  verdict: useful
+  why: any в рабочем коде
+- key: complexity|@typescript-eslint/no-explicit-any|tests/basic.test.tsx|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: tests/basic.test.tsx:277
+  verdict: noise
+  why: any для моков в тестах
+- key: complexity|@typescript-eslint/no-explicit-any|tests/devtools.test.tsx|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: tests/devtools.test.tsx:22
+  verdict: noise
+  why: any для моков в тестах
+- key: complexity|@typescript-eslint/no-explicit-any|tests/middlewareTypes.test.tsx|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: tests/middlewareTypes.test.tsx:96
+  verdict: noise
+  why: any для моков в тестах
+- key: complexity|@typescript-eslint/no-explicit-any|tests/persistAsync.test.tsx|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: tests/persistAsync.test.tsx:541
+  verdict: noise
+  why: any для моков в тестах
+- key: complexity|@typescript-eslint/no-explicit-any|tests/persistSync.test.tsx|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: tests/persistSync.test.tsx:316
+  verdict: noise
+  why: any для моков в тестах
+- key: complexity|@typescript-eslint/no-explicit-any|tests/test-utils.ts|Unexpected any. Specify a different type.
+  rule: eslint:@typescript-eslint/no-explicit-any
+  where: tests/test-utils.ts:27
+  verdict: noise
+  why: any для моков в тестах
+- key: complexity|@typescript-eslint/no-non-null-assertion|examples/starter/src/index.tsx|Forbidden non-null assertion.
+  rule: eslint:@typescript-eslint/no-non-null-assertion
+  where: examples/starter/src/index.tsx:57
+  verdict: useful
+  why: '! вместо проверки'
+- key: complexity|@typescript-eslint/no-non-null-assertion|tests/devtools.test.tsx|Forbidden non-null assertion.
+  rule: eslint:@typescript-eslint/no-non-null-assertion
+  where: tests/devtools.test.tsx:2812
+  verdict: noise
+  why: '! в тестах'
+- key: comments|jsdoc/require-jsdoc|examples/demo/src/App.jsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: examples/demo/src/App.jsx:21
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|examples/demo/src/components/CodePreview.jsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: examples/demo/src/components/CodePreview.jsx:15
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|examples/demo/src/components/CopyButton.jsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: examples/demo/src/components/CopyButton.jsx:8
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|examples/demo/src/components/Details.jsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: examples/demo/src/components/Details.jsx:1
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|examples/demo/src/components/Fireflies.jsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: examples/demo/src/components/Fireflies.jsx:31
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|examples/demo/src/components/Scene.jsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: examples/demo/src/components/Scene.jsx:178
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|examples/demo/src/components/SnippetLang.jsx|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: examples/demo/src/components/SnippetLang.jsx:1
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|examples/demo/src/utils/copy-to-clipboard.js|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: examples/demo/src/utils/copy-to-clipboard.js:1
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|rollup.config.mjs|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: rollup.config.mjs:93
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/middleware/combine.ts|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/middleware/combine.ts:5
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/middleware/persist.ts|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/middleware/persist.ts:31
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/middleware/ssrSafe.ts|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/middleware/ssrSafe.ts:6
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/react.ts|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/react.ts:26
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/react/shallow.ts|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/react/shallow.ts:4
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: comments|jsdoc/require-jsdoc|src/traditional.ts|Missing JSDoc comment.
+  rule: eslint:jsdoc/require-jsdoc
+  where: src/traditional.ts:31
+  verdict: noise
+  why: отсутствие doc-комментария — стиль, не slop
+- key: complexity|react/no-array-index-key|examples/demo/src/components/CodePreview.jsx|Do not use Array index in keys
+  rule: eslint:react/no-array-index-key
+  where: examples/demo/src/components/CodePreview.jsx:26
+  verdict: noise
+  why: составной ключ
+- key: complexity|react/no-array-index-key|examples/demo/src/components/Fireflies.jsx|Do not use Array index in keys
+  rule: eslint:react/no-array-index-key
+  where: examples/demo/src/components/Fireflies.jsx:63
+  verdict: useful
+  why: key={index}
+- key: complexity|react/no-array-index-key|examples/demo/src/components/Scene.jsx|Do not use Array index in keys
+  rule: eslint:react/no-array-index-key
+  where: examples/demo/src/components/Scene.jsx:112
+  verdict: useful
+  why: key={index}
+- key: duplication|duplicate-block|.github/workflows/compressed-size.yml|.github/workflows/compressed-size.yml|.github/workflows/preview-release.yml
+  rule: jscpd:duplicate-block
+  where: .github/workflows/compressed-size.yml:11
+  verdict: noise
+  why: конфиг CI/YAML
+- key: duplication|duplicate-block|.github/workflows/compressed-size.yml|.github/workflows/compressed-size.yml|.github/workflows/publish.yml
+  rule: jscpd:duplicate-block
+  where: .github/workflows/compressed-size.yml:15
+  verdict: noise
+  why: конфиг CI/YAML
+- key: duplication|duplicate-block|.github/workflows/compressed-size.yml|.github/workflows/compressed-size.yml|.github/workflows/test-multiple-builds.yml
+  rule: jscpd:duplicate-block
+  where: .github/workflows/compressed-size.yml:16
+  verdict: noise
+  why: конфиг CI/YAML
+- key: duplication|duplicate-block|.github/workflows/compressed-size.yml|.github/workflows/compressed-size.yml|.github/workflows/test-multiple-versions.yml
+  rule: jscpd:duplicate-block
+  where: .github/workflows/compressed-size.yml:16
+  verdict: noise
+  why: конфиг CI/YAML
+- key: duplication|duplicate-block|.github/workflows/compressed-size.yml|.github/workflows/compressed-size.yml|.github/workflows/test-old-typescript.yml
+  rule: jscpd:duplicate-block
+  where: .github/workflows/compressed-size.yml:16
+  verdict: noise
+  why: конфиг CI/YAML
+- key: duplication|duplicate-block|.github/workflows/compressed-size.yml|.github/workflows/compressed-size.yml|.github/workflows/test.yml
+  rule: jscpd:duplicate-block
+  where: .github/workflows/compressed-size.yml:16
+  verdict: noise
+  why: конфиг CI/YAML
+- key: duplication|duplicate-block|README.md|README.md|docs/learn/guides/advanced-typescript.md
+  rule: jscpd:duplicate-block
+  where: README.md:476
+  verdict: noise
+  why: код-пример в документации
+- key: duplication|duplicate-block|docs/learn/getting-started/comparison.md|docs/learn/getting-started/comparison.md|docs/learn/getting-started/comparison.md
+  rule: jscpd:duplicate-block
+  where: docs/learn/getting-started/comparison.md:27
+  verdict: noise
+  why: код-пример в документации
+- key: duplication|duplicate-block|docs/learn/guides/advanced-typescript.md|docs/learn/guides/advanced-typescript.md|docs/learn/guides/advanced-typescript.md
+  rule: jscpd:duplicate-block
+  where: docs/learn/guides/advanced-typescript.md:11
+  verdict: noise
+  why: код-пример в документации
+- key: duplication|duplicate-block|docs/learn/guides/advanced-typescript.md|docs/learn/guides/advanced-typescript.md|docs/reference/middlewares/devtools.md
+  rule: jscpd:duplicate-block
+  where: docs/learn/guides/advanced-typescript.md:436
+  verdict: noise
+  why: код-пример в документации
+- key: duplication|duplicate-block|docs/learn/guides/auto-generating-selectors.md|docs/learn/guides/auto-generating-selectors.md|docs/learn/guides/auto-generating-selectors.md
+  rule: jscpd:duplicate-block
+  where: docs/learn/guides/auto-generating-selectors.md:17
+  verdict: noise
+  why: код-пример в документации
+- key: duplication|duplicate-block|docs/learn/guides/nextjs.md|docs/learn/guides/nextjs.md|docs/learn/guides/nextjs.md
+  rule: jscpd:duplicate-block
+  where: docs/learn/guides/nextjs.md:169
+  verdict: noise
+  why: код-пример в документации
+- key: duplication|duplicate-block|docs/learn/guides/nextjs.md|docs/learn/guides/nextjs.md|docs/learn/guides/testing.md
+  rule: jscpd:duplicate-block
+  where: docs/learn/guides/nextjs.md:119
+  verdict: noise
+  why: код-пример в документации
+- key: duplication|duplicate-block|docs/learn/guides/ssr-and-hydration.md|docs/learn/guides/ssr-and-hydration.md|docs/learn/guides/ssr-and-hydration.md
+  rule: jscpd:duplicate-block
+  where: docs/learn/guides/ssr-and-hydration.md:42
+  verdict: noise
+  why: код-пример в документации
+- key: duplication|duplicate-block|docs/learn/guides/testing.md|docs/learn/guides/testing.md|docs/learn/guides/testing.md
+  rule: jscpd:duplicate-block
+  where: docs/learn/guides/testing.md:326
+  verdict: noise
+  why: код-пример в документации
+- key: 'complexity|empty-catch|src/middleware/devtools.ts|Пустой catch — ошибка проглочена без обработки.
+
+    '
+  rule: semgrep:empty-catch
+  where: src/middleware/devtools.ts:250
+  verdict: useful
+  why: пустой catch
