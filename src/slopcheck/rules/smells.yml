@@ -96,3 +96,35 @@ rules:
     message: >
       panic() в коде — предпочтительнее возврат error.
     pattern: panic(...)
+
+  # ------------------------------------------------------------- лишняя защитность
+  - id: useless-reraise
+    languages: [python]
+    severity: WARNING
+    message: >
+      except, который только пробрасывает исключение дальше, ничего не делает — уберите try.
+    pattern-either:
+      - pattern: |
+          try:
+              ...
+          except $E:
+              raise
+      - pattern: |
+          try:
+              ...
+          except $E as $ERR:
+              raise $ERR
+
+  # ------------------------------------------------------------- React
+  - id: trivial-usememo
+    languages: [javascript, typescript]
+    severity: INFO
+    message: >
+      useMemo вокруг литерала или чтения поля — мемоизация дороже самого вычисления.
+    pattern-either:
+      - pattern: useMemo(() => $OBJ.$FIELD, $DEPS)
+      - patterns:
+          - pattern: useMemo(() => $LIT, $DEPS)
+          - metavariable-regex:
+              metavariable: $LIT
+              regex: ^(-?\d+(\.\d+)?|true|false|null|undefined|"[^"]*"|'[^']*')$

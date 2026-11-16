@@ -76,3 +76,27 @@ def test_semgrep_smells_go_live(tmp_path: Path) -> None:
     rule_ids = {f.rule_id for f in SemgrepSmellsAdapter().run(tmp_path, Config())}
     assert "swallowed-error-go" in rule_ids
     assert "bare-panic-go" in rule_ids
+
+
+
+@pytest.mark.skipif(shutil.which("semgrep") is None, reason="semgrep не установлен")
+def test_defensive_and_memo_rules_live(tmp_path: Path) -> None:
+    """except-raise без обработки и useMemo на тривиальном — находки; осмысленное — нет."""
+    (tmp_path / "a.py").write_text(
+        "def f():\n"
+        "    try:\n        g()\n    except ValueError:\n        raise\n"
+        "    try:\n        g()\n    except ValueError as exc:\n        log(exc)\n        raise\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "b.tsx").write_text(
+        "const a = useMemo(() => 42, []);\n"
+        "const b = useMemo(() => user.name, [user]);\n"
+        "const c = useMemo(() => items.slice().sort(), [items]);\n",
+        encoding="utf-8",
+    )
+    found = sorted((Path(f.file).name, f.line, f.rule_id) for f in SemgrepSmellsAdapter().run(tmp_path, Config()))
+    assert found == [
+        ("a.py", 2, "useless-reraise"),
+        ("b.tsx", 1, "trivial-usememo"),
+        ("b.tsx", 2, "trivial-usememo"),
+    ]
