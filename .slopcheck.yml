@@ -24,3 +24,6 @@ ignore:
   # шаги .github/workflows/example.yml намеренно — это артефакт поставки,
   # а не копипаста в исходниках.
   - consumer/workflows
+  # Фикстуры тестов намеренно содержат slop (пустые catch, промисы без await):
+  # на них проверяются детекторы.
+  - tests/fixtures

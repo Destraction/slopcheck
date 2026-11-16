@@ -6,7 +6,9 @@
 
 from __future__ import annotations
 
+import os
 import re
+from collections.abc import Iterator
 from fnmatch import fnmatch
 from pathlib import Path
 
@@ -80,6 +82,21 @@ def is_ignored(rel_parts: tuple[str, ...], ignore: list[str]) -> bool:
     return False
 
 
+def walk_files(root: Path, ignore: list[str]) -> Iterator[Path]:
+    """Файлы под `root` без игнорируемых путей; в игнорируемые каталоги не спускается.
+
+    В отличие от `rglob` не обходит node_modules и .venv целиком: там сотни
+    тысяч файлов, которые всё равно отбрасываются.
+    """
+    for dirpath, dirnames, filenames in os.walk(root):
+        base = Path(dirpath)
+        rel = base.relative_to(root).parts
+        dirnames[:] = [d for d in dirnames if not is_ignored((*rel, d), ignore)]
+        for name in filenames:
+            if not is_ignored((*rel, name), ignore):
+                yield base / name
+
+
 def detect(root: Path, ignore: list[str] | None = None) -> list[str]:
     """Вернуть отсортированный список языков, найденных под `root`.
 
@@ -89,12 +106,7 @@ def detect(root: Path, ignore: list[str] | None = None) -> list[str]:
     root = root.resolve()
     found: set[str] = set()
 
-    for file in root.rglob("*"):
-        if not file.is_file():
-            continue
-        rel_parts = file.relative_to(root).parts
-        if is_ignored(rel_parts, ignore):
-            continue
+    for file in walk_files(root, ignore):
         lang = _EXT_TO_LANG.get(file.suffix.lower())
         if lang:
             found.add(lang)

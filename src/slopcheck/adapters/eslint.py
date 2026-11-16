@@ -18,11 +18,13 @@ from pathlib import Path
 
 from slopcheck.adapters.base import Adapter
 from slopcheck.config import Config
-from slopcheck.languages import is_test_file
+from slopcheck.languages import is_test_file, walk_files
 from slopcheck.models import Category, Finding, Severity
 from slopcheck.subprocess_util import ToolExecutionError, crashed, run_tool, tool_available
 
-_CONFIG_FILE = Path(__file__).resolve().parent.parent / "rules" / "eslint.config.cjs"
+_RULES_DIR = Path(__file__).resolve().parent.parent / "rules"
+_CONFIG_FILE = _RULES_DIR / "eslint.config.cjs"
+_TYPED_CONFIG_FILE = _RULES_DIR / "eslint.typed.cjs"
 
 # Правило → (категория, severity). Неперечисленное — COMPLEXITY/WARN.
 _RULES: dict[str, tuple[Category, Severity]] = {
@@ -33,6 +35,7 @@ _RULES: dict[str, tuple[Category, Severity]] = {
     "react-hooks/rules-of-hooks": (Category.COMPLEXITY, Severity.ERROR),
     "react/jsx-key": (Category.COMPLEXITY, Severity.ERROR),
     "@typescript-eslint/no-non-null-assertion": (Category.COMPLEXITY, Severity.INFO),
+    "@typescript-eslint/no-unnecessary-type-assertion": (Category.COMPLEXITY, Severity.INFO),
 }
 
 
@@ -103,6 +106,7 @@ class EslintAdapter(Adapter):
     category = Category.COMPLEXITY
     measures = frozenset({Category.DEAD_CODE, Category.COMMENTS})
     languages = frozenset({"javascript", "typescript"})
+    config_file = _CONFIG_FILE
 
     def is_available(self) -> bool:
         """Нужны eslint и каталог глобальных npm-пакетов с плагинами."""
@@ -115,9 +119,13 @@ class EslintAdapter(Adapter):
         targets = self.resolve_targets(root, files)
         if targets is None:
             return []
+        return self._lint(root, config, targets)
+
+    def _lint(self, root: Path, config: Config, targets: list[str]) -> list[Finding]:
+        """Один прогон ESLint с конфигом адаптера по `targets`."""
         cmd = [
             "eslint",
-            "--config", str(_CONFIG_FILE),
+            "--config", str(self.config_file),
             "--format", "json",
             "--no-warn-ignored",
             *_ignore_patterns(config.ignore),
@@ -128,9 +136,54 @@ class EslintAdapter(Adapter):
         # Коды ESLint: 0 — чисто, 1 — есть ошибки уровня error; 2 — сбой
         # (не загрузился плагин, битый конфиг).
         if crashed(result, ok_returncodes=(0, 1)) or not result.stdout.strip():
-            raise ToolExecutionError(f"eslint упал: {result.stderr.strip()[:300]}")
+            raise ToolExecutionError(f"{self.name} упал: {result.stderr.strip()[:300]}")
         return parse_report(result.stdout, config.docstrings_skip_tests)
 
 
+def _has_node_modules(project: Path, root: Path) -> bool:
+    """Установлены ли зависимости: node_modules в `project` или выше до `root` (hoisting)."""
+    chain = [project, *(p for p in project.parents if p == root or root in p.parents)]
+    return any((d / "node_modules").is_dir() for d in chain)
+
+
+def typed_projects(root: Path, ignore: list[str]) -> tuple[list[Path], bool]:
+    """Каталоги с tsconfig.json и установленными зависимостями; есть ли tsconfig вообще."""
+    tsconfigs = [f.parent for f in walk_files(root, ignore) if f.name == "tsconfig.json"]
+    found = [p for p in tsconfigs if _has_node_modules(p, root)]
+    # Вложенные проекты покрывает прогон по внешнему каталогу.
+    roots = [p for p in found if not any(q in p.parents for q in found)]
+    return sorted(roots), bool(tsconfigs)
+
+
+class EslintTypedAdapter(EslintAdapter):
+    """TS с типами: промисы без await, async вместо обычной функции, лишние приведения."""
+
+    name = "eslint-typed"
+    measures = frozenset()
+    languages = frozenset({"typescript"})
+    config_file = _TYPED_CONFIG_FILE
+
+    def run(
+        self, root: Path, config: Config, files: list[str] | None = None
+    ) -> list[Finding]:
+        """Прогнать типизированные правила по проектам с установленными зависимостями."""
+        projects, any_tsconfig = typed_projects(root, config.ignore)
+        if not projects:
+            if any_tsconfig:
+                raise ToolExecutionError(
+                    "нет node_modules — без установленных зависимостей типы библиотек "
+                    "становятся any и правила с типами врут (установите зависимости до прогона)"
+                )
+            return []
+        if files is None:
+            targets = [str(p) for p in projects]
+        else:
+            targets = [
+                f for f in self.select_files(files)
+                if any(p in (root / f).parents for p in projects)
+            ]
+        return self._lint(root, config, targets) if targets else []
+
+
 # Адаптеры модуля; регистрирует их `slopcheck.adapters.register_all`.
-ADAPTERS = (EslintAdapter(),)
+ADAPTERS = (EslintAdapter(), EslintTypedAdapter())

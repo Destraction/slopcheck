@@ -1,18 +1,7 @@
 // Конфиг ESLint для slopcheck: React/TS-смеллы, мёртвый код, JSDoc экспортов.
-//
-// Лежит в пакете slopcheck, а не в проверяемом репозитории, поэтому:
-//   - плагины грузятся из глобального node_modules (SLOPCHECK_NODE_MODULES,
-//     `npm root -g`): обычный require искал бы их рядом с этим файлом;
-//   - basePath = SLOPCHECK_ROOT: без него ESLint 9 считает файлы вне каталога
-//     конфига «вне base path» и молча их пропускает.
+// Загрузка плагинов и корень анализа — в eslint-load.cjs.
 // Все правила — "warn": категорию и severity находки задаёт адаптер.
-const path = require("node:path");
-const { createRequire } = require("node:module");
-
-const modulesDir = process.env.SLOPCHECK_NODE_MODULES;
-const load = modulesDir
-  ? createRequire(path.join(modulesDir, "_slopcheck.js"))
-  : require;
+const { load, root } = require("./eslint-load.cjs");
 
 const tseslint = load("typescript-eslint");
 const react = load("eslint-plugin-react");
@@ -21,7 +10,7 @@ const jsdoc = load("eslint-plugin-jsdoc");
 
 module.exports = [
   {
-    basePath: process.env.SLOPCHECK_ROOT || process.cwd(),
+    basePath: root,
     files: ["**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}"],
     languageOptions: {
       parser: tseslint.parser,

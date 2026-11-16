@@ -75,3 +75,46 @@ def test_live_run(tmp_path: Path) -> None:
         "jsdoc/require-jsdoc",
     } <= rules
     assert {f.file for f in findings} == {str(tmp_path / "src" / "List.tsx")}
+
+
+def test_typed_projects_require_node_modules(tmp_path: Path) -> None:
+    from slopcheck.adapters.eslint import typed_projects
+
+    (tmp_path / "web").mkdir()
+    (tmp_path / "web" / "tsconfig.json").write_text("{}")
+    assert typed_projects(tmp_path, []) == ([], True)
+    (tmp_path / "node_modules").mkdir()  # hoisting: зависимости в корне монорепо
+    (tmp_path / "web" / "sub").mkdir()
+    (tmp_path / "web" / "sub" / "tsconfig.json").write_text("{}")
+    assert typed_projects(tmp_path, []) == ([tmp_path / "web"], True)
+    assert typed_projects(tmp_path / "web" / "sub", []) == ([], True)
+
+
+def test_typed_without_node_modules_is_skip(tmp_path: Path) -> None:
+    from slopcheck.adapters.eslint import EslintTypedAdapter
+    from slopcheck.subprocess_util import ToolExecutionError
+
+    (tmp_path / "tsconfig.json").write_text("{}")
+    with pytest.raises(ToolExecutionError, match="node_modules"):
+        EslintTypedAdapter().run(tmp_path, Config())
+
+
+def test_typed_silent_without_typescript_project(tmp_path: Path) -> None:
+    from slopcheck.adapters.eslint import EslintTypedAdapter
+
+    (tmp_path / "app.js").write_text("export const a = 1;\n")
+    assert EslintTypedAdapter().run(tmp_path, Config()) == []
+
+
+@pytest.mark.skipif(not _has_plugins(), reason="eslint с плагинами не установлен")
+def test_typed_live_floating_promise(tmp_path: Path) -> None:
+    import shutil as sh
+
+    from slopcheck.adapters.eslint import EslintTypedAdapter
+
+    project = tmp_path / "typed"
+    sh.copytree(FIXTURES / "typed", project)
+    findings = EslintTypedAdapter().run(project, Config())
+    by_rule = {f.rule_id: f for f in findings}
+    assert by_rule["@typescript-eslint/no-floating-promises"].line == 4
+    assert by_rule["@typescript-eslint/no-unnecessary-type-assertion"].severity is Severity.INFO

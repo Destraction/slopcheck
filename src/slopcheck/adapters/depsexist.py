@@ -24,7 +24,7 @@ from pathlib import Path
 
 from slopcheck.adapters.base import Adapter
 from slopcheck.config import Config
-from slopcheck.languages import is_ignored, lang_for_path
+from slopcheck.languages import lang_for_path, walk_files
 from slopcheck.models import Category, Finding, Severity
 from slopcheck.registries import RegistryClient, RegistryUnavailable
 from slopcheck.subprocess_util import ToolExecutionError
@@ -299,17 +299,6 @@ def _private(name: str, patterns: list[str]) -> bool:
     return any(fnmatch(name, p) or fnmatch(name, p + "/*") for p in [*patterns, *goprivate])
 
 
-def _walk(root: Path, ignore: list[str]):
-    """Файлы под `root` без игнорируемых каталогов (в node_modules не спускаемся)."""
-    for dirpath, dirnames, filenames in os.walk(root):
-        base = Path(dirpath)
-        rel = base.relative_to(root).parts
-        dirnames[:] = [d for d in dirnames if not is_ignored((*rel, d), ignore)]
-        for name in filenames:
-            if not is_ignored((*rel, name), ignore):
-                yield base / name
-
-
 _REQUIREMENTS = re.compile(r"requirements.*\.(txt|in)$")
 
 
@@ -329,7 +318,7 @@ def _role(path: Path) -> str | None:
 def _collect(root: Path, config: Config, files: list[str] | None) -> dict[str, list[Path]]:
     """Файлы по ролям: манифесты экосистем и исходники JS/TS и Go."""
     if files is None:
-        candidates = list(_walk(root, config.ignore))
+        candidates = list(walk_files(root, config.ignore))
     else:
         candidates = [root / f for f in files if (root / f).is_file()]
     groups: dict[str, list[Path]] = defaultdict(list)
