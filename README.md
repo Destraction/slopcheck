@@ -74,7 +74,15 @@ Go-код должен компилироваться (`go build ./...`): ина
 ```bash
 slopcheck run ./path/to/repo --format console   # json | sarif | md
 slopcheck gate ./repo --baseline base.json      # delta-гейт для CI (exit 1 при регрессе)
+slopcheck check-changed ./repo                  # новые относительно HEAD находки незакоммиченных правок
+slopcheck check-changed ./repo --staged         # то же по индексу (pre-commit)
 ```
+
+`check-changed` показывает только то, что внесли правки: старый долг
+изменённых файлов не выводится. Если находок уровня `hook_severity` нет,
+HEAD не перепроверяется, и команда остаётся быстрой. Иначе те же файлы
+прогоняются во временном `git worktree` на HEAD и сравниваются. Коды выхода:
+0 — новых находок нет, 1 — есть, 2 — не git-репозиторий или сбой git.
 
 ## Docker (все детекторы в одном образе)
 

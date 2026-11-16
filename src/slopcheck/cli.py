@@ -216,5 +216,42 @@ def gate(
     raise typer.Exit(code=1)
 
 
+@app.command(name="check-changed")
+def check_changed(
+    path: Path = typer.Argument(
+        Path("."),
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        help="Путь к git-репозиторию (или его подкаталогу).",
+    ),
+    staged: bool = typer.Option(
+        False, "--staged", help="Только файлы из индекса (сценарий pre-commit)."
+    ),
+) -> None:
+    """Новые относительно HEAD находки в незакоммиченных правках (exit 1, если есть).
+
+    Старый долг изменённых файлов не показывается — только то, что внесли
+    правки. Порог — `hook_severity` из `.slopcheck.yml`.
+    """
+    from slopcheck.agent_check import check, format_text
+    from slopcheck.subprocess_util import ToolExecutionError
+
+    try:
+        result = check(path, staged=staged)
+    except ToolExecutionError as exc:
+        typer.echo(f"check-changed: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+
+    for entry in result.skipped:
+        typer.echo(f"  пропущено — {entry}", err=True)
+    if not result.new:
+        typer.echo(f"✅ slopcheck: новых находок нет (файлов проверено: {len(result.files)})")
+        raise typer.Exit(code=0)
+    typer.echo(f"❌ slopcheck: правки добавили slop — {len(result.new)}:")
+    typer.echo(format_text(result))
+    raise typer.Exit(code=1)
+
+
 if __name__ == "__main__":
     app()

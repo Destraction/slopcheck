@@ -20,7 +20,7 @@ from slopcheck.subprocess_util import ToolExecutionError, crashed, run_tool
 STAGED = "staged"
 
 
-def _git(root: Path, *args: str) -> str:
+def git(root: Path, *args: str) -> str:
     """Выполнить git в `root` и вернуть stdout; сбой git — исключение."""
     result = run_tool(["git", "-C", str(root), *args])
     if crashed(result):
@@ -39,15 +39,20 @@ def changed_files(root: Path, ref: str) -> list[str]:
     root = root.resolve()
     # git diff отдаёт пути от верха репозитория; root может быть подкаталогом —
     # приводим к путям от root и отбрасываем файлы вне его.
-    toplevel = Path(_git(root, "rev-parse", "--show-toplevel").strip())
+    toplevel = Path(git(root, "rev-parse", "--show-toplevel").strip())
 
     if ref == STAGED:
-        out = _git(root, "diff", "--cached", "--name-only", "--diff-filter=d")
+        out = git(root, "diff", "--cached", "--name-only", "--diff-filter=d")
     else:
-        out = _git(root, "diff", "--name-only", "--diff-filter=d", f"{ref}...HEAD")
+        out = git(root, "diff", "--name-only", "--diff-filter=d", f"{ref}...HEAD")
 
+    return _relative_existing(out.splitlines(), toplevel, root)
+
+
+def _relative_existing(names: list[str], toplevel: Path, root: Path) -> list[str]:
+    """Пути от верха репо → существующие файлы под `root`, относительно него."""
     files: list[str] = []
-    for line in out.splitlines():
+    for line in names:
         name = line.strip()
         if not name:
             continue
@@ -62,3 +67,29 @@ def changed_files(root: Path, ref: str) -> list[str]:
             continue  # файл вне root (root — подкаталог репо)
         files.append(rel.as_posix())
     return files
+
+
+def has_head(root: Path) -> bool:
+    """Есть ли в репозитории хоть один коммит (на новом репо HEAD не существует)."""
+    result = run_tool(["git", "-C", str(root), "rev-parse", "--verify", "--quiet", "HEAD"])
+    return result.returncode == 0
+
+
+def working_files(root: Path) -> list[str]:
+    """Файлы рабочего дерева, отличающиеся от HEAD: staged, unstaged и новые.
+
+    Новые неотслеживаемые файлы входят (агент создаёт файлы, не добавляя их
+    в индекс); игнорируемые git'ом — нет. Пути — как у `changed_files`.
+
+    Raises:
+        ToolExecutionError: не git-репозиторий или git недоступен.
+    """
+    root = root.resolve()
+    toplevel = Path(git(root, "rev-parse", "--show-toplevel").strip())
+    if has_head(root):
+        tracked = git(root, "diff", "HEAD", "--name-only", "--diff-filter=d")
+    else:
+        tracked = git(root, "ls-files", "--cached")
+    untracked = git(root, "ls-files", "--others", "--exclude-standard", "--full-name")
+    names = {line.strip() for line in (tracked + "\n" + untracked).splitlines() if line.strip()}
+    return _relative_existing(sorted(names), toplevel, root)
