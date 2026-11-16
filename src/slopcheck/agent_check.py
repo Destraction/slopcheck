@@ -14,7 +14,10 @@
 
 from __future__ import annotations
 
+import os
 import tempfile
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -38,6 +41,22 @@ class AgentCheckResult:
     new: list[Finding] = field(default_factory=list)
     files: list[str] = field(default_factory=list)
     skipped: list[str] = field(default_factory=list)
+
+
+# Переменные, которые git выставляет внутри своих хуков (pre-commit). Унаследованные
+# `git worktree add` и детекторами (semgrep зовёт git ls-files), они направляют
+# git во временный индекс коммита: worktree на HEAD не создаётся.
+_GIT_HOOK_ENV = ("GIT_INDEX_FILE", "GIT_DIR", "GIT_WORK_TREE", "GIT_PREFIX", "GIT_EXEC_PATH")
+
+
+@contextmanager
+def _without_git_hook_env() -> Iterator[None]:
+    """Временно убрать из окружения переменные git-хука, затем вернуть как было."""
+    saved = {name: os.environ.pop(name) for name in _GIT_HOOK_ENV if name in os.environ}
+    try:
+        yield
+    finally:
+        os.environ.update(saved)
 
 
 def _at_least(findings: list[Finding], config: Config) -> list[Finding]:
@@ -88,14 +107,16 @@ def check(
     if not files:
         return AgentCheckResult()
 
-    head_run = run(root, config, registry, files=files)
-    candidates = _at_least(head_run.report.findings, config)
-    if not candidates:
-        return AgentCheckResult(files=files, skipped=head_run.skipped)
-
-    # Тот же набор файлов, что у head: у парной находки jscpd изменённый файл
-    # может быть второй стороной, а не `file`.
-    base = _base_findings(root, files, config, registry)
+    # Список файлов уже взят (в pre-commit — из индекса коммита); дальше
+    # переменные git-хука только мешают.
+    with _without_git_hook_env():
+        head_run = run(root, config, registry, files=files)
+        candidates = _at_least(head_run.report.findings, config)
+        if not candidates:
+            return AgentCheckResult(files=files, skipped=head_run.skipped)
+        # Тот же набор файлов, что у head: у парной находки jscpd изменённый
+        # файл может быть второй стороной, а не `file`.
+        base = _base_findings(root, files, config, registry)
     return AgentCheckResult(
         new=_at_least(diff_findings(base, candidates), config),
         files=files,

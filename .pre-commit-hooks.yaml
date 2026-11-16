@@ -1,0 +1,9 @@
+# Хук для фреймворка pre-commit (https://pre-commit.com).
+# slopcheck и детекторы должны быть установлены в системе (или используйте
+# Docker-образ в CI): language: system не ставит их сам.
+- id: slopcheck
+  name: slopcheck — новый slop в индексе
+  entry: slopcheck check-changed --staged
+  language: system
+  pass_filenames: false
+  always_run: true

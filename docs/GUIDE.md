@@ -165,6 +165,10 @@ Concurrency без cancel — параллельные пуши собирают
   одной линейкой.
 - `reporters/` — форматы вывода: `console`, `json`, `md` (markdown), `sarif`.
 - `baseline.py` + `gate` — сравнение находок с baseline: падаем только на новых.
+- `agent_check.py` + `check-changed` — новые относительно HEAD находки
+  незакоммиченных правок (worktree на HEAD создаётся, только если есть кандидаты).
+- `hooks.py` — Stop-хук Claude Code (`slopcheck hook claude`) и установка хуков
+  (`install-hook claude|git`); `.pre-commit-hooks.yaml` — для фреймворка pre-commit.
 - `scoring.py` — веса/скоринг находок.
 - `llm/` — LLM-ревью: `gemini.py` (класс `GeminiReviewer`, через gemini cli),
   `review.py`. Нет ключа/квоты → ревью молча пропускается.

@@ -253,5 +253,58 @@ def check_changed(
     raise typer.Exit(code=1)
 
 
+hook_app = typer.Typer(help="Хуки, которые вызывают внешние инструменты (не для ручного запуска).")
+app.add_typer(hook_app, name="hook")
+
+
+@hook_app.command(name="claude")
+def hook_claude() -> None:
+    """Stop-хук Claude Code: JSON на stdin, новые находки → exit 2 и текст агенту."""
+    import json
+    import sys
+
+    from slopcheck.hooks import claude_stop
+
+    raw = sys.stdin.read()
+    try:
+        payload = json.loads(raw) if raw.strip() else {}
+    except json.JSONDecodeError:
+        payload = {}
+    decision = claude_stop(payload)
+    if decision.message:
+        typer.echo(decision.message, err=True)
+    raise typer.Exit(code=decision.exit_code)
+
+
+@app.command(name="install-hook")
+def install_hook(
+    target: str = typer.Argument(..., help="claude — Stop-хук Claude Code; git — pre-commit."),
+    path: Path = typer.Option(
+        Path("."), "--repo", help="Репозиторий для git pre-commit."
+    ),
+    settings: Path = typer.Option(
+        Path.home() / ".claude" / "settings.json",
+        "--settings",
+        help="settings.json Claude Code (по умолчанию — глобальный).",
+    ),
+    force: bool = typer.Option(False, "--force", help="Перезаписать чужой pre-commit хук."),
+) -> None:
+    """Установить хук: Stop-хук Claude Code или git pre-commit."""
+    from slopcheck.hooks import install_claude, install_git
+
+    if target == "claude":
+        typer.echo(install_claude(settings))
+        return
+    if target == "git":
+        try:
+            typer.echo(install_git(path, force=force))
+        except (FileExistsError, ValueError) as exc:
+            typer.echo(str(exc), err=True)
+            raise typer.Exit(code=2) from exc
+        return
+    typer.echo(f"неизвестная цель: {target} (claude | git)", err=True)
+    raise typer.Exit(code=2)
+
+
 if __name__ == "__main__":
     app()

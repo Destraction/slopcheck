@@ -84,6 +84,37 @@ HEAD не перепроверяется, и команда остаётся б�
 прогоняются во временном `git worktree` на HEAD и сравниваются. Коды выхода:
 0 — новых находок нет, 1 — есть, 2 — не git-репозиторий или сбой git.
 
+## Хуки: ловить slop при написании, а не в CI
+
+**Claude Code (Stop-хук).** В конце каждого хода агента slopcheck проверяет
+незакоммиченные правки. Если они добавили slop уровня `hook_severity`, агент
+получает список находок и чинит их в том же ходе.
+
+```bash
+slopcheck install-hook claude          # в ~/.claude/settings.json (бэкап рядом, .bak-slopcheck)
+```
+
+Хук работает только в репозиториях с `.slopcheck.yml`, в остальных молчит.
+Повторно в том же ходе не блокирует (`stop_hook_active`), так что агент не
+зацикливается. Проверка ограничена 120 с; сбой или таймаут ход не блокируют.
+
+**git pre-commit.** Коммит, добавивший slop в индекс, отклоняется:
+
+```bash
+slopcheck install-hook git             # .git/hooks/pre-commit; чужой хук — только с --force
+```
+
+или через фреймворк [pre-commit](https://pre-commit.com) (slopcheck и
+детекторы должны быть установлены в системе):
+
+```yaml
+repos:
+  - repo: https://github.com/Destraction/slopcheck
+    rev: <тег или sha>
+    hooks:
+      - id: slopcheck
+```
+
 ## Docker (все детекторы в одном образе)
 
 Собирать в окружении с открытой сетью (npm-registry, GitHub releases):

@@ -122,3 +122,16 @@ def test_head_worktree_removed(tmp_path: Path) -> None:
         ["git", "-C", str(root), "worktree", "list"], capture_output=True, text=True, check=True
     ).stdout
     assert len(out.strip().splitlines()) == 1
+
+
+def test_works_inside_git_hook_env(tmp_path: Path, monkeypatch) -> None:
+    """В pre-commit git выставляет GIT_INDEX_FILE: worktree на HEAD всё равно создаётся."""
+    import os
+
+    root, registry, _ = _setup(tmp_path)
+    (root / "old.py").write_text("x = 1  # SLOP old debt\ny = 2  # SLOP fresh\n")
+    _git(root, "add", "old.py")
+    monkeypatch.setenv("GIT_INDEX_FILE", str(root / ".git" / "index"))
+    result = check(root, staged=True, config=Config(), registry=registry)
+    assert [f.identity for f in result.new] == ["y = 2  # SLOP fresh"]
+    assert os.environ["GIT_INDEX_FILE"] == str(root / ".git" / "index")
