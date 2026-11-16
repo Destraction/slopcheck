@@ -1,0 +1,23 @@
+# Корпус калибровки slopcheck: живые OSS-репозитории, закреплённые на коммите.
+# Клонируются bench/run.py в ~/.cache/slopcheck-bench, в репо slopcheck не кладутся.
+# path — подкаталог для анализа (по умолчанию корень).
+repos:
+  - name: gotify-server        # Go-сервис + React/TS UI в ui/
+    url: https://github.com/gotify/server
+    commit: 01086b95a8b69ee87383f6e8bcae601d8c33384b
+  - name: cobra                # Go-библиотека
+    url: https://github.com/spf13/cobra
+    commit: adbc8813901bba65827259daa8e22ff94ec1f30e
+  - name: glow                 # Go CLI
+    url: https://github.com/charmbracelet/glow
+    commit: 8b0600fa445535b9c53194c0d4f7fe3cf700ef3e
+  - name: taxonomy             # Next.js-приложение
+    url: https://github.com/shadcn-ui/taxonomy
+    commit: 298a8857c7128a0d121e7f699dfd729f23b3966d
+  - name: zustand              # React-библиотека хуков
+    url: https://github.com/pmndrs/zustand
+    commit: 9fed2eb2f3af672da9f7bf694b996df3831fc207
+  - name: bulletproof-react    # Vite SPA (каталог react-vite)
+    url: https://github.com/alan2207/bulletproof-react
+    commit: 9506629ed003a561c6627735480cce4994244bb4
+    path: apps/react-vite
