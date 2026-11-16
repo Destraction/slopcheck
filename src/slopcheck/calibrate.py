@@ -53,6 +53,10 @@ _ALWAYS_INFO = (
 _HALLUCINATED = re.compile(r'Imports "([^"]+)"')
 _PANIC_LITERAL = re.compile(r'panic\(\s*("|`|fmt\.Sprint|errors\.New)')
 _CATCH_COMMENT = re.compile(r"catch\b[^{]*\{\s*(//|/\*)")
+_CALL = re.compile(r"^\s*(\w+)\(")
+_MOUNTED = re.compile(r"set(Is)?Mounted\(\s*true\s*\)")
+_ASYNC_WORK = re.compile(r"\.then\(|\bawait\b|\bfetch\(")
+_LATEST_REF = re.compile(r"^\s*\w+\.current\s*=\s*[\w.]+;?\s*$")
 
 
 def rule_key(finding: Finding) -> str:
@@ -106,22 +110,66 @@ def _drop(root: Path, finding: Finding, key: str) -> bool:
     return False
 
 
+def _framework_param(root: Path, finding: Finding) -> bool:
+    """Параметр сигнатуры фреймворка и параметр catch — не мёртвый код."""
+    return finding.message.startswith(("Parameter", "Catch parameter"))
+
+
+def _panic_on_programmer_error(root: Path, finding: Finding) -> bool:
+    """panic("…") на ошибке программиста — идиома Go (regexp.MustCompile);
+    плохо — panic(err) на ошибке окружения."""
+    return bool(_PANIC_LITERAL.search(_span(root, finding)))
+
+
+def _sanitized(root: Path, finding: Finding) -> bool:
+    """HTML уже прошёл через sanitize (DOMPurify)."""
+    return "sanitize" in _span(root, finding, extra=3)
+
+
+def _act_wrapper(root: Path, finding: Finding) -> bool:
+    """Вызов локальной обёртки над act() (`const flush = () => act(...)`):
+    act React 19 возвращает thenable даже для синхронного колбэка."""
+    call = _CALL.match(_span(root, finding))
+    if not call:
+        return False
+    name = re.escape(call.group(1))
+    wrapper = re.compile(rf"\b{name}\s*=\s*(async\s*)?\([^)]*\)\s*=>\s*act\(")
+    return bool(wrapper.search("\n".join(_read_lines(root / finding.file))))
+
+
+def _effect_idiom(root: Path, finding: Finding) -> bool:
+    """setState в эффекте как идиома: флаг mounted для гидрации или сброс
+    loading/error перед асинхронной загрузкой в том же эффекте."""
+    after = _span(root, finding, extra=8)
+    return bool(_MOUNTED.search(after) or _ASYNC_WORK.search(after))
+
+
+def _latest_ref(root: Path, finding: Finding) -> bool:
+    """`fnRef.current = fn` при рендере — паттерн «последнее значение в ref»."""
+    return bool(_LATEST_REF.match(_span(root, finding)))
+
+
+# Поправки, которые зависят от кода вокруг находки: правило → признак «не slop».
+_DEMOTE_IF = {
+    "aislop:eslint/no-unused-vars": _framework_param,
+    "aislop:ai-slop/go-library-panic": _panic_on_programmer_error,
+    "aislop:security/dangerously-set-innerhtml": _sanitized,
+    "eslint:react/no-danger": _sanitized,
+    "eslint:@typescript-eslint/no-floating-promises": _act_wrapper,
+    "eslint:react-hooks/set-state-in-effect": _effect_idiom,
+    "aislop:react/set-state-in-effect": _effect_idiom,
+    "aislop:react/refs": _latest_ref,
+}
+
+
 def _demote(root: Path, finding: Finding, key: str) -> bool:
     """Находка верна по форме, но в этом контексте не slop."""
     if key.startswith(_ALWAYS_INFO):
         return True
     if key in _RELAXED_IN_TESTS and is_test_file(finding.file):
         return True
-    if key == "aislop:eslint/no-unused-vars":
-        # Параметр сигнатуры фреймворка и параметр catch — не мёртвый код.
-        return finding.message.startswith(("Parameter", "Catch parameter"))
-    if key == "aislop:ai-slop/go-library-panic":
-        # panic("…") на ошибке программиста — идиома Go (regexp.MustCompile);
-        # плохо — panic(err) на ошибке окружения.
-        return bool(_PANIC_LITERAL.search(_span(root, finding)))
-    if key in ("aislop:security/dangerously-set-innerhtml", "eslint:react/no-danger"):
-        return "sanitize" in _span(root, finding, extra=3)
-    return False
+    check = _DEMOTE_IF.get(key)
+    return bool(check and check(root, finding))
 
 
 def calibrate(findings: list[Finding], root: Path) -> list[Finding]:

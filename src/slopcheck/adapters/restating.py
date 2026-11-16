@@ -114,12 +114,21 @@ def _matched_enough(total: int, misses: int) -> bool:
     return (total - misses) / total >= _MATCH_SHARE_LONG
 
 
+def _mostly_non_latin(text: str) -> bool:
+    """Букв не латиницей больше, чем латиницей (русский текст с именами кода)."""
+    letters = [ch for ch in text if ch.isalpha()]
+    latin = sum(1 for ch in letters if ch.isascii())
+    return len(letters) - latin > latin
+
+
 def _is_lone_comment(lines: list[str], index: int) -> str | None:
     """Текст одиночного комментария строки `index`; None — не тот случай."""
     match = _COMMENT.match(lines[index])
     if not match:
         return None
     text = match.group(1).strip()
+    if _mostly_non_latin(text):
+        return None  # комментарий не на английском: совпадут лишь вкрапления имён кода
     # Метка раздела (`// update discussion:`) — навигация, а не пересказ.
     if not text or _DIRECTIVE.match(text) or text.endswith(":"):
         return None

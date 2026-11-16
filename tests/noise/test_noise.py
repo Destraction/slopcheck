@@ -151,3 +151,47 @@ def test_explicit_blank_assignment_is_info(tmp_path: Path) -> None:
     _write(tmp_path, "main.go", 'package main\n\nfunc main() {\n\t_ = viper.BindPFlag("tui", nil)\n}\n')
     found = [f for f in SemgrepSmellsAdapter().run(tmp_path, Config()) if f.rule_id == "swallowed-error-go"]
     assert found and all(f.severity is Severity.INFO for f in found)
+
+
+# ------------------------------------------------------------------ ИИ-корпус (bench/ai, H3)
+
+def test_act_wrapper_call_is_info(tmp_path: Path) -> None:
+    # `flush()` — обёртка над act(): act React 19 всегда возвращает thenable.
+    _write(tmp_path, "src/List.test.tsx",
+           "const flush = () => act(() => vi.advanceTimersByTime(300));\n"
+           "flush();\n"
+           "save();\n")
+    found = calibrate([
+        _f("eslint", "@typescript-eslint/no-floating-promises", "src/List.test.tsx", line=2),
+        _f("eslint", "@typescript-eslint/no-floating-promises", "src/List.test.tsx", line=3),
+    ], tmp_path)
+    assert _severity(found) == [Severity.INFO, Severity.WARN]
+
+
+def test_set_state_before_async_load_is_info(tmp_path: Path) -> None:
+    _write(tmp_path, "src/useFetch.ts",
+           "useEffect(() => {\n  setLoading(true);\n  fetcher().then(setData);\n}, [attempt]);\n"
+           "useEffect(() => {\n  setFiltered(items.filter(Boolean));\n}, [items]);\n")
+    found = calibrate([
+        _f("eslint", "react-hooks/set-state-in-effect", "src/useFetch.ts", line=2),
+        _f("aislop", "react/set-state-in-effect", "src/useFetch.ts", line=2),
+        _f("eslint", "react-hooks/set-state-in-effect", "src/useFetch.ts", line=6),
+    ], tmp_path)
+    assert _severity(found) == [Severity.INFO, Severity.INFO, Severity.WARN]
+
+
+def test_latest_value_ref_is_info(tmp_path: Path) -> None:
+    _write(tmp_path, "src/useFetch.ts", "fetcherRef.current = fetcher;\nconst n = countRef.current + 1;\n")
+    found = calibrate([
+        _f("aislop", "react/refs", "src/useFetch.ts", line=1),
+        _f("aislop", "react/refs", "src/useFetch.ts", line=2),
+    ], tmp_path)
+    assert _severity(found) == [Severity.INFO, Severity.WARN]
+
+
+def test_non_english_comment_is_not_restating() -> None:
+    from slopcheck.adapters.restating import find_restating
+
+    russian = "  // Храним последний fetcher в ref, чтобы новая ссылка не вызывала загрузку.\n  const fetcherRef = useRef(fetcher);\n"
+    assert find_restating(russian) == []
+    assert find_restating("  // fetch the data\n  fetchData()\n") == [(1, "fetch the data")]

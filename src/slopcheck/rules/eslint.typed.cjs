@@ -7,6 +7,14 @@ const { load, root } = require("./eslint-load.cjs");
 
 const tseslint = load("typescript-eslint");
 
+// act() из React 19 всегда возвращает thenable, даже для синхронного колбэка:
+// `act(() => vi.advanceTimersByTime(300))` в тестах — не потерянный промис.
+const safeAct = ["@testing-library/react", "react", "react-dom/test-utils"].map((pkg) => ({
+  from: "package",
+  name: "act",
+  package: pkg,
+}));
+
 module.exports = [
   {
     basePath: root,
@@ -22,8 +30,10 @@ module.exports = [
     linterOptions: { reportUnusedDisableDirectives: "off" },
     plugins: { "@typescript-eslint": tseslint.plugin },
     rules: {
-      "@typescript-eslint/no-floating-promises": "warn",
-      "@typescript-eslint/no-misused-promises": "warn",
+      "@typescript-eslint/no-floating-promises": ["warn", { allowForKnownSafeCalls: safeAct }],
+      // async-обработчик в JSX-атрибуте (`onSubmit={handleSubmit}`) — идиома React:
+      // ошибки обработчик ловит сам. Проверка аргументов и свойств остаётся.
+      "@typescript-eslint/no-misused-promises": ["warn", { checksVoidReturn: { attributes: false } }],
       "@typescript-eslint/await-thenable": "warn",
       "@typescript-eslint/no-unnecessary-type-assertion": "warn",
     },
