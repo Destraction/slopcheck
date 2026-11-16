@@ -35,6 +35,14 @@ class Adapter(ABC):
         """Все категории, которые адаптер проверяет: домашняя плюс `measures`."""
         return self.measures | {self.category}
 
+    def enabled(self, config: Config) -> bool:
+        """Включён ли адаптер конфигом. Выключенный runner обходит молча.
+
+        Это не пропуск: проверку не просили (напр. сетевую `check_deps`),
+        и помечать её «слепой зоной» в каждом отчёте было бы шумом.
+        """
+        return True
+
     def applies_to(self, languages: list[str]) -> bool:
         """Актуален ли адаптер для набора языков репозитория."""
         if not self.languages:

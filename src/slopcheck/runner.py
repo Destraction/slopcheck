@@ -219,7 +219,7 @@ def run(
     measured: set[Category] = set()
 
     for adapter in registry.for_categories(enabled):
-        if not adapter.applies_to(languages):
+        if not adapter.applies_to(languages) or not adapter.enabled(config):
             continue
         adapter_findings, skip_note = _run_adapter(adapter, root, config, files)
         if skip_note:

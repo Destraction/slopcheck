@@ -70,6 +70,13 @@ class Config(BaseModel):
     # Порог находок, которые хук агента (`slopcheck hook claude`) и
     # `check-changed` возвращают на починку.
     hook_severity: Severity = Severity.WARN
+    # Сверять зависимости и импорты с реестрами (npm, Go proxy, PyPI): ловит
+    # выдуманные пакеты (slopsquatting). Ходит в сеть — поэтому выключено по
+    # умолчанию; включается здесь или флагом `--check-deps`.
+    check_deps: bool = False
+    # Свои пакеты, которых нет в публичных реестрах: glob по имени пакета
+    # (`@mycorp/*`, `github.com/mycorp/*`). Плюс GOPRIVATE для Go.
+    private_packages: list[str] = Field(default_factory=list)
     # Устаревший алиас `ignore_rules` (только для aislop), читается вместе с ним.
     # Правила aislop, которые не считаются slop'ом. По умолчанию — проверка
     # форматирования: это дело форматтера проекта, а не гейта на slop, и она

@@ -11,6 +11,7 @@ from slopcheck.adapters import (
     comments,
     complexity,
     deadcode,
+    depsexist,
     duplication,
     eslint,
     golangci,
@@ -19,7 +20,7 @@ from slopcheck.adapters import (
 from slopcheck.adapters.base import Adapter
 from slopcheck.registry import Registry, default_registry
 
-_MODULES = (duplication, deadcode, comments, complexity, smells, golangci, eslint)
+_MODULES = (duplication, deadcode, comments, complexity, smells, golangci, eslint, depsexist)
 
 
 def all_adapters() -> list[Adapter]:

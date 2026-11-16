@@ -17,6 +17,14 @@ app = typer.Typer(
 )
 
 
+def _load(path: Path, check_deps: bool):
+    """Конфиг репозитория; `--check-deps` включает сетевую проверку пакетов поверх него."""
+    from slopcheck.config import load_config
+
+    config = load_config(path)
+    return config.model_copy(update={"check_deps": True}) if check_deps else config
+
+
 @app.command()
 def version() -> None:
     """Показать версию slopcheck."""
@@ -74,10 +82,14 @@ def run(
             "(индекс, сценарий pre-commit)."
         ),
     ),
+    check_deps: bool = typer.Option(
+        False,
+        "--check-deps",
+        help="Сверить пакеты с реестрами npm / Go proxy / PyPI (ходит в сеть).",
+    ),
 ) -> None:
     """Прогнать детекторы по репозиторию и выдать отчёт."""
     from slopcheck import reporters
-    from slopcheck.config import load_config
     from slopcheck.runner import run as run_analysis
     from slopcheck.subprocess_util import ToolExecutionError
 
@@ -100,10 +112,11 @@ def run(
             typer.echo(f"--changed: {exc}", err=True)
             raise typer.Exit(code=2) from exc
 
-    result = run_analysis(path, files=files)
+    config = _load(path, check_deps)
+    result = run_analysis(path, config=config, files=files)
 
     if llm_review:
-        _apply_llm_review(result, load_config(path))
+        _apply_llm_review(result, config)
 
     reporters.emit(result, fmt)
 
@@ -164,21 +177,26 @@ def gate(
         dir_okay=False,
         help="JSON-отчёт базовой ветки (вывод `slopcheck run --format json`).",
     ),
+    check_deps: bool = typer.Option(
+        False,
+        "--check-deps",
+        help="Сверить пакеты с реестрами npm / Go proxy / PyPI (ходит в сеть).",
+    ),
 ) -> None:
     """Delta-гейт: провалить (exit 1), если PR добавил slop выше порога severity.
 
     Base-отчёт готовится заранее: на базовой ветке `slopcheck run --format json`.
     """
     from slopcheck.baseline import evaluate_gate, load_baseline
-    from slopcheck.config import load_config
     from slopcheck.runner import run as run_analysis
 
-    head = run_analysis(path)
+    config = _load(path, check_deps)
+    head = run_analysis(path, config=config)
     base = load_baseline(baseline)
     outcome = evaluate_gate(
         head.report,
         base.report,
-        load_config(path),
+        config,
         head_skipped=head.skipped,
         base_skipped=base.skipped,
     )
@@ -228,6 +246,11 @@ def check_changed(
     staged: bool = typer.Option(
         False, "--staged", help="Только файлы из индекса (сценарий pre-commit)."
     ),
+    check_deps: bool = typer.Option(
+        False,
+        "--check-deps",
+        help="Сверить пакеты с реестрами npm / Go proxy / PyPI (ходит в сеть).",
+    ),
 ) -> None:
     """Новые относительно HEAD находки в незакоммиченных правках (exit 1, если есть).
 
@@ -238,7 +261,7 @@ def check_changed(
     from slopcheck.subprocess_util import ToolExecutionError
 
     try:
-        result = check(path, staged=staged)
+        result = check(path, staged=staged, config=_load(path, check_deps))
     except ToolExecutionError as exc:
         typer.echo(f"check-changed: {exc}", err=True)
         raise typer.Exit(code=2) from exc
