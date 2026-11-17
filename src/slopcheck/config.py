@@ -49,6 +49,8 @@ class Config(BaseModel):
             # Рабочие копии агентских worktree внутри репо: тот же код второй
             # раз — иначе весь проект «дублирует сам себя».
             ".claude",
+            # История счёта slopcheck (`slopcheck trend`) — не код.
+            ".slopcheck",
         ]
     )
     # Явный список языков; пустой → автодетект (languages.detect).
@@ -74,6 +76,9 @@ class Config(BaseModel):
     # выдуманные пакеты (slopsquatting). Ходит в сеть — поэтому выключено по
     # умолчанию; включается здесь или флагом `--check-deps`.
     check_deps: bool = False
+    # Писать историю счёта полных прогонов в `.slopcheck/history.jsonl`
+    # (`slopcheck trend`). В CI и в Docker-образе не пишется независимо от поля.
+    history: bool = True
     # Свои пакеты, которых нет в публичных реестрах: glob по имени пакета
     # (`@mycorp/*`, `github.com/mycorp/*`). Плюс GOPRIVATE для Go.
     private_packages: list[str] = Field(default_factory=list)

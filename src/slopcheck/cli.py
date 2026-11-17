@@ -118,6 +118,10 @@ def run(
     if llm_review:
         _apply_llm_review(result, config)
 
+    if files is None:
+        from slopcheck.history import record
+
+        record(path.resolve(), result.report, config)
     reporters.emit(result, fmt)
 
 
@@ -188,6 +192,7 @@ def gate(
     Base-отчёт готовится заранее: на базовой ветке `slopcheck run --format json`.
     """
     from slopcheck.baseline import evaluate_gate, load_baseline
+    from slopcheck.history import score_line
     from slopcheck.runner import run as run_analysis
 
     config = _load(path, check_deps)
@@ -213,6 +218,7 @@ def gate(
             typer.echo(f"  - {entry}", err=True)
     for warning in outcome.warnings:
         typer.echo(f"⚠️  {warning}", err=True)
+    typer.echo(score_line(base.report, head.report))
 
     if outcome.passed:
         typer.echo(
@@ -232,6 +238,23 @@ def gate(
                 f"  [{f.severity.value}] {f.category.value} {f.file}:{f.line} — {f.message}"
             )
     raise typer.Exit(code=1)
+
+
+@app.command()
+def trend(
+    path: Path = typer.Argument(
+        Path("."),
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        help="Путь к репозиторию.",
+    ),
+    last: int = typer.Option(20, "--last", "-n", min=1, help="Сколько последних прогонов показать."),
+) -> None:
+    """Динамика slop-score по истории полных прогонов (`.slopcheck/history.jsonl`)."""
+    from slopcheck.history import load, render_trend
+
+    typer.echo(render_trend(load(path.resolve()), last=last))
 
 
 @app.command(name="check-changed")

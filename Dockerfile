@@ -68,6 +68,10 @@ RUN git config --system --add safe.directory '*' && golangci-lint --version
 RUN aislop --version
 
 # Изолированный venv для slopcheck и Python-детекторов.
+# История счёта (`slopcheck trend`) — локальная: контейнер оставил бы в
+# смонтированном репозитории файлы владельца root.
+ENV SLOPCHECK_HISTORY=0
+
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv "$VIRTUAL_ENV"
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"

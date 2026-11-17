@@ -60,7 +60,21 @@ v2 (в работе), уже сделано:
 
 Осталось: HTML-дашборд, автофикс в CI (сейчас — локальный скилл).
 
-## Установка (dev)
+## Установка
+
+На PyPI slopcheck нет: имя занято другим проектом. CLI ставится из GitHub,
+образ со всеми детекторами — из GitHub Container Registry:
+
+```bash
+uv tool install "slopcheck[detectors] @ git+https://github.com/Destraction/slopcheck"
+docker pull ghcr.io/destraction/slopcheck:latest   # тег latest — с master, vX.Y.Z — с релиза
+```
+
+Обновить CLI — та же команда с `--force --reinstall`. Хук Claude Code и
+pre-commit вызывают установленный CLI, поэтому после обновления их
+переустанавливать не нужно.
+
+Для разработки:
 
 ```bash
 pip install -e ".[dev]"
@@ -83,6 +97,10 @@ npm install -g eslint@9 typescript typescript-eslint \
 brew install golangci-lint           # v2
 ```
 
+Точные версии детекторов, с которыми работает CI, — в `ARG …_VERSION` в
+`Dockerfile`. С другими версиями находки локального прогона могут
+расходиться с гейтом CI: новая версия линтера — новые правила.
+
 Go-код должен компилироваться (`go build ./...`): иначе golangci-lint
 не запускает линтеры, и slopcheck честно помечает Go-проверки пропущенными.
 
@@ -104,7 +122,18 @@ slopcheck run ./path/to/repo --format console   # json | sarif | md
 slopcheck gate ./repo --baseline base.json      # delta-гейт для CI (exit 1 при регрессе)
 slopcheck check-changed ./repo                  # новые относительно HEAD находки незакоммиченных правок
 slopcheck check-changed ./repo --staged         # то же по индексу (pre-commit)
+slopcheck trend ./repo                          # динамика счёта по истории полных прогонов
 ```
+
+**История счёта.** Каждый полный `slopcheck run` дописывает строку в
+`.slopcheck/history.jsonl`: дата, коммит, счёт, счёт по категориям, число
+находок. Каталог сам исключает себя из git. `slopcheck trend` показывает
+последние прогоны и изменение счёта. Строки с другим набором проверенных
+категорий помечены `≠`: установка нового детектора — не регресс. Инкрементальный
+прогон (`--changed`) в историю не идёт. В CI и в Docker-образе
+(`SLOPCHECK_HISTORY=0`) история не пишется: между прогонами CI она не хранится,
+вместо неё гейт печатает `slop-score: base … → head …`, и шаблон CI кладёт
+это в сводку.
 
 `check-changed` показывает только то, что внесли правки: старый долг
 изменённых файлов не выводится. Если находок уровня `hook_severity` нет,
@@ -194,6 +223,7 @@ lizard, semgrep). Зависимости Go-модулей качаются пр
 | `aislop_ignore_rules` | `[python-formatting]` | устаревший алиас `ignore_rules`, читается вместе с ним; форматирование — забота форматтера |
 | `hook_severity` | `warn` | с какого уровня новая находка возвращается агенту хуком и `check-changed` |
 | `check_deps` | `false` | сверять пакеты с реестрами npm / Go proxy / PyPI (ходит в сеть; то же, что `--check-deps`) |
+| `history` | `true` | писать историю счёта полных прогонов (`slopcheck trend`); в CI и Docker не пишется |
 | `private_packages` | — | свои пакеты, которых нет в публичных реестрах: glob (`@mycorp/*`, `git.corp.io/*`); для Go учитывается и `GOPRIVATE` |
 | `dead_code_ignore_decorators` | typer/click/flask/fastapi/pytest | функция, зарегистрированная декоратором, не мёртвая |
 | `dead_code_ignore_names` | — | точечные исключения по имени |

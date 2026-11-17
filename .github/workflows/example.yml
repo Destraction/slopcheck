@@ -85,4 +85,11 @@ jobs:
 
       - name: Delta gate
         if: steps.base.outputs.has_base == 'true'
-        run: docker run --rm -e SLOPCHECK_CACHE_DIR=/cache -v "$RUNNER_TEMP/slopcache:/cache" -v "$RUNNER_TEMP/base.json:/base/base.json:ro" -v "$PWD:/src" slopcheck:ci gate /src --check-deps --baseline /base/base.json
+        # Вывод гейта (счёт base → head и блокирующие находки) — ещё и в Summary.
+        # Код выхода сохраняется явно: пайп в tee его бы спрятал.
+        run: |
+          code=0
+          docker run --rm -e SLOPCHECK_CACHE_DIR=/cache -v "$RUNNER_TEMP/slopcache:/cache" -v "$RUNNER_TEMP/base.json:/base/base.json:ro" -v "$PWD:/src" slopcheck:ci gate /src --check-deps --baseline /base/base.json > "$RUNNER_TEMP/gate.txt" || code=$?
+          cat "$RUNNER_TEMP/gate.txt"
+          { echo "### Delta-гейт"; echo '```'; cat "$RUNNER_TEMP/gate.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          exit "$code"

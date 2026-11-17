@@ -37,6 +37,12 @@ runs:
     - name: Delta gate
       if: ${{ inputs.baseline != '' }}
       shell: bash
-      run: >
-        docker run --rm -v "${{ github.workspace }}:/src" slopcheck:ci
-        gate "/src/${{ inputs.path }}" --baseline "/src/${{ inputs.baseline }}"
+      # Вывод гейта (счёт base → head и блокирующие находки) — ещё и в Summary;
+      # код выхода сохраняется явно.
+      run: |
+        code=0
+        docker run --rm -v "${{ github.workspace }}:/src" slopcheck:ci \
+          gate "/src/${{ inputs.path }}" --baseline "/src/${{ inputs.baseline }}" > "$RUNNER_TEMP/gate.txt" || code=$?
+        cat "$RUNNER_TEMP/gate.txt"
+        { echo "### Delta-гейт"; echo '```'; cat "$RUNNER_TEMP/gate.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+        exit "$code"
