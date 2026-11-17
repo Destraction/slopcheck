@@ -359,3 +359,8 @@
   where: flag_groups.go:247
   verdict: noise
   why: явное `_ =` — осознанный игнор
+- key: comments|separator-comment|completions.go|===========================================================================
+  rule: separator-comments:separator-comment
+  where: completions.go:86
+  verdict: useful
+  why: декоративная линейка-разделитель

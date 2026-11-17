@@ -38,6 +38,11 @@
   where: console_windows.go:1
   verdict: useful
   why: файл не по gofmt
+- key: 'complexity|error-no-wrap|main.go|return fmt.Errorf("unable to parse PAGER command: %s", pagerCmd)'
+  rule: go-error-wrap:error-no-wrap
+  where: main.go:326
+  verdict: useful
+  why: ошибка shell.Fields (незакрытая кавычка) теряется
 - key: 'complexity|staticcheck/S1025|ui/stash.go|S1025: the argument is already a string, there''s no need to use fmt.Sprintf'
   rule: golangci-lint:staticcheck/S1025
   where: ui/stash.go:771

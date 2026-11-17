@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from slopcheck.baseline import diff_findings
+from slopcheck.baseline import diff_findings, promote_new
 from slopcheck.config import Config, load_config
 from slopcheck.gitchanged import STAGED, changed_files, git, has_head, working_files
 from slopcheck.models import SEVERITY_RANK, Finding
@@ -111,7 +111,9 @@ def check(
     # переменные git-хука только мешают.
     with _without_git_hook_env():
         head_run = run(root, config, registry, files=files)
-        candidates = _at_least(head_run.report.findings, config)
+        # Подавление линтера — info, пока не доказано, что оно новое: поднимаем
+        # заранее, дельта с HEAD ниже отсеет старые (ключ не зависит от уровня).
+        candidates = _at_least(promote_new(head_run.report.findings), config)
         if not candidates:
             return AgentCheckResult(files=files, skipped=head_run.skipped)
         # Тот же набор файлов, что у head: у парной находки jscpd изменённый

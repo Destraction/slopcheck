@@ -25,7 +25,12 @@ from pathlib import Path
 
 from slopcheck.config import Config, default_config
 from slopcheck.models import SEVERITY_RANK as _SEVERITY_RANK
-from slopcheck.models import Category, Finding, Report
+from slopcheck.models import Category, Finding, Report, Severity
+
+# Правила, у которых находка в полном прогоне — info, а новая — warn.
+# Подавление линтера без причины в чужом коде — обычно осознанное старое
+# решение; только что добавленное — повод исправить причину (adapters/suppress.py).
+WARN_WHEN_NEW = frozenset({"lint-suppression"})
 
 
 @dataclass
@@ -60,6 +65,15 @@ def diff_findings(base: list[Finding], head: list[Finding]) -> list[Finding]:
         else:
             new.append(f)
     return new
+
+
+def promote_new(findings: list[Finding]) -> list[Finding]:
+    """Поднять до warn новые находки правил из `WARN_WHEN_NEW`."""
+    return [
+        f.model_copy(update={"severity": Severity.WARN})
+        if f.rule_id in WARN_WHEN_NEW and f.severity is Severity.INFO else f
+        for f in findings
+    ]
 
 
 def _skipped_names(skipped: list[str]) -> set[str]:
@@ -139,7 +153,7 @@ def evaluate_gate(
     base_names = _skipped_names(base_skipped or [])
 
     errors, warnings = _blindspot_notes(head_names, base_names)
-    new = diff_findings(base.findings, head.findings)
+    new = promote_new(diff_findings(base.findings, head.findings))
     blocking, demoted_warnings = _split_blocking(
         new,
         _SEVERITY_RANK[config.gate_severity],

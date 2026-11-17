@@ -309,6 +309,21 @@
   where: ui/src/common/Markdown.tsx:27
   verdict: noise
   why: рендер-функция передаётся пропом
+- key: complexity|error-no-wrap|plugin/compat/wrap.go|return nil, errors.New("missing GetGotifyPluginInfo symbol")
+  rule: go-error-wrap:error-no-wrap
+  where: plugin/compat/wrap.go:15
+  verdict: noise
+  why: ошибка Lookup = нет символа; новое сообщение говорит то же
+- key: complexity|error-no-wrap|plugin/compat/wrap.go|return nil, errors.New("missing NewGotifyPluginInstance symbol")
+  rule: go-error-wrap:error-no-wrap
+  where: plugin/compat/wrap.go:24
+  verdict: noise
+  why: ошибка Lookup = нет символа; новое сообщение говорит то же
+- key: complexity|error-no-wrap|plugin/manager.go|return errors.New("instance not found")
+  rule: go-error-wrap:error-no-wrap
+  where: plugin/manager.go:110
+  verdict: useful
+  why: причина Instance теряется; лучше sentinel или %w
 - key: duplication|duplicate-block|api/application.go|api/application.go|api/application.go
   rule: jscpd:duplicate-block
   where: api/application.go:195
@@ -537,3 +552,23 @@
   where: ui/vite.config.ts:5
   verdict: noise
   why: catch с поясняющим комментарием
+- key: comments|separator-comment|api/oidc_test.go|--- ExternalAuthorizeHandler ---
+  rule: separator-comments:separator-comment
+  where: api/oidc_test.go:602
+  verdict: useful
+  why: разделы тестов линейками вместо отдельных файлов/подтестов
+- key: comments|separator-comment|api/oidc_test.go|--- ExternalTokenHandler ---
+  rule: separator-comments:separator-comment
+  where: api/oidc_test.go:647
+  verdict: useful
+  why: разделы тестов линейками вместо отдельных файлов/подтестов
+- key: comments|separator-comment|api/oidc_test.go|--- LoginHandler ---
+  rule: separator-comments:separator-comment
+  where: api/oidc_test.go:75
+  verdict: useful
+  why: разделы тестов линейками вместо отдельных файлов/подтестов
+- key: comments|separator-comment|api/oidc_test.go|--- createClient ---
+  rule: separator-comments:separator-comment
+  where: api/oidc_test.go:584
+  verdict: useful
+  why: разделы тестов линейками вместо отдельных файлов/подтестов

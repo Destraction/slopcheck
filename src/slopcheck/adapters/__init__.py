@@ -15,14 +15,17 @@ from slopcheck.adapters import (
     duplication,
     eslint,
     golangci,
+    goerrors,
     goiface,
     restating,
+    separators,
     smells,
+    suppress,
 )
 from slopcheck.adapters.base import Adapter
 from slopcheck.registry import Registry, default_registry
 
-_MODULES = (duplication, deadcode, comments, complexity, smells, golangci, eslint, depsexist, restating, goiface)
+_MODULES = (duplication, deadcode, comments, complexity, smells, golangci, eslint, depsexist, restating, goiface, goerrors, separators, suppress)
 
 
 def all_adapters() -> list[Adapter]:

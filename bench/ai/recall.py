@@ -29,9 +29,11 @@ from pathlib import Path
 
 import yaml
 
+from slopcheck.baseline import WARN_WHEN_NEW
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from generate import AI, OUT, WORK, apply, load_tasks, _copy_seed  # noqa: E402
+from generate import AI, OUT, WORK, apply, load_tasks, _copy_seed  # noqa: E402 — bench/ai не пакет
 
 TRUTH = AI / "truth"
 RESULTS = AI / "results"
@@ -39,12 +41,13 @@ EVAL = WORK.parent / "ai-eval"
 LINE_SLACK = 2
 
 # Тип случая → подстроки правил slopcheck, которые его ловят.
-# Пустой список — детектора нет (кандидаты волны 2).
+# Пустой список — детектора нет.
 KIND_RULES: dict[str, tuple[str, ...]] = {
     "restating-comment": ("trivial-comment", "narrative-comment", "meta-comment"),
+    "separator-comment": ("separator-comment",),
     "edit-trace-comment": (),
     "swallowed-error": ("errcheck", "swallowed", "empty-catch", "empty-block", "no-empty"),
-    "error-no-wrap": (),
+    "error-no-wrap": ("error-no-wrap",),
     "ctx-background": (),
     "unused-code": ("unused", "knip", "vulture", "ineffassign", "no-unused", "deadcode"),
     "duplicate": ("duplicate",),
@@ -59,7 +62,7 @@ KIND_RULES: dict[str, tuple[str, ...]] = {
     "effect-misuse": ("exhaustive-deps", "set-state-in-effect"),
     "console-leftover": ("console", "debugger"),
     "panic": ("panic",),
-    "suppression": (),
+    "suppression": ("lint-suppression",),
     "todo-stub": ("todo",),
     "other": (),
 }
@@ -132,7 +135,9 @@ def evaluate(model: str, task: str, seed_keys: set[str]) -> list[dict]:
     """Новые находки slopcheck на заготовке с патчем агента."""
     work = apply(task, model, EVAL / model / task)
     _install(work)
-    return [f for f in _slopcheck(work) if "file" in f and _key(f) not in seed_keys]
+    new = [f for f in _slopcheck(work) if "file" in f and _key(f) not in seed_keys]
+    # Как гейт и хук: новое подавление линтера без причины — warn.
+    return [dict(f, severity="warn") if f.get("rule_id") in WARN_WHEN_NEW else f for f in new]
 
 
 def seed_keys(seed: str) -> set[str]:
