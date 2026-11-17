@@ -231,35 +231,44 @@ def main() -> None:
     recall_p.add_argument("--rerun", action="store_true")
     recall_p.add_argument("--unmatched", action="store_true")
     args = parser.parse_args()
+    {"recall": _cmd_recall, "run": _cmd_run, "report": _cmd_report, "label": _cmd_label}[args.cmd](args)
 
-    if args.cmd == "recall":
-        sys.path.insert(0, str(BENCH / "ai"))
-        import recall
 
-        if args.rerun:
-            recall.rerun()
-        recall.report(args.unmatched)
-        return
+def _cmd_recall(args: argparse.Namespace) -> None:
+    """Полнота на корпусе ИИ-кода (bench/ai)."""
+    sys.path.insert(0, str(BENCH / "ai"))
+    import recall
 
+    if args.rerun:
+        recall.rerun()
+    recall.report(args.unmatched)
+
+
+def _cmd_run(args: argparse.Namespace) -> None:
+    """Клон → slopcheck → находки в out/ → таблица шума."""
     repos = load_corpus()
-    if args.cmd == "run":
-        OUT.mkdir(exist_ok=True)
-        for repo in repos:
-            if args.only and repo.name != args.only:
-                continue
-            ensure_checkout(repo)
-            report = run_slopcheck(repo, args.docker)
-            (OUT / f"{repo.name}.json").write_text(
-                json.dumps(findings_of(report), ensure_ascii=False, indent=1), encoding="utf-8"
-            )
-            print(f"{repo.name}: {len(findings_of(report))} находок; пропущено: {report.get('skipped') or '—'}")
-        print_report(repos)
-    elif args.cmd == "report":
-        print_report(repos)
-    else:
-        repo = next(r for r in repos if r.name == args.name)
-        print(f"{repo.name}: добавлено заготовок {add_label_stubs(repo, args.per_rule)}")
+    OUT.mkdir(exist_ok=True)
+    for repo in repos:
+        if args.only and repo.name != args.only:
+            continue
+        ensure_checkout(repo)
+        report = run_slopcheck(repo, args.docker)
+        (OUT / f"{repo.name}.json").write_text(
+            json.dumps(findings_of(report), ensure_ascii=False, indent=1), encoding="utf-8"
+        )
+        print(f"{repo.name}: {len(findings_of(report))} находок; пропущено: {report.get('skipped') or '—'}")
+    print_report(repos)
 
+
+def _cmd_report(_args: argparse.Namespace) -> None:
+    """Таблица шума по сохранённым находкам."""
+    print_report(load_corpus())
+
+
+def _cmd_label(args: argparse.Namespace) -> None:
+    """Заготовки разметки для одного репозитория."""
+    repo = next(r for r in load_corpus() if r.name == args.name)
+    print(f"{repo.name}: добавлено заготовок {add_label_stubs(repo, args.per_rule)}")
 
 if __name__ == "__main__":
     main()

@@ -55,7 +55,7 @@ def test_collect_stats_counts_noise_among_warn_plus(tmp_path, monkeypatch) -> No
 
 # Корпус ИИ-кода: сопоставление находки со случаем из разметки.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "bench" / "ai"))
-import recall  # noqa: E402
+import recall  # noqa: E402 — bench/ai не пакет, путь добавлен строкой выше
 
 
 def _raw(rule: str, file: str, line: int, tool: str = "knip") -> dict:
