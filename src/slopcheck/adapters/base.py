@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterator
 from pathlib import Path
 
 from slopcheck.config import Config
-from slopcheck.languages import lang_for_path
+from slopcheck.languages import lang_for_path, walk_files
 from slopcheck.models import Category, Finding
 
 
@@ -60,6 +61,19 @@ class Adapter(ABC):
             return list(files)
         return [f for f in files if lang_for_path(f) in self.languages]
 
+    def sources(self, root: Path, config: Config, files: list[str] | None) -> Iterator[tuple[str, str]]:
+        """(путь от root, текст) файлов языков адаптера — для встроенных эвристик.
+
+        Полный прогон — весь `root` без игнорируемых путей; инкрементальный —
+        только релевантные файлы из `files`.
+        """
+        if files is None:
+            paths = (p for p in walk_files(root, config.ignore) if lang_for_path(p) in self.languages)
+        else:
+            paths = (root / f for f in self.select_files(files))
+        for path in paths:
+            yield path.relative_to(root).as_posix(), path.read_text(encoding="utf-8", errors="replace")
+
     def resolve_targets(
         self, root: Path, files: list[str] | None, *, absolute: bool = False
     ) -> list[str] | None:
@@ -95,3 +109,11 @@ class Adapter(ABC):
         вправе игнорировать список — runner отфильтрует находки сам.
         """
         raise NotImplementedError
+
+
+class BuiltinAdapter(Adapter):
+    """Встроенная эвристика slopcheck: внешних тулов нет, доступна всегда."""
+
+    def is_available(self) -> bool:
+        """Внешних тулов нет — доступна всегда."""
+        return True

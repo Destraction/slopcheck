@@ -21,7 +21,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
-from slopcheck.adapters.base import Adapter
+from slopcheck.adapters.base import BuiltinAdapter
 from slopcheck.config import Config
 from slopcheck.languages import walk_files
 from slopcheck.models import Category, Finding, Severity
@@ -97,7 +97,7 @@ def single_impl_interfaces(files: dict[str, str]) -> list[tuple[Interface, str]]
     return result
 
 
-class GoSingleImplAdapter(Adapter):
+class GoSingleImplAdapter(BuiltinAdapter):
     """Go-интерфейсы, у которых в модуле ровно одна реализация и нет моков."""
 
     name = "go-single-impl"
@@ -105,10 +105,6 @@ class GoSingleImplAdapter(Adapter):
     languages = frozenset({"go"})
     # Реализации ищутся по всему модулю: на срезе файлов вторая не видна.
     file_scoped = False
-
-    def is_available(self) -> bool:
-        """Встроенная эвристика: внешних тулов нет."""
-        return True
 
     def run(self, root: Path, config: Config, files: list[str] | None = None) -> list[Finding]:
         """Найти интерфейсы с единственной реализацией."""

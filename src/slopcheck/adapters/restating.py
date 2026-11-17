@@ -22,12 +22,10 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from slopcheck.adapters.base import Adapter
+from slopcheck.adapters.base import BuiltinAdapter
 from slopcheck.config import Config
-from slopcheck.languages import lang_for_path, walk_files
 from slopcheck.models import Category, Finding, Severity
 
-_LANGS = frozenset({"go", "javascript", "typescript"})
 _COMMENT = re.compile(r"^\s*//\s?(.*)$")
 _DIRECTIVE = re.compile(r"^(go:|nolint|eslint|@ts-|prettier-|istanbul|c8 |#|/|todo|fixme|xxx|hack)", re.I)
 # Объявление сразу под комментарием → это doc-комментарий, а не пересказ.
@@ -168,42 +166,30 @@ def find_restating(text: str) -> list[tuple[int, str]]:
     return found
 
 
-class RestatingCommentAdapter(Adapter):
+class RestatingCommentAdapter(BuiltinAdapter):
     """Комментарии-пересказы кода в Go и JS/TS."""
 
     name = "restating-comments"
     category = Category.COMMENTS
-    languages = _LANGS
-
-    def is_available(self) -> bool:
-        """Встроенная эвристика: внешних тулов нет."""
-        return True
+    languages = frozenset({"go", "javascript", "typescript"})
 
     def run(self, root: Path, config: Config, files: list[str] | None = None) -> list[Finding]:
         """Найти комментарии-пересказы в файлах Go и JS/TS."""
-        if files is None:
-            paths = [p for p in walk_files(root, config.ignore) if lang_for_path(p) in _LANGS]
-        else:
-            paths = [root / f for f in self.select_files(files)]
-        findings: list[Finding] = []
-        for path in paths:
-            text = path.read_text(encoding="utf-8", errors="replace")
-            rel = path.relative_to(root).as_posix()
-            findings += [
-                Finding(
-                    category=Category.COMMENTS,
-                    tool="restating-comments",
-                    file=rel,
-                    line=line,
-                    message=f"Комментарий пересказывает следующую строку кода: «{comment}»",
-                    severity=Severity.WARN,
-                    # Тот же класс и без identity, как у aislop: на одной строке
-                    # находки обоих склеятся в одну.
-                    rule_id="trivial-comment",
-                )
-                for line, comment in find_restating(text)
-            ]
-        return findings
+        return [
+            Finding(
+                category=Category.COMMENTS,
+                tool="restating-comments",
+                file=rel,
+                line=line,
+                message=f"Комментарий пересказывает следующую строку кода: «{comment}»",
+                severity=Severity.WARN,
+                # Тот же класс и без identity, как у aislop: на одной строке
+                # находки обоих склеятся в одну.
+                rule_id="trivial-comment",
+            )
+            for rel, text in self.sources(root, config, files)
+            for line, comment in find_restating(text)
+        ]
 
 
 # Адаптеры модуля; регистрирует их `slopcheck.adapters.register_all`.
