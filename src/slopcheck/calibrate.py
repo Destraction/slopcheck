@@ -50,6 +50,19 @@ _ALWAYS_INFO = (
     "knip:knip-devDependencies",            # инструменты из конфигов не видны без node_modules
 )
 
+# Вендоренный UI-кит (shadcn/ui и подобные): компоненты копируются в проект
+# целиком, со всем API примитива — неиспользуемые экспорты и похожие обёртки
+# Dialog/Sheet/Drawer там норма, а не slop. Кит узнаём по каталогу
+# `components/ui/`, в котором хоть один файл импортирует radix или cva.
+_UI_KIT_RULES = frozenset({
+    "knip:knip-exports",
+    "knip:knip-types",
+    "jscpd:duplicate-block",
+    "aislop:code-quality/duplicate-block",
+})
+_UI_KIT_DIR = re.compile(r"^(.*?(?:^|/)components/ui)/")
+_UI_KIT_IMPORT = re.compile(r"""from\s+["'](?:@radix-ui/|class-variance-authority)""")
+_UI_KIT_SUFFIXES = (".ts", ".tsx", ".js", ".jsx")
 _HALLUCINATED = re.compile(r'Imports "([^"]+)"')
 _PANIC_LITERAL = re.compile(r'panic\(\s*("|`|fmt\.Sprint|errors\.New)')
 _CATCH_COMMENT = re.compile(r"catch\b[^{]*\{\s*(//|/\*)")
@@ -110,6 +123,21 @@ def _drop(root: Path, finding: Finding, key: str) -> bool:
     return False
 
 
+@lru_cache(maxsize=64)
+def _is_ui_kit_dir(directory: Path) -> bool:
+    """Каталог `components/ui` — вендоренный кит: в нём импортируют radix или cva."""
+    for path in directory.rglob("*"):
+        if path.suffix in _UI_KIT_SUFFIXES and _UI_KIT_IMPORT.search("\n".join(_read_lines(path))):
+            return True
+    return False
+
+
+def _in_ui_kit(root: Path, finding: Finding) -> bool:
+    """Находка лежит в вендоренном UI-ките."""
+    match = _UI_KIT_DIR.match(finding.file)
+    return bool(match) and _is_ui_kit_dir(root / match.group(1))
+
+
 def _framework_param(root: Path, finding: Finding) -> bool:
     """Параметр сигнатуры фреймворка и параметр catch — не мёртвый код."""
     return finding.message.startswith(("Parameter", "Catch parameter"))
@@ -168,6 +196,8 @@ def _demote(root: Path, finding: Finding, key: str) -> bool:
         return True
     if key in _RELAXED_IN_TESTS and is_test_file(finding.file):
         return True
+    if key in _UI_KIT_RULES and _in_ui_kit(root, finding):
+        return True
     check = _DEMOTE_IF.get(key)
     return bool(check and check(root, finding))
 
@@ -175,6 +205,7 @@ def _demote(root: Path, finding: Finding, key: str) -> bool:
 def calibrate(findings: list[Finding], root: Path) -> list[Finding]:
     """Применить поправки корпуса: отбросить ложные, понизить шумные до info."""
     _read_lines.cache_clear()
+    _is_ui_kit_dir.cache_clear()
     result: list[Finding] = []
     for finding in findings:
         key = rule_key(finding)

@@ -195,3 +195,19 @@ def test_non_english_comment_is_not_restating() -> None:
     russian = "  // Храним последний fetcher в ref, чтобы новая ссылка не вызывала загрузку.\n  const fetcherRef = useRef(fetcher);\n"
     assert find_restating(russian) == []
     assert find_restating("  // fetch the data\n  fetchData()\n") == [(1, "fetch the data")]
+
+
+def test_vendored_ui_kit_exports_and_duplicates_info(tmp_path: Path) -> None:
+    # shadcn/ui: компоненты копируются со всем API; use-toast сам radix не импортирует,
+    # но лежит в том же ките.
+    _write(tmp_path, "src/components/ui/dialog.tsx", 'import * as Dialog from "@radix-ui/react-dialog"\n')
+    _write(tmp_path, "src/components/ui/use-toast.ts", 'import * as React from "react"\n')
+    # Свой каталог ui без radix/cva — обычный код.
+    _write(tmp_path, "app/components/ui/Button.tsx", 'import * as React from "react"\n')
+    found = calibrate([
+        _f("knip", "knip-exports", "src/components/ui/use-toast.ts"),
+        _f("aislop", "code-quality/duplicate-block", "src/components/ui/dialog.tsx"),
+        _f("knip", "knip-exports", "app/components/ui/Button.tsx"),
+        _f("eslint", "@typescript-eslint/no-explicit-any", "src/components/ui/dialog.tsx"),
+    ], tmp_path)
+    assert _severity(found) == [Severity.INFO, Severity.INFO, Severity.WARN, Severity.WARN]
