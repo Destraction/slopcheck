@@ -7,15 +7,35 @@
 # Node — для jscpd/knip/aislop/eslint; Go — для golangci-lint;
 # Python-детекторы — из extra [detectors].
 
+# Версии всех детекторов закреплены точно (H10): плавающий `latest`/`@4`
+# менял находки между сборками, и гейт CI расходился с прошлым прогоном
+# без единой правки кода. Обновление тула — отдельный коммит с прогоном
+# корпуса (bench/). Любую версию можно переопределить --build-arg.
+ARG GO_VERSION=1.27.4
+ARG GOLANGCI_VERSION=2.15.0
+ARG NODE_VERSION=20.20.2
+
 # Go-тулчейн и golangci-lint берём из официальных образов: golangci-lint
 # грузит пакеты через `go`, поэтому без тулчейна он бесполезен.
-FROM golang:1.27-bookworm AS go
-FROM golangci/golangci-lint:v2.15.0 AS golangci
+FROM golang:${GO_VERSION}-bookworm AS go
+FROM golangci/golangci-lint:v${GOLANGCI_VERSION} AS golangci
 
-FROM node:20-bookworm-slim
+FROM node:${NODE_VERSION}-bookworm-slim
 
-# Версия aislop (переопределяется --build-arg для пина).
-ARG AISLOP_VERSION=latest
+ARG JSCPD_VERSION=4.3.0
+ARG KNIP_VERSION=5.88.1
+ARG AISLOP_VERSION=0.22.1
+ARG ESLINT_VERSION=9.39.5
+ARG TYPESCRIPT_VERSION=5.9.3
+ARG TYPESCRIPT_ESLINT_VERSION=8.72.2
+ARG ESLINT_PLUGIN_REACT_VERSION=7.37.5
+ARG ESLINT_PLUGIN_REACT_HOOKS_VERSION=7.1.1
+ARG ESLINT_PLUGIN_JSDOC_VERSION=65.4.8
+ARG VULTURE_VERSION=2.16
+ARG DEPTRY_VERSION=0.25.1
+ARG INTERROGATE_VERSION=1.7.0
+ARG LIZARD_VERSION=1.26.1
+ARG SEMGREP_VERSION=1.185.0
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -24,12 +44,15 @@ RUN apt-get update \
 
 # Node-детекторы глобально. aislop распространяется npm-пакетом (не релизным
 # бинарником) и на постинсталле дотягивает свои бинарники сам.
-RUN npm install -g jscpd@4 knip@5 "aislop@${AISLOP_VERSION}"
+RUN npm install -g "jscpd@${JSCPD_VERSION}" "knip@${KNIP_VERSION}" "aislop@${AISLOP_VERSION}"
 
 # ESLint с плагинами для пакетного конфига (rules/eslint.config.cjs):
 # React-хуки, ключи списков, any, JSDoc экспортов.
-RUN npm install -g eslint@9 typescript@5 typescript-eslint@8 \
-        eslint-plugin-react@7 eslint-plugin-react-hooks@7 eslint-plugin-jsdoc@65 \
+RUN npm install -g "eslint@${ESLINT_VERSION}" "typescript@${TYPESCRIPT_VERSION}" \
+        "typescript-eslint@${TYPESCRIPT_ESLINT_VERSION}" \
+        "eslint-plugin-react@${ESLINT_PLUGIN_REACT_VERSION}" \
+        "eslint-plugin-react-hooks@${ESLINT_PLUGIN_REACT_HOOKS_VERSION}" \
+        "eslint-plugin-jsdoc@${ESLINT_PLUGIN_JSDOC_VERSION}" \
     && eslint --version
 
 COPY --from=go /usr/local/go /usr/local/go
@@ -52,7 +75,10 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY src ./src
-RUN pip install --no-cache-dir ".[detectors]"
+RUN pip install --no-cache-dir ".[detectors]" \
+        "vulture==${VULTURE_VERSION}" "deptry==${DEPTRY_VERSION}" \
+        "interrogate==${INTERROGATE_VERSION}" "lizard==${LIZARD_VERSION}" \
+        "semgrep==${SEMGREP_VERSION}"
 
 WORKDIR /src
 ENTRYPOINT ["slopcheck"]
