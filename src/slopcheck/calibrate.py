@@ -202,14 +202,28 @@ def _demote(root: Path, finding: Finding, key: str) -> bool:
     return bool(check and check(root, finding))
 
 
+def _covered_separators(findings: list[Finding]) -> set[tuple[str, int | None]]:
+    """Строки, где разделитель уже нашёл встроенный `separator-comment`."""
+    return {(f.file, f.line) for f in findings if f.rule_id == "separator-comment"}
+
+
+def _aislop_separator(finding: Finding) -> bool:
+    """aislop отдаёт комментарий-разделитель как narrative-comment; отличает только сообщение."""
+    return rule_key(finding) == "aislop:ai-slop/narrative-comment" and "decorative separator" in finding.message
+
+
 def calibrate(findings: list[Finding], root: Path) -> list[Finding]:
     """Применить поправки корпуса: отбросить ложные, понизить шумные до info."""
     _read_lines.cache_clear()
     _is_ui_kit_dir.cache_clear()
+    # Один разделитель — одна находка. Копия от aislop штрафовала бы счёт
+    # дважды, а агенту несла подсказку про рассказ о правках вместо линейки
+    # (cobra completions.go:86, хук на gotify-server).
+    separators = _covered_separators(findings)
     result: list[Finding] = []
     for finding in findings:
         key = rule_key(finding)
-        if _drop(root, finding, key):
+        if _drop(root, finding, key) or (_aislop_separator(finding) and (finding.file, finding.line) in separators):
             continue
         if finding.severity != Severity.INFO and _demote(root, finding, key):
             finding = finding.model_copy(update={"severity": Severity.INFO})

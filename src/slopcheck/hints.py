@@ -133,6 +133,12 @@ def hints_for(findings: Iterable[Finding]) -> list[tuple[str, str]]:
     return list(seen.items())
 
 
+# Общее правило над подсказками: агент, которому мешает линтер, охотнее
+# всего глушит правило — это не исправление.
+NO_SUPPRESS = "Чини причину в коде: подавление правила (eslint-disable, //nolint, # noqa, @ts-ignore) не считается исправлением."
+
+
 def render_hints(findings: Iterable[Finding], bullet: str = "- ") -> list[str]:
-    """Строки «класс: подсказка» для вывода под списком находок."""
-    return [f"{bullet}{rule_class}: {hint}" for rule_class, hint in hints_for(findings)]
+    """Общее правило и строки «класс: подсказка» для вывода под списком находок."""
+    hints = [f"{bullet}{rule_class}: {hint}" for rule_class, hint in hints_for(findings)]
+    return [NO_SUPPRESS, *hints] if hints else []

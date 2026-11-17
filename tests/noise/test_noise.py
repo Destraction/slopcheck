@@ -35,6 +35,15 @@ def test_duplicates_in_lockfiles_docs_ci_dropped(tmp_path: Path, file: str) -> N
     assert calibrate([_f("jscpd", "duplicate-block", file)], tmp_path) == []
 
 
+def test_aislop_separator_merged_into_separator_comment(tmp_path: Path) -> None:
+    # cobra completions.go:86: одна линейка `// ====…` приходила дважды.
+    aislop = _f("aislop", "ai-slop/narrative-comment", "c.go", 86, "Narrative comment block (decorative separator)")
+    native = _f("separator-comments", "separator-comment", "c.go", 86, "Комментарий-разделитель")
+    elsewhere = _f("aislop", "ai-slop/narrative-comment", "c.go", 99, "Narrative comment block (decorative separator)")
+    narrative = _f("aislop", "ai-slop/narrative-comment", "c.go", 86, "Narrative comment block")
+    assert calibrate([aislop, native, elsewhere, narrative], tmp_path) == [native, elsewhere, narrative]
+
+
 def test_baseurl_directory_is_not_hallucinated_package(tmp_path: Path) -> None:
     # taxonomy: `import { X } from "types"` — каталог types/ под baseUrl ".";
     # paths со звёздочками раньше ломали разбор tsconfig.

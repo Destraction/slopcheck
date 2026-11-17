@@ -7,7 +7,7 @@ import pytest
 from slopcheck.adapters import all_adapters
 from slopcheck.adapters.base import BuiltinAdapter
 from slopcheck.agent_check import AgentCheckResult, format_text
-from slopcheck.hints import hint_for, hints_for
+from slopcheck.hints import NO_SUPPRESS, hint_for, hints_for
 from slopcheck.models import Category, CategoryResult, Finding, Report, Severity
 from slopcheck.reporters import markdown
 from slopcheck.runner import RunResult
@@ -36,8 +36,8 @@ def test_hook_text_ends_with_hints() -> None:
                                              _f("staticcheck/S1025", tool="golangci-lint", file="a.go")]))
     lines = text.splitlines()
     assert lines[0].startswith("a.go:1 [warn] staticcheck/S1025")
-    assert lines[2:4] == ["", "Как чинить:"] and len(lines) == 5
-    assert lines[4].startswith("- lint-suppression: Исправь то, на что жалуется правило")
+    assert lines[2:5] == ["", "Как чинить:", NO_SUPPRESS] and len(lines) == 6
+    assert lines[5].startswith("- lint-suppression: Исправь то, на что жалуется правило")
 
 
 def test_hook_text_without_known_classes_has_no_hint_block() -> None:
@@ -49,7 +49,7 @@ def test_markdown_hints_for_top_findings() -> None:
         _f("duplicate-block", tool="jscpd"), _f("duplicate-block", tool="jscpd", line=5)])])
     md = markdown.render(RunResult(report=report, skipped=[]))
     assert md.count("- duplicate-block: Вынеси общий код") == 1
-    assert "### Как чинить" in md
+    assert "### Как чинить" in md and NO_SUPPRESS in md
 
 
 # Встроенные эвристики slopcheck: их rule_id известны заранее, подсказка обязана быть.
