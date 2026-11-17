@@ -50,7 +50,17 @@ def test_collect_stats_counts_noise_among_warn_plus(tmp_path, monkeypatch) -> No
     stats, totals = bench.collect_stats([bench.Repo(name="x", url="u", commit="c")])
     assert stats["eslint:r1"].noise_share == 0.5
     # info-находка в итог warn+ не входит.
-    assert totals == {"labeled": 2, "noise": 1}
+    assert totals == {"labeled": 2, "noise": 1, "unlabeled": 0}
+
+
+def test_report_exit_code_by_noise_limit(monkeypatch, capsys) -> None:
+    repo = bench.Repo(name="x", url="u", commit="c")
+    monkeypatch.setattr(bench, "collect_stats", lambda _repos: ({}, {"labeled": 10, "noise": 3, "unlabeled": 4}))
+    assert bench.print_report([repo]) is False  # 30% > 20%
+    out = capsys.readouterr().out
+    assert "ВЫШЕ ПОРОГА" in out and "warn+ без разметки: 4" in out
+    monkeypatch.setattr(bench, "collect_stats", lambda _repos: ({}, {"labeled": 10, "noise": 2, "unlabeled": 0}))
+    assert bench.print_report([repo]) is True
 
 
 # Корпус ИИ-кода: сопоставление находки со случаем из разметки.

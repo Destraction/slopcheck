@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from collections import defaultdict
@@ -91,7 +92,9 @@ def run_slopcheck(repo: Repo, image: str | None) -> dict:
         cmd = ["docker", "run", "--rm", "-v", f"{repo.target}:/src", image, "run", "/src", "--format", "json"]
     else:
         cmd = [str(Path(sys.executable).parent / "slopcheck"), "run", str(repo.target), "--format", "json"]
-    proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    # Замер, а не работа над проектом: историю счёта в клонах корпуса не пишем.
+    env = {**os.environ, "SLOPCHECK_HISTORY": "0"}
+    proc = subprocess.run(cmd, capture_output=True, text=True, check=False, env=env)
     if proc.returncode != 0 or not proc.stdout.strip():
         raise RuntimeError(f"{repo.name}: slopcheck упал: {proc.stderr.strip()[-500:]}")
     return json.loads(proc.stdout)
@@ -155,9 +158,9 @@ class RuleStats:
 
 
 def collect_stats(repos: list[Repo]) -> tuple[dict[str, RuleStats], dict[str, int]]:
-    """Статистика по правилам и итог по warn+ (размечено/шум)."""
+    """Статистика по правилам и итог по warn+ (размечено/шум/без разметки)."""
     stats: dict[str, RuleStats] = defaultdict(RuleStats)
-    totals = {"labeled": 0, "noise": 0}
+    totals = {"labeled": 0, "noise": 0, "unlabeled": 0}
     for repo in repos:
         labels = load_labels(repo.name)
         for f in load_findings(repo.name):
@@ -167,6 +170,7 @@ def collect_stats(repos: list[Repo]) -> tuple[dict[str, RuleStats], dict[str, in
             s.warn_plus += warn_plus
             verdict = labels.get(finding_key(f), {}).get("verdict")
             if verdict not in VERDICTS:
+                totals["unlabeled"] += warn_plus
                 continue
             setattr(s, verdict, getattr(s, verdict) + 1)
             if warn_plus:
@@ -175,21 +179,27 @@ def collect_stats(repos: list[Repo]) -> tuple[dict[str, RuleStats], dict[str, in
     return stats, totals
 
 
-def print_report(repos: list[Repo]) -> None:
-    """Таблица шума по правилам и итог против порога DoD."""
+def print_report(repos: list[Repo]) -> bool:
+    """Таблица шума по правилам и итог против порога DoD; False — выше порога."""
     stats, totals = collect_stats(repos)
     print(f"{'правило':60} {'всего':>6} {'warn+':>6} {'польза':>7} {'шум':>5} {'шум%':>6}")
     for rule, s in sorted(stats.items(), key=lambda kv: -kv[1].total):
         share = s.noise_share
         pct = f"{share:.0%}" if share is not None else "—"
         print(f"{rule[:60]:60} {s.total:6} {s.warn_plus:6} {s.useful:7} {s.noise:5} {pct:>6}")
+    if totals["unlabeled"]:
+        # Новое правило или сдвиг находок после обновления тула: в долю шума
+        # не входят, пока не размечены.
+        print(f"\nwarn+ без разметки: {totals['unlabeled']} — разметить: bench/run.py label <репо>")
     labeled = totals["labeled"]
-    if labeled:
-        share = totals["noise"] / labeled
-        mark = "OK" if share <= NOISE_LIMIT else "ВЫШЕ ПОРОГА"
-        print(f"\nwarn+: размечено {labeled}, шум {totals['noise']} ({share:.0%}), порог {NOISE_LIMIT:.0%} — {mark}")
-    else:
+    if not labeled:
         print("\nwarn+: разметки нет")
+        return True
+    share = totals["noise"] / labeled
+    ok = share <= NOISE_LIMIT
+    print(f"\nwarn+: размечено {labeled}, шум {totals['noise']} ({share:.0%}), "
+          f"порог {NOISE_LIMIT:.0%} — {'OK' if ok else 'ВЫШЕ ПОРОГА'}")
+    return ok
 
 
 def add_label_stubs(repo: Repo, per_rule: int) -> int:
@@ -257,12 +267,18 @@ def _cmd_run(args: argparse.Namespace) -> None:
             json.dumps(findings_of(report), ensure_ascii=False, indent=1), encoding="utf-8"
         )
         print(f"{repo.name}: {len(findings_of(report))} находок; пропущено: {report.get('skipped') or '—'}")
-    print_report(repos)
+    _exit_on_noise(print_report(repos))
 
 
 def _cmd_report(_args: argparse.Namespace) -> None:
     """Таблица шума по сохранённым находкам."""
-    print_report(load_corpus())
+    _exit_on_noise(print_report(load_corpus()))
+
+
+def _exit_on_noise(ok: bool) -> None:
+    """Код выхода 1, если шум выше порога (для еженедельного прогона в CI)."""
+    if not ok:
+        sys.exit(1)
 
 
 def _cmd_label(args: argparse.Namespace) -> None:

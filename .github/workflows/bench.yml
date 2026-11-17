@@ -1,0 +1,59 @@
+# Еженедельный прогон корпуса калибровки (bench/): шум slopcheck на реальных
+# Go/React-репозиториях тем же образом, что гоняет гейт CI.
+#
+# Красный — доля шума среди размеченных находок warn+ выше порога (20%):
+# правка правил или обновление детектора ухудшили точность. Находки без
+# разметки (новое правило, сдвиг после обновления тула) в долю не входят —
+# их число печатается в сводке, разметка: `bench/run.py label <репо>`.
+# Полнота на корпусе ИИ-кода (`bench/run.py recall`) сюда не входит: ей нужны
+# npm install и go mod download по 32 патчам, она гоняется локально.
+
+name: bench
+
+on:
+  schedule:
+    - cron: "0 5 * * 1"  # понедельник, 05:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  noise:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build slopcheck image
+        run: docker build -t slopcheck:bench .
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bench dependencies
+        run: python -m pip install pyyaml
+
+      # Код выхода сохраняется явно: пайп в tee его бы спрятал.
+      - name: Corpus run
+        run: |
+          code=0
+          python bench/run.py run --docker slopcheck:bench > "$RUNNER_TEMP/bench.txt" || code=$?
+          cat "$RUNNER_TEMP/bench.txt"
+          {
+            echo "## Шум slopcheck на корпусе калибровки"
+            echo '```'
+            tail -n 45 "$RUNNER_TEMP/bench.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$code"
+
+      - name: Upload findings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-out
+          path: bench/out/

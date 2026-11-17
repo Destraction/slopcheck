@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -116,7 +117,8 @@ def _slopcheck(work: Path) -> list[dict]:
     """Находки slopcheck (с проверкой пакетов, как в шаблоне CI)."""
     exe = str(Path(sys.executable).parent / "slopcheck")
     proc = subprocess.run([exe, "run", str(work), "--check-deps", "--format", "json"],
-                          capture_output=True, text=True, check=False)
+                          capture_output=True, text=True, check=False,
+                          env={**os.environ, "SLOPCHECK_HISTORY": "0"})
     if not proc.stdout.strip():
         raise RuntimeError(f"{work}: slopcheck упал: {proc.stderr[-500:]}")
     report = json.loads(proc.stdout)
