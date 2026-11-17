@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING
 from slopcheck.baseline import diff_findings, promote_new
 from slopcheck.config import Config, load_config
 from slopcheck.gitchanged import STAGED, changed_files, git, has_head, working_files
+from slopcheck.hints import render_hints
 from slopcheck.models import SEVERITY_RANK, Finding
 from slopcheck.runner import run
 
@@ -127,9 +128,11 @@ def check(
 
 
 def format_text(result: AgentCheckResult) -> str:
-    """Компактный список для агента: `файл:строка [severity] правило — сообщение`."""
-    lines = [
-        f"{f.file}:{f.line} [{f.severity.value}] {f.rule_id or f.tool} — {f.message}"
-        for f in sorted(result.new, key=lambda f: (f.file, f.line))
-    ]
+    """Компактный список для агента: `файл:строка [severity] правило — сообщение`,
+    под ним — как чинить, по строке на класс находки."""
+    found = sorted(result.new, key=lambda f: (f.file, f.line))
+    lines = [f"{f.file}:{f.line} [{f.severity.value}] {f.rule_id or f.tool} — {f.message}" for f in found]
+    hints = render_hints(found)
+    if hints:
+        lines += ["", "Как чинить:", *hints]
     return "\n".join(lines)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from slopcheck.hints import render_hints
 from slopcheck.models import Report, Severity
 from slopcheck.runner import RunResult
 
@@ -73,6 +74,9 @@ def _findings_section(report: Report) -> list[str]:
     if len(findings) > _TOP_FINDINGS:
         lines.append("")
         lines.append(f"_…и ещё {len(findings) - _TOP_FINDINGS} находок._")
+    hints = render_hints(findings[:_TOP_FINDINGS])
+    if hints:
+        lines += ["", "### Как чинить", "", *hints]
     return lines
 
 
