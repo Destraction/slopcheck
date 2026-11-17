@@ -83,6 +83,10 @@ def test_failure_and_timeout_do_not_block(tmp_path, monkeypatch) -> None:
     root = str(_repo(tmp_path))
     _fake_check(monkeypatch, _Proc(2, stderr="не git"))
     assert claude_stop({"cwd": root}).exit_code == 0
+    # Падение Python тоже даёт код 1, но без заголовка находок — агенту не отдаём.
+    _fake_check(monkeypatch, _Proc(1, stderr="Traceback …\nTypeError: …"))
+    decision = claude_stop({"cwd": root})
+    assert decision.exit_code == 0 and "не выполнена" in decision.message
     _fake_check(monkeypatch, subprocess.TimeoutExpired(cmd="x", timeout=1))
     decision = claude_stop({"cwd": root}, timeout=1)
     assert decision.exit_code == 0 and "не уложилась" in decision.message

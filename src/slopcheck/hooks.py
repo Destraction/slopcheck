@@ -16,6 +16,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from slopcheck.agent_check import FINDINGS_HEADER
 from slopcheck.config import CONFIG_FILENAME
 
 # Время на проверку: хук бежит в конце каждого хода, дольше — мешает работе.
@@ -69,8 +70,8 @@ def claude_stop(payload: dict, timeout: float = CHECK_TIMEOUT) -> HookDecision:
         )
     except subprocess.TimeoutExpired:
         return HookDecision(0, f"slopcheck: проверка не уложилась в {timeout:g} с — пропущена.")
-    if proc.returncode == 1:
-        findings = proc.stdout.split("\n", 1)[1] if "\n" in proc.stdout else proc.stdout
+    if proc.returncode == 1 and proc.stdout.startswith(FINDINGS_HEADER):
+        findings = proc.stdout.split("\n", 1)[1] if "\n" in proc.stdout else ""
         return HookDecision(2, _FIX_PROMPT + findings.strip())
     if proc.returncode != 0:
         return HookDecision(0, f"slopcheck: проверка не выполнена — {proc.stderr.strip()[-300:]}")

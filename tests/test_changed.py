@@ -150,6 +150,17 @@ def test_incremental_keeps_pair_via_identity(tmp_path: Path) -> None:
     assert len(result.report.findings) == 1
 
 
+def test_incremental_finding_without_identity_in_unchanged_file(tmp_path: Path) -> None:
+    # aislop сканирует корень целиком: находка в неизменённом файле без identity
+    # раньше роняла фильтр (`in None`), и хук получал трассировку как «находки».
+    stray = Finding(category=Category.DEAD_CODE, tool="aislop", file="dist/x.js", line=1, message="x")
+    adapter = _Recorder([stray, _finding("a.py")])
+    reg = Registry()
+    reg.register(adapter)
+    result = run(_plain_repo(tmp_path), config=Config(), registry=reg, files=["a.py"])
+    assert [f.file for f in result.report.findings] == ["a.py"]
+
+
 def test_incremental_empty_list_is_empty_report(tmp_path: Path) -> None:
     adapter = _Recorder([_finding("a.py")])
     reg = Registry()

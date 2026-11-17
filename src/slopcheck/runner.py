@@ -80,7 +80,10 @@ def _touches_changed(finding: Finding, changed: set[str]) -> bool:
     """
     if finding.file in changed:
         return True
-    return any(part in finding.identity for part in changed) if changed else False
+    # identity есть не у всех: aislop по неизменённому файлу (в т. ч. в dist/) — None.
+    if not finding.identity:
+        return False
+    return any(part in finding.identity for part in changed)
 
 
 def _run_adapter(

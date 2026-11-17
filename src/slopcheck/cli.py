@@ -257,7 +257,7 @@ def check_changed(
     Старый долг изменённых файлов не показывается — только то, что внесли
     правки. Порог — `hook_severity` из `.slopcheck.yml`.
     """
-    from slopcheck.agent_check import check, format_text
+    from slopcheck.agent_check import FINDINGS_HEADER, check, format_text
     from slopcheck.subprocess_util import ToolExecutionError
 
     try:
@@ -271,7 +271,7 @@ def check_changed(
     if not result.new:
         typer.echo(f"✅ slopcheck: новых находок нет (файлов проверено: {len(result.files)})")
         raise typer.Exit(code=0)
-    typer.echo(f"❌ slopcheck: правки добавили slop — {len(result.new)}:")
+    typer.echo(f"{FINDINGS_HEADER} — {len(result.new)}:")
     typer.echo(format_text(result))
     raise typer.Exit(code=1)
 

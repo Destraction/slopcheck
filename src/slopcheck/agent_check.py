@@ -35,6 +35,11 @@ if TYPE_CHECKING:
     from slopcheck.registry import Registry
 
 
+# Первая строка вывода `check-changed`, когда находки есть. По ней хук отличает
+# список находок от падения с тем же кодом выхода 1 (трассировка Python).
+FINDINGS_HEADER = "❌ slopcheck: правки добавили slop"
+
+
 @dataclass
 class AgentCheckResult:
     """Новые находки правок и диагностика прогона."""
